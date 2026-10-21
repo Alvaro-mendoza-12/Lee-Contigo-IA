@@ -1,8 +1,10 @@
 # Documentación del proyecto: LeeContigo IA
 
-**Estado:** propuesta documental, sin código implementado  
+**Estado:** MVP web implementado; análisis inicial conservado como referencia  
 **Fecha:** 21 de octubre de 2026  
-**Propósito:** comparar los cinco desafíos ganadores de Fase 1 y preparar el plan para prototipar el desafío de tutoría lectora con IA.
+**Propósito:** documentar la elección, la planificación y la implementación del desafío de tutoría lectora con IA.
+
+**Estado actual y acceso al producto:** consultar [implementación y UX](14_implementacion_y_ux.md) y el [README del proyecto](../README.md). Web: https://lee-contigo-ia.vercel.app. Los documentos 00 a 13 recogen la planificación previa; las funciones propuestas allí no equivalen a funciones ya construidas.
 
 ## Recomendación
 
@@ -25,6 +27,8 @@ La puntuación comparativa es una estimación de trabajo, no una calificación d
 11. [Sustentación y pitch de 3 a 5 diapositivas](11_pitch_y_sustentacion.md)
 12. [Skills de Vercel aplicables](12_skills_vercel.md)
 13. [Fuentes y límites de la investigación](13_fuentes.md)
+14. [Implementación real, UX y operación](14_implementacion_y_ux.md)
+15. [Recursos visuales y procedencia](15_recursos_visuales.md)
 
 ## Supuesto geográfico
 
@@ -32,7 +36,7 @@ Las bases y los cinco desafíos seleccionados están centrados en Perú, por eso
 
 ## Estado de la carpeta
 
-Incluye decisión, evidencia, alcance de producto web, requisitos, tecnologías, diseño de IA, calendario, viabilidad de ingresos, riesgos, métricas y guion de sustentación. No contiene código, prototipo funcional, resultados con usuarios, ventas ni validación pedagógica. Esos resultados solo podrán afirmarse después de construir y probar el MVP.
+Incluye decisión, evidencia, alcance, requisitos, tecnologías, diseño de IA, calendario, viabilidad de ingresos, riesgos, métricas y sustentación. El código funcional está en la raíz del proyecto. No hay resultados con usuarios, ventas ni validación pedagógica realizada. El documento 14 detalla las comprobaciones técnicas y los límites del MVP.
 
 ## Lectura rápida de las bases
 

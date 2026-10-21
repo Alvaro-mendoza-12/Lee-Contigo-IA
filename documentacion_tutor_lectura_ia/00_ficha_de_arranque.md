@@ -3,7 +3,7 @@
 **Proyecto:** LeeContigo IA  
 **Versión documental:** 1.0  
 **Fecha de decisión:** 21 de octubre de 2026  
-**Estado:** listo para comenzar la planificación de implementación; todavía no hay código ni prototipo.
+**Estado de esta ficha:** planificación original. El MVP ya se implementó; ver [estado actual](14_implementacion_y_ux.md). Las decisiones abiertas de esta ficha deben leerse junto con ese documento.
 
 ## Respuesta directa: ¿está definido todo?
 

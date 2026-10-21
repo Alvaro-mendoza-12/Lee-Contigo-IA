@@ -348,7 +348,7 @@ svg {
   overflow: hidden;
   border-radius: 17px;
 }
-.hero-art svg {
+.hero-art img {
   display: block;
   width: 100%;
   height: auto;
@@ -774,7 +774,7 @@ svg {
   border-radius: 14px;
   overflow: hidden;
 }
-.story-cover-link svg {
+.story-cover-link img {
   width: 100%;
   height: auto;
   display: block;
@@ -873,7 +873,7 @@ svg {
   overflow: hidden;
   position: relative;
 }
-.reading-art svg {
+.reading-art img {
   width: 100%;
   height: 100%;
   object-fit: cover;
@@ -2219,3 +2219,4 @@ svg {
     transform: none;
   }
 }
+

@@ -54,7 +54,7 @@ export function Reader({ story, level }: { story: Story; level: Level }) {
       <div className="reading-layout">
         <article className="reading-card">
           <div className="reading-art">
-            <StoryArt variant={story.art} />
+            <StoryArt variant={story.art} priority />
             <span className="reading-theme">{story.theme}</span>
           </div>
           <div className="reading-content">
@@ -179,3 +179,4 @@ export function Reader({ story, level }: { story: Story; level: Level }) {
     </div>
   );
 }
+

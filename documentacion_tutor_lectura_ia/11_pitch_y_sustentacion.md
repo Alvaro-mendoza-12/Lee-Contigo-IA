@@ -2,6 +2,8 @@
 
 ## Idea en una frase
 
+La presentación final del MVP se encuentra en `entregables/`. Este documento conserva el guion inicial; para describir qué existe hoy se debe usar el documento 14.
+
 **LeeContigo convierte la práctica de lectura en una experiencia breve y personalizada: el estudiante lee un relato revisado, responde preguntas y recibe pistas con IA que lo ayudan a volver al texto.**
 
 ## Sustentación simple de 30 segundos
@@ -71,4 +73,4 @@ El MVP no requiere perfiles, nombres ni texto libre; no ofrece chat abierto ni a
 Piloto con medida de comprensión antes y después, revisión docente, finalización y calidad de pistas. Una muestra pequeña no prueba efectos para todo el país.
 
 **¿Qué está construido hoy?**  
-Esta carpeta es documentación. No hay código ni prototipo implementado. Mostrar únicamente lo que realmente se construya y pruebe.
+Existe una web funcional con dos relatos en dos niveles editoriales, lectura accesible, tres preguntas por versión, pistas generadas con IA y respaldo preparado. No hay piloto educativo ni cobros implementados. Ver el documento 14 y mostrar el recorrido real de la web.

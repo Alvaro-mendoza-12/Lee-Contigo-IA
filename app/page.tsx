@@ -60,7 +60,7 @@ export default function Home() {
           </div>
           <div className="hero-story">
             <div className="hero-art">
-              <StoryArt variant="night" />
+              <StoryArt variant="night" priority />
             </div>
             <div className="hero-book-caption">
               <div>
@@ -165,3 +165,4 @@ export default function Home() {
     </>
   );
 }
+

@@ -1,13 +1,65 @@
 # LeeContigo IA
 
-Carpeta de trabajo del proyecto de tutoría de lectura con IA. La documentación del proyecto está en:
+Tutor web de comprensión lectora para niños de aproximadamente 8 a 10 años. MVP del desafío de lectura de la Hackathon futurX 2026.
 
-[documentacion_tutor_lectura_ia](documentacion_tutor_lectura_ia/README.md)
+- **Web:** https://lee-contigo-ia.vercel.app
+- **Repositorio:** https://github.com/Alvaro-mendoza-12/Lee-Contigo-IA
+- **Carpeta local:** `D:\LeeContigo IA`
 
-## Estado
+## Qué incluye
 
-La idea, el alcance inicial, la experiencia web, los requisitos, la arquitectura propuesta, el uso de IA, la ruta de implementación, el modelo de ingresos y los criterios de evaluación están documentados. Esta carpeta todavía no contiene código ni prototipo.
+Dos relatos originales, cada uno adaptado editorialmente a dos niveles: **Paso a paso** y **Un pequeño reto**. El estudiante puede ampliar la letra, escuchar la lectura con la voz del navegador y explorar tres preguntas. El tutor genera pistas breves con IA según el relato, la pregunta y el nivel. Cada pista permite consultar la evidencia en el texto.
 
-La decisión base para iniciar es una web móvil en español para practicar comprensión lectora en cuarto de primaria, con dos niveles, hasta dos relatos, tres preguntas y una pista acotada por IA. No se guardarán perfiles de menores en el MVP.
+La adaptación del relato está preparada en el catálogo; la IA reformula las pistas durante la práctica. No se afirma que el modelo genere o valide automáticamente los cuentos ni que el producto ya haya demostrado mejorar el aprendizaje. El contenido está pendiente de revisión docente.
 
-El nombre LeeContigo IA se usa como nombre de trabajo del proyecto. Antes de publicar o vender se debe comprobar disponibilidad legal y de dominio.
+## Ejecutar en local
+
+Requiere Node.js 22 o posterior; el proyecto se ha construido con Node.js 24.
+
+```powershell
+npm.cmd ci
+npm.cmd run dev -- --hostname 127.0.0.1 --port 4173
+```
+
+Abrir http://127.0.0.1:4173. En este equipo el puerto 3000 está reservado; por eso se usa 4173.
+
+```powershell
+npm.cmd run build
+npm.cmd run start -- --port 4173
+npm.cmd run typecheck
+npm.cmd test
+npx.cmd playwright test
+```
+
+Para las comprobaciones de navegador hay que instalar Chromium con `npx.cmd playwright install chromium`. Se pueden dirigir al despliegue público mediante `TEST_BASE_URL`.
+
+## IA y configuración
+
+Se usa Vercel AI SDK con AI Gateway. Modelo predeterminado: `google/gemini-2.5-flash`, seleccionado por su compatibilidad con los créditos gratuitos disponibles en la cuenta. La disponibilidad puede cambiar; verificar el catálogo y el saldo antes de una demo.
+
+En Vercel se usa autenticación OIDC del proyecto. Para desarrollo se puede usar `vercel env pull .env.local` con una sesión autorizada o definir `AI_GATEWAY_API_KEY` en `.env.local`. La variable opcional `AI_MODEL` permite cambiar el modelo. Ver `.env.example`. Nunca subir claves, tokens ni `.env.local` a GitHub.
+
+Si la IA no está configurada, se agota el saldo, hay un límite de uso o la salida no pasa los controles, se muestra una **pista preparada** claramente identificada. Una pista de respaldo no se presenta como generación de IA.
+
+AI Gateway ofrece una asignación gratuita limitada a modelos elegibles; no es uso ilimitado. No se ha comprado saldo ni activado recarga automática desde el proyecto. Condiciones vigentes: https://vercel.com/docs/ai-gateway/pricing.
+
+## Privacidad y alcance
+
+El MVP no solicita nombres, cuentas, colegio, grabaciones ni texto libre. Las respuestas quedan en memoria de la página, no se envían al modelo ni se guardan en una base de datos. El hosting y el proveedor de IA pueden procesar datos técnicos de conexión. El límite de solicitudes es temporal y por instancia; no sustituye protección distribuida para un lanzamiento masivo.
+
+No incluye cuentas institucionales, cobros, estadísticas longitudinales ni un piloto educativo realizado. El modelo comercial propuesto es licencia institucional o acceso patrocinado; debe validarse con compradores y requiere alojamiento compatible con uso comercial.
+
+## Documentación y entrega
+
+- `documentacion_tutor_lectura_ia/14_implementacion_y_ux.md`: alcance real, arquitectura, experiencia, pruebas y operación.
+- `documentacion_tutor_lectura_ia/15_recursos_visuales.md`: procedencia y prompts de las ilustraciones.
+- `documentacion_tutor_lectura_ia/`: análisis y planificación inicial. Los documentos 00 a 13 conservan decisiones anteriores; el 14 describe lo implementado.
+- `fuentes/bases_hackathon_futurx_2026.pdf`: bases usadas para preparar el MVP.
+- `entregables/`: presentación y guía de entrega.
+- `licencias/`: avisos de recursos de terceros.
+
+La entrega de Fase 2 requiere URL y pitch de 3 a 5 diapositivas. La web y el pitch utilizan el nombre del equipo, sin identificar participantes, universidades o países de origen. El registro del equipo y el envío en la plataforma corresponden a sus integrantes.
+
+## GitHub y Vercel
+
+La rama `main` está conectada al proyecto `lee-contigo-ia` de Vercel. Los cambios enviados a esa rama generan un despliegue. GitHub Actions ejecuta comprobaciones de código, compilación y navegación. Esperar el estado **Ready** antes de presentar una versión.

@@ -10,4 +10,4 @@ playwright-report/
 .DS_Store
 artifacts/
 
-.vercel
+.codex-finalizer/
