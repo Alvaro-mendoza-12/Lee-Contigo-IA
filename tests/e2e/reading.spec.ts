@@ -105,5 +105,12 @@ test("API rechaza instrucciones arbitrarias y origen ajeno", async ({
   });
   expect(foreign.status()).toBe(403);
   const unknown = await request.get("/leer/no-existe");
-  expect(unknown.status()).toBe(404);
+  // Next.js streams notFound UI with 200 after a loading boundary has started.
+  expect(await unknown.text()).toContain("Esta página se nos perdió");
+  const sameOrigin = await request.post("/api/tutor", {
+    data: valid,
+    headers: { origin: process.env.TEST_BASE_URL || "http://127.0.0.1:4173" },
+  });
+  expect([200, 429]).toContain(sameOrigin.status());
+  expect((await sameOrigin.json()).hint).toBeTruthy();
 });

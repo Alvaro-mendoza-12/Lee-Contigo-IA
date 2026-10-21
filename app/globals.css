@@ -474,7 +474,7 @@ svg {
 }
 .handwritten {
   font-size: 13px;
-  color: #7c7657;
+  color: #6c6648;
   font-style: italic;
   transform: rotate(-4deg);
   margin-bottom: 5px;
@@ -1317,7 +1317,7 @@ svg {
 .hint-empty small {
   display: block;
   font-size: 11px;
-  color: #7d6d51;
+  color: #6d5d42;
 }
 .hint-result .report-button {
   font-size: 9px;

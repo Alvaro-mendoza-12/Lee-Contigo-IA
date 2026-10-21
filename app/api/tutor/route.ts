@@ -15,8 +15,17 @@ function reply(body: unknown, status = 200) {
 }
 export async function POST(request: Request) {
   const origin = request.headers.get("origin");
-  if (origin && origin !== new URL(request.url).origin)
-    return reply({ error: "Origen no permitido." }, 403);
+  if (origin) {
+    try {
+      // Next.js/Vercel may expose an internal request URL. Host is the public authority.
+      const expectedHost =
+        request.headers.get("host") ?? new URL(request.url).host;
+      if (new URL(origin).host !== expectedHost)
+        return reply({ error: "Origen no permitido." }, 403);
+    } catch {
+      return reply({ error: "Origen no permitido." }, 403);
+    }
+  }
   if (!request.headers.get("content-type")?.includes("application/json"))
     return reply({ error: "Se esperaba JSON." }, 415);
   if (Number(request.headers.get("content-length") ?? 0) > 1024)
@@ -40,7 +49,11 @@ export async function POST(request: Request) {
       { hint: question.hints[input.tier], quote, source: "prepared", reason },
       status,
     );
-  if (!process.env.AI_GATEWAY_API_KEY && !process.env.VERCEL_OIDC_TOKEN)
+  if (
+    !process.env.AI_GATEWAY_API_KEY &&
+    !process.env.VERCEL_OIDC_TOKEN &&
+    process.env.VERCEL !== "1"
+  )
     return prepared("not_configured");
   const key = [input.storyId, input.level, input.questionId, input.tier].join(
     ":",
