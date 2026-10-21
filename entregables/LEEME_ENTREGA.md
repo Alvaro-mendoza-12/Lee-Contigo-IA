@@ -3,7 +3,7 @@
 ## Qué entregar
 
 1. **URL del MVP:** https://lee-contigo-ia.vercel.app
-2. **Pitch:** `pitch_LeeContigo_IA.pptx`, cinco diapositivas. Usar el formato que permita el campo de carga de la plataforma; no sustituir las bases por suposiciones sobre el formulario.
+2. **Pitch:** `pitch_LeeContigo_IA.pdf`, cinco diapositivas listas para visualizar. También se incluye `pitch_LeeContigo_IA.pptx` como versión editable. Las bases no especifican extensión: cargar la versión admitida por el formulario de la plataforma.
 
 No enviar la carpeta de documentación como si fuera el prototipo. La documentación técnica sirve para la sustentación y está en el repositorio. No incluir nombres de integrantes, universidades o países de origen en la web ni en las diapositivas; las bases permiten el nombre del equipo.
 
@@ -16,7 +16,9 @@ Hora de Perú (UTC−5, la misma de Bogotá en estas fechas):
 | Cierre de registro de equipos | Jueves 22 de octubre de 2026, 12:00 del mediodía |
 | Apertura de entrega del MVP y pitch | Viernes 23 de octubre de 2026, 12:00 del mediodía |
 | Cierre de entrega | Sábado 24 de octubre de 2026, 12:00 del mediodía |
+| Publicación de los ocho finalistas | Sábado 24 de octubre de 2026, 14:00 |
 | Demo Day | Sábado 24 de octubre de 2026, 16:00 |
+| Premiación prevista | Sábado 24 de octubre de 2026, 17:15 |
 
 Fuente: `fuentes/bases_hackathon_futurx_2026.pdf`. Revisar los avisos de la plataforma por posibles cambios. La inscripción del equipo de 2 a 4 integrantes y el envío final siguen a cargo del equipo; no se han realizado desde este proyecto.
 

@@ -98,6 +98,7 @@ El resultado sin infracciones detectadas por axe no equivale a una certificació
 - Ocho comprobaciones de navegador sobre flujo completo, selección de relato/nivel, accesibilidad y API. Incluyen móvil y escritorio, seis rutas sin desbordamiento horizontal y las reglas WCAG A/AA seleccionadas por axe.
 - Revisión visual de inicio, lectura y práctica en pantallas de escritorio y móvil.
 - Solicitud real a AI Gateway después de habilitar los créditos; la respuesta del tutor se identifica con `source: "ai"`. Las respuestas preparadas se identifican por separado.
+- Ocho comprobaciones de navegador adicionales dirigidas a la URL pública: todas aprobadas. Se verificaron además pistas reales de ambas historias y de los dos niveles, y GitHub Actions terminó con resultado satisfactorio para la versión publicada.
 
 El alcance de estas comprobaciones es técnico. No son resultados de un piloto educativo ni demuestran mejora en comprensión lectora.
 
@@ -124,6 +125,17 @@ Antes de mayor tráfico: protección global de uso y presupuesto, monitoreo de e
 | Sustentación | Evidencia oficial, recorrido demostrable, límites y modelo de sostenibilidad propuesto |
 
 La selección y el registro de integrantes y el envío en la plataforma no se realizan desde esta aplicación. Deben completarse por el equipo en los plazos de las bases. No se ha enviado la participación.
+
+### Criterios de calificación de Fase 2
+
+| Criterio | Peso | Cómo se sustenta |
+|---|---|---|
+| Solución al desafío | 50 % | Mostrar relatos por nivel y una pista generada por IA en el producto real; explicar qué falta validar pedagógicamente. |
+| Pitch y presentación | 20 % | Cinco diapositivas con necesidad, enfoque técnico y funcionamiento, apoyadas por una demo breve. |
+| Facilidad de uso | 20 % | Recorrido corto, reintentos, regreso al texto, controles accesibles y comprobaciones en móvil/escritorio. |
+| Difusión | 10 % | Se calcula con los referidos acumulados por los integrantes en la inscripción; no lo genera la aplicación. |
+
+Las bases excluyen difusión de la calificación del Demo Day, que se calcula sobre 90 %. La calidad del MVP no garantiza la selección o un premio.
 
 ## Fuentes técnicas y de operación
 
