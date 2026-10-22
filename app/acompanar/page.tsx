@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { CompanionPlanner } from "@/components/companion-planner";
+import { stories } from "@/lib/stories";
 import {
   ArrowRight,
   ShieldCheck,
@@ -24,6 +26,9 @@ export default function Guide() {
           de una persona adulta cuando haga falta.
         </p>
       </header>
+      <CompanionPlanner
+        stories={stories.map(({ id, title }) => ({ id, title }))}
+      />
       <section className="guide-intro">
         <span className="guide-intro-icon">
           <HeartHandshake size={38} />

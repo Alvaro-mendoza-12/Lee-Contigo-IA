@@ -1,5 +1,4 @@
 "use client";
-import { useState } from "react";
 import Link from "next/link";
 import {
   ArrowRight,
@@ -12,8 +11,9 @@ import {
 import { stories, levels, type Level } from "@/lib/stories";
 import { StoryArt } from "./art";
 import { Journey } from "./journey";
-export function Library() {
-  const [level, setLevel] = useState<Level>("paso");
+import { useReadingLevel } from "./use-reading-level";
+export function Library({ initialLevel = "paso" }: { initialLevel?: Level }) {
+  const [level, setLevel] = useReadingLevel(initialLevel);
   return (
     <div className="container library-page">
       <Journey current={1} />
@@ -58,6 +58,17 @@ export function Library() {
           Puedes probar otro nivel en cualquier momento. Aquí no hay notas.
         </p>
       </fieldset>
+      <div className="level-change-notice" role="status">
+        <Sparkles size={19} aria-hidden="true" />
+        <div>
+          <strong>{levels[level].label} seleccionado</strong>
+          <p>
+            {level === "paso"
+              ? "Leerás una versión con frases más cortas. Las preguntas te ayudarán a buscar detalles."
+              : "Leerás una versión con más vocabulario. Las preguntas te invitarán a relacionar ideas."}
+          </p>
+        </div>
+      </div>
       <div className="story-grid">
         {stories.map((story, index) => (
           <article className="story-card" key={story.id}>
@@ -83,6 +94,10 @@ export function Library() {
                 </Link>
               </h2>
               <p>{story.description}</p>
+              <div className="story-level-preview">
+                <span>{levels[level].label} · Así empieza</span>
+                <p>“{story.versions[level].paragraphs[0]}”</p>
+              </div>
               <Link
                 className="button button-outline story-button"
                 href={"/leer/" + story.id + "?nivel=" + level}

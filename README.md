@@ -8,7 +8,9 @@ Tutor web de comprensión lectora para niños de aproximadamente 8 a 10 años. M
 
 ## Qué incluye
 
-Dos relatos originales, cada uno adaptado editorialmente a dos niveles: **Paso a paso** y **Un nuevo reto**. El estudiante puede ampliar la letra, escuchar la lectura con la voz del navegador y explorar tres preguntas. El tutor genera pistas breves con IA según el relato, la pregunta y el nivel. Tras un error, el modo de reintento pide otra estrategia para buscar evidencia, sin enviar la respuesta seleccionada. Cada pista permite consultar la evidencia en el texto.
+Dos relatos originales, cada uno adaptado editorialmente a dos niveles: **Paso a paso** y **Un nuevo reto**. La lectura se presenta como un libro por páginas, con once tamaños de letra, voz opcional, animación de cambio de página que se puede desactivar y acceso al texto continuo. En móvil, el relato se reparte en páginas más cortas. La biblioteca muestra cómo empieza el cuento según el nivel elegido.
+
+En **Para acompañar**, una persona adulta puede elegir cuento, nivel y objetivo de conversación; la guía propone preguntas para antes, durante y al terminar. Esas opciones continúan en la lectura. El estudiante explora tres preguntas. El tutor genera pistas breves con IA según el relato, la pregunta y el nivel. Tras un error, el modo de reintento pide otra estrategia para buscar evidencia, sin enviar la respuesta seleccionada. Cada pista permite consultar la evidencia en el texto.
 
 La portada presenta los cuentos apilados, con un intercambio suave cada siete segundos. Incluye navegación manual y pausa; se detiene con foco de teclado, al pasar el cursor, al salir de pantalla o al ocultar la pestaña. Con movimiento reducido no hay reproducción automática ni animación.
 
@@ -32,6 +34,8 @@ npm.cmd run typecheck
 npm.cmd test
 npx.cmd playwright test
 ```
+
+Comprobación registrada en este corte: seis pruebas unitarias y 18 recorridos de navegador en escritorio y móvil, incluidos los flujos de libro y acompañamiento.
 
 Para las comprobaciones de navegador hay que instalar Chromium con `npx.cmd playwright install chromium`. Se pueden dirigir al despliegue público mediante `TEST_BASE_URL`.
 

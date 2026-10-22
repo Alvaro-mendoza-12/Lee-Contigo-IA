@@ -1125,6 +1125,336 @@ svg {
   color: var(--muted);
   margin-top: 13px;
 }
+/* ═══════════════════════════════════════════════
+   Reader - Level Picker / Level Feedback
+   ═══════════════════════════════════════════════ */
+.reader-level-picker {
+  display: flex;
+  gap: 10px;
+  margin-top: 22px;
+}
+.reader-level-picker button {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 10px 16px;
+  border: 1.5px solid #93a893;
+  border-radius: 10px;
+  background: var(--white);
+  font-size: 13px;
+  font-weight: 750;
+  color: var(--forest);
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease;
+}
+.reader-level-picker button:hover {
+  background: var(--sage);
+}
+.reader-level-picker button[aria-pressed="true"] {
+  background: #e4ede0;
+  border-color: var(--forest);
+  box-shadow: 0 0 0 1px var(--forest);
+}
+.reader-level-feedback {
+  font-size: 13px;
+  color: var(--muted);
+  margin-top: 12px;
+  line-height: 1.7;
+}
+/* ═══════════════════════════════════════════════
+   Reader - Book View (open-storybook)
+   ═══════════════════════════════════════════════ */
+.open-storybook {
+  display: grid;
+  grid-template-columns: 200px 1fr;
+  gap: 0;
+  background: linear-gradient(135deg, #fdfaf3 0%, #f8f3e6 100%);
+  border: 1px solid #e4dcc8;
+  border-radius: 18px;
+  min-height: 340px;
+  overflow: hidden;
+  box-shadow:
+    inset 0 1px 0 #fffef7,
+    0 8px 30px -15px rgba(60, 80, 50, 0.15);
+  position: relative;
+}
+.open-storybook::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 200px;
+  width: 12px;
+  background: linear-gradient(90deg, rgba(0, 0, 0, 0.06), transparent);
+  pointer-events: none;
+  z-index: 2;
+}
+.book-illustration {
+  background: #e9e4d6;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 20px;
+  border-right: 1px solid #ddd5c2;
+  position: relative;
+  overflow: hidden;
+}
+.book-illustration img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  position: absolute;
+  inset: 0;
+  opacity: 0.6;
+}
+.book-illustration span {
+  position: relative;
+  z-index: 1;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  color: #6a5d40;
+  background: rgba(255, 252, 240, 0.85);
+  padding: 5px 10px;
+  border-radius: 6px;
+}
+.book-leaf {
+  padding: 32px 36px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 16px;
+  position: relative;
+  min-height: 280px;
+  perspective: 1200px;
+}
+.book-chapter {
+  display: block;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  color: #9a8a64;
+  font-style: italic;
+}
+.book-page-text {
+  font-size: var(--reading-font, 20px);
+  line-height: 1.95;
+  color: #34493d;
+  letter-spacing: 0.1px;
+}
+.book-page-number {
+  display: block;
+  text-align: center;
+  font-size: 12px;
+  font-weight: 700;
+  color: #a09578;
+  margin-top: auto;
+  padding-top: 10px;
+}
+/* Page-turn animations */
+.page-turn-next {
+  animation: page-flip-in-next 600ms cubic-bezier(0.25, 0.8, 0.25, 1) both;
+}
+.page-turn-previous {
+  animation: page-flip-in-previous 600ms cubic-bezier(0.25, 0.8, 0.25, 1) both;
+}
+@keyframes page-flip-in-next {
+  0% {
+    opacity: 0;
+    transform: rotateY(-12deg) translateX(30px) scale(0.97);
+  }
+  100% {
+    opacity: 1;
+    transform: rotateY(0deg) translateX(0) scale(1);
+  }
+}
+@keyframes page-flip-in-previous {
+  0% {
+    opacity: 0;
+    transform: rotateY(12deg) translateX(-30px) scale(0.97);
+  }
+  100% {
+    opacity: 1;
+    transform: rotateY(0deg) translateX(0) scale(1);
+  }
+}
+/* ═══════════════════════════════════════════════
+   Book View Options & Animation Control
+   ═══════════════════════════════════════════════ */
+.book-view-options {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+.book-animation-control {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--muted);
+  cursor: pointer;
+}
+.book-animation-control input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--forest);
+  cursor: pointer;
+}
+/* ═══════════════════════════════════════════════
+   Book Full Text View
+   ═══════════════════════════════════════════════ */
+.book-full-text {
+  font-size: var(--reading-font, 20px);
+  line-height: 1.95;
+  color: #34493d;
+  letter-spacing: 0.1px;
+  padding: 8px 0;
+}
+.book-full-text p + p {
+  margin-top: 22px;
+}
+/* ═══════════════════════════════════════════════
+   Book Navigation (Anterior / Siguiente)
+   ═══════════════════════════════════════════════ */
+.book-navigation {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  margin-top: 20px;
+  padding-top: 10px;
+}
+.book-navigation > span {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+  min-width: 110px;
+  text-align: center;
+}
+.book-navigation .button,
+.book-navigation .button-outline {
+  font-size: 13px;
+  min-height: 46px;
+  padding: 10px 20px;
+  gap: 8px;
+}
+/* ═══════════════════════════════════════════════
+   Book Finish (after last page)
+   ═══════════════════════════════════════════════ */
+.book-finish {
+  text-align: center;
+  margin-top: 28px;
+  padding-top: 22px;
+  border-top: 1px solid var(--line);
+}
+.book-finish .small-label {
+  display: block;
+  margin-bottom: 14px;
+}
+/* ═══════════════════════════════════════════════
+   Reading Companion Inline
+   ═══════════════════════════════════════════════ */
+.reading-companion-inline {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  background: #f6edd8;
+  border: 1px solid #e8dcc0;
+  border-radius: 14px;
+  padding: 18px 20px;
+  margin-top: 24px;
+  color: #6b5b39;
+  font-size: 13px;
+  line-height: 1.75;
+}
+.reading-companion-inline svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+  color: #957e4e;
+}
+.reading-companion-inline p {
+  margin: 0;
+}
+.reading-companion-inline strong {
+  display: block;
+  margin-bottom: 4px;
+  color: #5a4c2e;
+}
+/* ═══════════════════════════════════════════════
+   Level Change Notice (biblioteca)
+   ═══════════════════════════════════════════════ */
+.level-change-notice {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  background: #eef3e8;
+  border: 1px solid #dce5d2;
+  border-radius: 14px;
+  padding: 18px 20px;
+  margin-bottom: 28px;
+  max-width: 790px;
+  margin-inline: auto;
+}
+.level-change-notice svg {
+  flex-shrink: 0;
+  color: var(--forest);
+  margin-top: 2px;
+}
+.level-change-notice strong {
+  display: block;
+  font-size: 14px;
+  color: var(--forest);
+  margin-bottom: 4px;
+}
+.level-change-notice p {
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.7;
+}
+/* ═══════════════════════════════════════════════
+   Story Level Preview (biblioteca cards)
+   ═══════════════════════════════════════════════ */
+.story-level-preview {
+  background: #f5f3ec;
+  border-radius: 10px;
+  padding: 14px 16px;
+  margin-bottom: 18px;
+}
+.story-level-preview > span {
+  display: block;
+  font-size: 10px;
+  font-weight: 800;
+  color: var(--forest);
+  letter-spacing: 0.05em;
+  margin-bottom: 8px;
+}
+.story-level-preview > p {
+  font-size: 12px;
+  line-height: 1.7;
+  color: var(--muted);
+  font-style: italic;
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+/* ═══════════════════════════════════════════════
+   Level Summary Sidebar (reader)
+   ═══════════════════════════════════════════════ */
+.level-summary .text-button {
+  font-size: 11px;
+  gap: 5px;
+  margin-top: 8px;
+  min-height: 36px;
+}
 .companion-card {
   background: #eaf0e4;
   border: 1px solid #dce4d2;
@@ -1595,6 +1925,191 @@ svg {
   max-width: 720px;
   margin-top: 60px;
 }
+.companion-planner {
+  padding: 28px;
+  margin: 0 0 30px;
+  border: 1px solid #d9e2d3;
+  border-radius: 20px;
+  background: linear-gradient(145deg, #f4f7ef 0%, #fffefa 72%);
+  box-shadow: 0 12px 32px -25px rgba(37, 74, 60, 0.42);
+}
+.planner-heading {
+  display: flex;
+  gap: 15px;
+  align-items: flex-start;
+  margin-bottom: 23px;
+  color: var(--forest);
+}
+.planner-heading > svg {
+  flex: 0 0 auto;
+  margin-top: 5px;
+}
+.planner-heading h2 {
+  font-size: 24px;
+  margin: 5px 0 7px;
+}
+.planner-heading p {
+  max-width: 70ch;
+  font-size: 13px;
+  line-height: 1.7;
+  color: var(--muted);
+}
+.planner-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(300px, 0.92fr);
+  gap: 24px;
+  align-items: start;
+}
+.planner-choices,
+.planner-preview {
+  min-width: 0;
+}
+.planner-choices > label,
+.planner-fieldset legend {
+  display: block;
+  margin-bottom: 9px;
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 750;
+}
+.planner-choices select {
+  width: 100%;
+  min-height: 47px;
+  padding: 9px 13px;
+  border: 1px solid #b8c8b5;
+  border-radius: 10px;
+  background: #fff;
+  color: var(--ink);
+  font: inherit;
+}
+.planner-fieldset {
+  padding: 0;
+  border: 0;
+  margin: 20px 0 0;
+}
+.planner-levels {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px;
+}
+.planner-levels label,
+.planner-goals label {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  min-height: 42px;
+  padding: 10px 12px;
+  border: 1px solid #d5ded0;
+  border-radius: 10px;
+  background: #fff;
+  color: var(--ink);
+  cursor: pointer;
+}
+.planner-levels label {
+  align-items: center;
+  font-size: 12px;
+  font-weight: 700;
+}
+.planner-levels input,
+.planner-goals input {
+  width: 17px;
+  height: 17px;
+  flex: 0 0 auto;
+  accent-color: var(--forest);
+}
+.planner-goals {
+  display: grid;
+  gap: 8px;
+}
+.planner-goals label.selected,
+.planner-levels label:has(input:checked) {
+  border-color: #65846d;
+  background: #edf3e9;
+  box-shadow: inset 0 0 0 1px #65846d;
+}
+.planner-goals strong,
+.planner-goals small {
+  display: block;
+}
+.planner-goals strong {
+  margin-bottom: 3px;
+  font-size: 12px;
+}
+.planner-goals small {
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.5;
+}
+.planner-preview {
+  padding: 18px;
+  border: 1px solid #e4dfd0;
+  border-radius: 15px;
+  background: #fffdfa;
+}
+.planner-stages {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+  margin: 12px 0 15px;
+}
+.planner-stages button {
+  min-height: 44px;
+  padding: 7px 5px;
+  border: 1px solid #d6dfd1;
+  border-radius: 9px;
+  background: #f7f8f4;
+  color: #4e6255;
+  font-size: 10px;
+  font-weight: 750;
+  line-height: 1.35;
+}
+.planner-stages button[aria-pressed="true"] {
+  border-color: var(--forest);
+  background: #e8f0e5;
+  color: var(--forest);
+  box-shadow: inset 0 0 0 1px var(--forest);
+}
+.planner-conversation {
+  min-height: 150px;
+  padding: 17px;
+  border-radius: 12px;
+  background: #f4f0e5;
+}
+.planner-conversation > span {
+  color: #796b4c;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+.planner-conversation h3 {
+  margin: 9px 0;
+  color: #334a3f;
+  font-family: var(--font-serif, Georgia, serif);
+  font-size: 19px;
+  line-height: 1.5;
+}
+.planner-conversation p,
+.planner-preview > small {
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.65;
+}
+.planner-summary {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin: 14px 0;
+  color: var(--forest);
+  font-size: 11px;
+  font-weight: 750;
+}
+.planner-preview > .button {
+  margin-bottom: 11px;
+}
+.planner-preview > small {
+  display: block;
+}
 .guide-intro {
   display: flex;
   gap: 25px;
@@ -1820,6 +2335,9 @@ svg {
   }
   .footer-inner > span {
     display: none;
+  }
+  .planner-layout {
+    grid-template-columns: 1fr;
   }
 }
 @media (max-width: 760px) {
@@ -2190,6 +2708,87 @@ svg {
   .story-text.font-size-2 {
     font-size: 24px;
   }
+  .open-storybook {
+    grid-template-columns: 1fr;
+    min-height: auto;
+  }
+  .open-storybook::after {
+    left: 0;
+    top: auto;
+    bottom: 0;
+    width: 100%;
+    height: 8px;
+    background: linear-gradient(180deg, transparent, rgba(0, 0, 0, 0.04));
+    display: none;
+  }
+  .book-illustration {
+    height: 140px;
+    border-right: 0;
+    border-bottom: 1px solid #ddd5c2;
+  }
+  .book-leaf {
+    padding: 22px 20px;
+    min-height: 200px;
+  }
+  .book-chapter {
+    font-size: 10px;
+  }
+  .book-navigation {
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .book-navigation > span {
+    font-size: 11px;
+    order: -1;
+    width: 100%;
+    text-align: center;
+    min-width: unset;
+  }
+  .book-navigation .button,
+  .book-navigation .button-outline {
+    font-size: 12px;
+    min-height: 44px;
+    padding: 9px 16px;
+    flex: 1;
+  }
+  .book-view-options {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  .book-animation-control {
+    font-size: 11px;
+  }
+  .reader-level-picker {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .reader-level-picker button {
+    font-size: 11px;
+    padding: 8px 12px;
+  }
+  .reader-level-feedback {
+    font-size: 11px;
+  }
+  .reading-companion-inline {
+    padding: 14px 16px;
+    font-size: 12px;
+    gap: 10px;
+  }
+  .level-change-notice {
+    padding: 14px 16px;
+  }
+  .level-change-notice strong {
+    font-size: 12px;
+  }
+  .level-change-notice p {
+    font-size: 12px;
+  }
+  .story-level-preview {
+    padding: 12px 14px;
+    margin-bottom: 14px;
+  }
   .reading-content > .button {
     font-size: 12px;
     padding-inline: 12px;
@@ -2309,6 +2908,41 @@ svg {
   }
   .guide-page .page-heading {
     margin-top: 38px;
+  }
+  .companion-planner {
+    padding: 20px;
+    border-radius: 16px;
+  }
+  .planner-heading {
+    gap: 11px;
+    margin-bottom: 18px;
+  }
+  .planner-heading > svg {
+    width: 24px;
+    height: 24px;
+  }
+  .planner-heading h2 {
+    font-size: 20px;
+  }
+  .planner-heading p {
+    font-size: 12px;
+  }
+  .planner-preview {
+    padding: 14px;
+  }
+  .planner-stages {
+    gap: 5px;
+  }
+  .planner-stages button {
+    font-size: 9px;
+    padding-inline: 3px;
+  }
+  .planner-conversation {
+    min-height: 0;
+    padding: 14px;
+  }
+  .planner-conversation h3 {
+    font-size: 17px;
   }
   .guide-intro {
     flex-direction: column;

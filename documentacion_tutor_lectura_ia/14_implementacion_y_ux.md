@@ -8,23 +8,29 @@ Este documento describe el producto construido. Los documentos 00 a 13 son el an
 
 ## 1. Alcance funcional disponible
 
-| Sección | Ruta | Función |
-|---|---|---|
-| Inicio | `/` | Explica la experiencia y presenta portadas apiladas con cambio suave, pausa y navegación manual. |
-| Biblioteca | `/biblioteca` | Dos relatos originales, elección entre dos niveles y acceso a lectura. |
-| Lectura | `/leer/[id]?nivel=paso` o `reto` | Relato adaptado, tamaño de letra, lectura en voz del navegador y acceso a preguntas. |
-| Práctica | `/practicar/[id]?nivel=...` | Tres preguntas, retroalimentación, reintentos, dos grados de pista, consulta del texto y cierre. |
-| Guía adulta | `/acompanar` | Cómo acompañar, qué hace la IA, privacidad, evidencia y alcance de demostración. |
-| Privacidad | `/privacidad` | Información que procesa el recorrido y límites del prototipo. |
-| Tutor | `POST /api/tutor` | Valida identificadores editoriales y solicita una pista a IA Gateway. |
-| Estado | `GET /api/estado` | Información básica de disponibilidad; no expone claves. |
+| Sección     | Ruta                             | Función                                                                                                                                                                                                                           |
+| ----------- | -------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Inicio      | `/`                              | Explica la experiencia y presenta portadas apiladas con cambio suave, pausa y navegación manual.                                                                                                                                  |
+| Biblioteca  | `/biblioteca`                    | Dos relatos originales, elección entre dos niveles, vista previa de la versión seleccionada y acceso a lectura.                                                                                                                   |
+| Lectura     | `/leer/[id]?nivel=paso` o `reto` | Libro por páginas con relato adaptado, once tamaños de letra de 12 a 44 px, voz del navegador, animación opcional y acceso a preguntas. El texto se divide en páginas más breves en móvil; se puede cambiar al relato continuo.   |
+| Práctica    | `/practicar/[id]?nivel=...`      | Tres preguntas, retroalimentación, reintentos, dos grados de pista, consulta del texto y cierre.                                                                                                                                  |
+| Guía adulta | `/acompanar`                     | Planificador interactivo: elige cuento, nivel, objetivo de conversación y momento (antes, durante o al terminar); envía la selección a la lectura acompañada. Incluye orientación sobre IA, privacidad y alcance de demostración. |
+| Privacidad  | `/privacidad`                    | Información que procesa el recorrido y límites del prototipo.                                                                                                                                                                     |
+| Tutor       | `POST /api/tutor`                | Valida identificadores editoriales y solicita una pista a IA Gateway.                                                                                                                                                             |
+| Estado      | `GET /api/estado`                | Información básica de disponibilidad; no expone claves.                                                                                                                                                                           |
 
 ### Relatos y adaptación al nivel
 
 1. **Una luz en el bosque:** Lina, una luciérnaga, ayuda al grillo Tomás a cruzar un río.
 2. **La semilla viajera:** Nico aprende a cuidar una semilla y a esperar su crecimiento.
 
-Cada relato tiene una versión **Paso a paso**, con frases más sencillas, y otra **Un nuevo reto**, con mayor riqueza de lenguaje y relaciones que explorar. Las preguntas y las pistas de respaldo pertenecen a esa versión. La selección se conserva en la URL al pasar de biblioteca a lectura y práctica.
+Cada relato tiene una versión **Paso a paso**, con frases más sencillas, y otra **Un nuevo reto**, con mayor riqueza de lenguaje y relaciones que explorar. Las preguntas y las pistas de respaldo pertenecen a esa versión. La selección se conserva en la URL al pasar de biblioteca a lectura y práctica. El lector permite probar el otro nivel en el mismo relato y refleja la selección en la URL; los controles del navegador atrás/adelante recuperan el nivel.
+
+### Libro y accesibilidad de lectura
+
+La lectura se presenta en páginas con ilustración, número visible, controles anterior/siguiente y progreso. El tamaño se ajusta en once pasos y la cantidad de palabras por página baja al aumentar la letra. En móvil se divide en páginas más breves para facilitar el avance. La persona lectora puede desactivar la animación del cambio de página; el sistema también la desactiva cuando el dispositivo solicita movimiento reducido. La opción **Ver relato completo** ofrece una lectura continua. La voz utiliza el sintetizador del navegador y lee la página visible o el relato completo según la vista.
+
+La vista previa de la biblioteca cambia junto con el nivel para que se aprecie la diferencia editorial antes de abrir el cuento. La guía de acompañamiento pide elegir una historia, un nivel y un objetivo —imaginar, buscar pistas o explicar—, y permite pasar entre tres momentos de conversación. Al iniciar, la selección acompaña a la persona adulta y al lector durante el cuento; la pregunta se actualiza según el párrafo.
 
 La adaptación del relato es editorial y está incluida en el catálogo. La IA genera pistas durante la práctica; no genera cuentos ilimitados, no determina automáticamente el grado del niño y no diagnostica dificultades. Los niveles son opciones de práctica, no equivalencias certificadas de edad o grado escolar.
 
@@ -63,35 +69,35 @@ Navegador → interfaz Next.js/React
                 → pista y fragmento del relato
 ```
 
-| Capa | Implementación |
-|---|---|
-| Interfaz y rutas | Next.js 16 App Router, React 19, TypeScript |
-| Estilo | CSS adaptable, Nunito Sans, iconos Lucide |
-| Ilustraciones | Dos imágenes originales generadas para el proyecto; Next Image con tamaños adaptables |
-| Contenido | `lib/stories.ts`; preguntas y evidencia vinculadas por identificador |
-| IA | `app/api/tutor/route.ts`, AI SDK y esquema Zod |
-| Persistencia | Sin base de datos, cuentas, cookies de perfilado ni almacenamiento local del progreso |
-| Publicación | GitHub `main` conectado al proyecto Vercel `lee-contigo-ia` |
-| Comprobaciones | Node test runner, Playwright y axe; flujo de GitHub Actions |
+| Capa             | Implementación                                                                        |
+| ---------------- | ------------------------------------------------------------------------------------- |
+| Interfaz y rutas | Next.js 16 App Router, React 19, TypeScript                                           |
+| Estilo           | CSS adaptable, Nunito Sans, iconos Lucide                                             |
+| Ilustraciones    | Dos imágenes originales generadas para el proyecto; Next Image con tamaños adaptables |
+| Contenido        | `lib/stories.ts`; preguntas y evidencia vinculadas por identificador                  |
+| IA               | `app/api/tutor/route.ts`, AI SDK y esquema Zod                                        |
+| Persistencia     | Sin base de datos, cuentas, cookies de perfilado ni almacenamiento local del progreso |
+| Publicación      | GitHub `main` conectado al proyecto Vercel `lee-contigo-ia`                           |
+| Comprobaciones   | Node test runner, Playwright y axe; flujo de GitHub Actions                           |
 
 ## 4. UX y las diez heurísticas de Nielsen
 
-| Heurística | Aplicación concreta |
-|---|---|
-| Visibilidad del estado | Recorrido de elección, lectura y práctica; pregunta actual; estado de carga al pedir pista. |
-| Relación con el mundo real | Lenguaje cotidiano: historia, leer, pista, volver al relato; sin jerga de IA en el recorrido infantil. |
-| Control y libertad | Volver a leer, cambiar respuesta, consultar texto sin salir, detener voz y repetir la práctica. |
-| Consistencia | Mismos botones, tipografía, navegación y nombres de niveles en todas las pantallas. |
-| Prevención de errores | No se confirma una respuesta vacía; controles de pista deshabilitados durante la carga; opciones cerradas. |
-| Reconocimiento | El título y el texto de apoyo permanecen accesibles; las acciones tienen etiquetas visibles. |
-| Flexibilidad | Dos niveles, tamaño de letra y voz opcional; uso con ratón, toque o teclado. |
-| Diseño sencillo | Una acción principal por etapa, colores suaves, contenido sin publicidad ni ranking. |
-| Recuperación de errores | Reintentos amables, respaldo ante fallo de IA y página de ruta desconocida con regreso a biblioteca. |
-| Ayuda | Guía para docentes/familias, explicación de la pista, acceso a evidencia y aviso de privacidad. |
+| Heurística                 | Aplicación concreta                                                                                                                                                      |
+| -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Visibilidad del estado     | Recorrido de elección, lectura y práctica; nivel y versión seleccionados; número de página; pregunta actual; estado de carga al pedir pista.                             |
+| Relación con el mundo real | Lenguaje cotidiano: historia, leer, pista, volver al relato; sin jerga de IA en el recorrido infantil.                                                                   |
+| Control y libertad         | Volver a leer, cambiar nivel, pasar páginas en ambas direcciones, cambiar el tamaño, desactivar animación, consultar texto sin salir, detener voz y repetir la práctica. |
+| Consistencia               | Mismos botones, tipografía, navegación y nombres de niveles en todas las pantallas.                                                                                      |
+| Prevención de errores      | No se confirma una respuesta vacía; controles de pista deshabilitados durante la carga; opciones cerradas.                                                               |
+| Reconocimiento             | El título y el texto de apoyo permanecen accesibles; las acciones tienen etiquetas visibles.                                                                             |
+| Flexibilidad               | Dos niveles, once tamaños de letra, libro por páginas o texto continuo y voz opcional; uso con ratón, toque o teclado.                                                   |
+| Diseño sencillo            | Una acción principal por etapa, colores suaves, contenido sin publicidad ni ranking.                                                                                     |
+| Recuperación de errores    | Reintentos amables, respaldo ante fallo de IA y página de ruta desconocida con regreso a biblioteca.                                                                     |
+| Ayuda                      | Planificador para docentes/familias, conversación antes/durante/después, explicación de la pista, acceso a evidencia y aviso de privacidad.                              |
 
 ### Accesibilidad implementada
 
-Enlaces para saltar al contenido, foco visible, HTML semántico, respuestas con controles de radio nativos, etiquetas para iconos que actúan como botones, anuncios de estado y cambios de pregunta con manejo de foco. La experiencia se adapta a móvil y respeta la preferencia de movimiento reducido. Se corrigieron textos pequeños con contraste insuficiente detectados en la revisión automática.
+Enlaces para saltar al contenido, foco visible, HTML semántico, controles de radio y selección nativos, etiquetas para iconos que actúan como botones, anuncios de estado y cambios de pregunta con manejo de foco. La experiencia se adapta a móvil y respeta la preferencia de movimiento reducido. Los botones de nivel y etapa anuncian cuál está seleccionado; las páginas y el tamaño se pueden controlar por toque o teclado. Se corrigieron textos pequeños con contraste insuficiente detectados en la revisión automática.
 
 Las portadas cambian cada siete segundos con un movimiento de 850 ms. Solo la portada visible se puede enfocar y abrir; las restantes están ocultas para tecnologías de apoyo e inactivas. Hay controles de anterior, siguiente y pausa. El cambio automático se detiene durante el uso con teclado, al pasar el cursor, cuando el bloque sale de pantalla o cuando se oculta la pestaña. La preferencia de movimiento reducido mantiene el cambio manual sin animación.
 
@@ -100,8 +106,8 @@ El resultado sin infracciones detectadas por axe no equivale a una certificació
 ## 5. Comprobaciones realizadas
 
 - Compilación de producción y comprobación de TypeScript.
-- Cinco comprobaciones unitarias: coherencia del catálogo, entradas estrictas, manejo de niveles, plan de apoyo de reintento y filtro de pistas.
-- Catorce comprobaciones de navegador sobre flujo completo, selección de relato/nivel, accesibilidad, API, portadas, pausa, movimiento reducido y ayuda después de un error. Incluyen móvil y escritorio, seis rutas sin desbordamiento horizontal y las reglas WCAG A/AA seleccionadas por axe.
+- Seis comprobaciones unitarias: coherencia del catálogo, entradas estrictas, manejo de niveles, plan de apoyo de reintento, filtro de pistas y conservación del texto al paginar en móvil/escritorio.
+- Dieciocho comprobaciones de navegador sobre flujo completo, selección de relato/nivel, cambio de página, tamaños de letra, animación opcional, planificador de acompañamiento, accesibilidad, API, portadas, pausa y ayuda después de un error. Incluyen móvil y escritorio, siete rutas sin desbordamiento horizontal y las reglas WCAG A/AA seleccionadas por axe.
 - Revisión visual de inicio, lectura y práctica en pantallas de escritorio y móvil.
 - Solicitud real a AI Gateway después de habilitar los créditos; la respuesta del tutor se identifica con `source: "ai"`. Las respuestas preparadas se identifican por separado.
 - Ocho comprobaciones de navegador adicionales dirigidas a la URL pública: todas aprobadas. Se verificaron además pistas reales de ambas historias y de los dos niveles, y GitHub Actions terminó con resultado satisfactorio para la versión publicada.
@@ -122,24 +128,24 @@ Antes de mayor tráfico: protección global de uso y presupuesto, monitoreo de e
 
 ## 8. Correspondencia con las bases
 
-| Solicitud de Fase 2 | Entregable o evidencia |
-|---|---|
-| MVP funcional aplicado al desafío | Biblioteca, relatos por nivel, práctica y pistas con IA |
-| Acceso web | https://lee-contigo-ia.vercel.app |
-| Pitch de 3 a 5 diapositivas | Presentación de cinco diapositivas en `entregables/` |
-| Anonimato en web y pitch | Nombre de equipo LeeContigo; sin nombres de participantes, universidades ni países de origen |
-| Sustentación | Evidencia oficial, recorrido demostrable, límites y modelo de sostenibilidad propuesto |
+| Solicitud de Fase 2               | Entregable o evidencia                                                                       |
+| --------------------------------- | -------------------------------------------------------------------------------------------- |
+| MVP funcional aplicado al desafío | Biblioteca, relatos por nivel, práctica y pistas con IA                                      |
+| Acceso web                        | https://lee-contigo-ia.vercel.app                                                            |
+| Pitch de 3 a 5 diapositivas       | Presentación de cinco diapositivas en `entregables/`                                         |
+| Anonimato en web y pitch          | Nombre de equipo LeeContigo; sin nombres de participantes, universidades ni países de origen |
+| Sustentación                      | Evidencia oficial, recorrido demostrable, límites y modelo de sostenibilidad propuesto       |
 
 La selección y el registro de integrantes y el envío en la plataforma no se realizan desde esta aplicación. Deben completarse por el equipo en los plazos de las bases. No se ha enviado la participación.
 
 ### Criterios de calificación de Fase 2
 
-| Criterio | Peso | Cómo se sustenta |
-|---|---|---|
-| Solución al desafío | 50 % | Mostrar relatos por nivel y una pista generada por IA en el producto real; explicar qué falta validar pedagógicamente. |
-| Pitch y presentación | 20 % | Cinco diapositivas con necesidad, enfoque técnico y funcionamiento, apoyadas por una demo breve. |
-| Facilidad de uso | 20 % | Recorrido corto, reintentos, regreso al texto, controles accesibles y comprobaciones en móvil/escritorio. |
-| Difusión | 10 % | Se calcula con los referidos acumulados por los integrantes en la inscripción; no lo genera la aplicación. |
+| Criterio             | Peso | Cómo se sustenta                                                                                                       |
+| -------------------- | ---- | ---------------------------------------------------------------------------------------------------------------------- |
+| Solución al desafío  | 50 % | Mostrar relatos por nivel y una pista generada por IA en el producto real; explicar qué falta validar pedagógicamente. |
+| Pitch y presentación | 20 % | Cinco diapositivas con necesidad, enfoque técnico y funcionamiento, apoyadas por una demo breve.                       |
+| Facilidad de uso     | 20 % | Recorrido corto, reintentos, regreso al texto, controles accesibles y comprobaciones en móvil/escritorio.              |
+| Difusión             | 10 % | Se calcula con los referidos acumulados por los integrantes en la inscripción; no lo genera la aplicación.             |
 
 Las bases excluyen difusión de la calificación del Demo Day, que se calcula sobre 90 %. La calidad del MVP no garantiza la selección o un premio.
 

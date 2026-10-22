@@ -11,7 +11,14 @@ test("recorrido completo, reintento y pista de respaldo", async ({ page }) => {
   await page.getByRole("link", { name: "Quiero leerla" }).first().click();
   await page.getByRole("button", { name: "Aumentar tamaño de letra" }).click();
   await expect(page.getByText("Muy grande", { exact: true })).toBeVisible();
-  await page.getByRole("link", { name: "Ya leí, vamos a explorar" }).click();
+  const explore = page.getByRole("link", { name: "Ya leí, vamos a explorar" });
+  for (let turns = 0; turns < 12 && !(await explore.isVisible()); turns++) {
+    const next = page.getByRole("button", { name: "Página siguiente" });
+    await next.scrollIntoViewIfNeeded();
+    await next.click();
+  }
+  await expect(explore).toBeVisible();
+  await explore.click();
   await page
     .getByRole("radio", { name: /Porque quería buscar a la luna/ })
     .check();
@@ -57,10 +64,59 @@ test("nuevo reto y otra historia preservan el nivel en las rutas", async ({
   await expect(
     page.getByText(/En lugar de tirarla, decidió averiguar/),
   ).toBeVisible();
-  await page.getByRole("link", { name: "Ya leí, vamos a explorar" }).click();
+  const explore = page.getByRole("link", { name: "Ya leí, vamos a explorar" });
+  for (let turns = 0; turns < 12 && !(await explore.isVisible()); turns++) {
+    const next = page.getByRole("button", { name: "Página siguiente" });
+    await next.scrollIntoViewIfNeeded();
+    await next.click();
+  }
+  await expect(explore).toBeVisible();
+  await explore.click();
   await expect(
     page.getByRole("heading", { name: /¿Qué significa «asomara»/ }),
   ).toBeVisible();
+});
+test("el libro cambia nivel, conserva tamaño y responde al pasar páginas", async ({
+  page,
+}) => {
+  await page.goto("/leer/luz-del-bosque?nivel=paso");
+  await expect(page.getByText(/^Página 1 de \d+$/)).toBeVisible();
+  const next = page.getByRole("button", { name: "Página siguiente" });
+  await next.scrollIntoViewIfNeeded();
+  await next.click();
+  await expect(page.getByText(/^Página 2 de \d+$/)).toBeVisible();
+  await page.getByRole("button", { name: "Aumentar tamaño de letra" }).click();
+  await expect(page.locator(".book-page-text")).toHaveCSS("font-size", "28px");
+  await page
+    .getByRole("button", { name: "Un nuevo reto", exact: true })
+    .click();
+  await expect(page).toHaveURL(/nivel=reto/);
+  await expect(page.locator(".book-page-text")).toContainText("Cada anochecer");
+  const animation = page.getByLabel("Animar páginas");
+  if (await animation.isEnabled()) {
+    await animation.uncheck();
+    await next.scrollIntoViewIfNeeded();
+    await next.click();
+    await expect(page.locator(".book-leaf")).not.toHaveClass(/page-turn-/);
+    await animation.check();
+    await next.scrollIntoViewIfNeeded();
+    await next.click();
+    await expect(page.locator(".book-leaf")).toHaveClass(/page-turn-/);
+  }
+});
+test("la guía permite preparar y comenzar una lectura acompañada", async ({
+  page,
+}) => {
+  await page.goto("/acompanar");
+  await page.getByRole("button", { name: /2\. Durante la lectura/ }).click();
+  await expect(page.locator(".planner-conversation")).toContainText(
+    "Busquen una acción",
+  );
+  await page.getByLabel("¿Qué historia van a leer?").selectOption({ index: 1 });
+  await page.getByRole("radio", { name: "Un nuevo reto" }).check();
+  await page.getByRole("link", { name: /Empezar lectura acompañada/ }).click();
+  await expect(page).toHaveURL(/semilla-viajera\?nivel=reto&juntos=1/);
+  await expect(page.locator(".reading-companion-inline")).toBeVisible();
 });
 test("accesibilidad automática y ausencia de desbordamiento", async ({
   page,
@@ -71,6 +127,7 @@ test("accesibilidad automática y ausencia de desbordamiento", async ({
     "/leer/luz-del-bosque?nivel=paso",
     "/practicar/luz-del-bosque?nivel=paso",
     "/acompanar",
+    "/leer/semilla-viajera?nivel=reto&juntos=1&objetivo=imaginar",
     "/privacidad",
   ]) {
     await page.goto(route);

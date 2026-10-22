@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { getStory, getLevel, stories } from "@/lib/stories";
 import { Reader } from "@/components/reader";
+import { getReadingGoal } from "@/lib/reading";
 export function generateStaticParams() {
   return stories.map((story) => ({ id: story.id }));
 }
@@ -17,10 +18,21 @@ export default async function StoryPage({
   searchParams,
 }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ nivel?: string }>;
+  searchParams: Promise<{ nivel?: string; juntos?: string; objetivo?: string }>;
 }) {
-  const [{ id }, { nivel }] = await Promise.all([params, searchParams]);
+  const [{ id }, { nivel, juntos, objetivo }] = await Promise.all([
+    params,
+    searchParams,
+  ]);
   const story = getStory(id);
   if (!story) notFound();
-  return <Reader story={story} level={getLevel(nivel)} />;
+  return (
+    <Reader
+      key={id + getLevel(nivel) + (juntos ?? "") + (objetivo ?? "")}
+      story={story}
+      initialLevel={getLevel(nivel)}
+      accompanied={juntos === "1"}
+      goal={getReadingGoal(objetivo)}
+    />
+  );
 }
