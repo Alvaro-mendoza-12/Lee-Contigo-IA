@@ -26,6 +26,7 @@ import {
 } from "react";
 import { fontSteps, paginateStory } from "@/lib/reading";
 import { levels, type Level } from "@/lib/stories";
+import { BookSpread } from "./book-spread";
 import { ReadingPause } from "./reading-pause";
 import {
   comprehensionSkillLabels,
@@ -50,10 +51,8 @@ export function StoryCreator() {
   const [gatewayUnavailable, setGatewayUnavailable] = useState(false);
   const [creating, setCreating] = useState(false);
   const [fontSize, setFontSize] = useState(5);
-  const [pageIndex, setPageIndex] = useState(0);
-  const [direction, setDirection] = useState<"next" | "previous">("next");
+  const [position, setPosition] = useState({ paragraph: 0, word: 0 });
   const [animate, setAnimate] = useState(true);
-  const [reducedMotion, setReducedMotion] = useState(false);
   const [compact, setCompact] = useState(false);
   const [speaking, setSpeaking] = useState(false);
   const [canSpeak, setCanSpeak] = useState(false);
@@ -73,7 +72,13 @@ export function StoryCreator() {
     () => (story ? paginateStory(story.paragraphs, fontSize, compact) : []),
     [story, fontSize, compact],
   );
-  const currentPageIndex = Math.min(pageIndex, Math.max(0, pages.length - 1));
+  const matchedIndex = pages.findIndex(
+    (item) =>
+      item.paragraph === position.paragraph &&
+      item.start <= position.word &&
+      item.end > position.word,
+  );
+  const currentPageIndex = Math.max(0, matchedIndex);
   const currentPage = pages[currentPageIndex];
   const currentQuestion = story?.questions[questionIndex];
   const answerIsCorrect =
@@ -94,13 +99,12 @@ export function StoryCreator() {
     setCanSpeak("speechSynthesis" in window);
     const motion = window.matchMedia("(prefers-reduced-motion: reduce)");
     const updateMotion = () => {
-      setReducedMotion(motion.matches);
       if (motion.matches) setAnimate(false);
     };
     updateMotion();
     motion.addEventListener("change", updateMotion);
 
-    const mobile = window.matchMedia("(max-width: 760px)");
+    const mobile = window.matchMedia("(max-width: 900px)");
     const updateCompact = () => setCompact(mobile.matches);
     updateCompact();
     mobile.addEventListener("change", updateCompact);
@@ -217,7 +221,7 @@ export function StoryCreator() {
 
       setStory(data.story);
       setIdea("");
-      setPageIndex(0);
+      setPosition({ paragraph: 0, word: 0 });
       setFontSize(5);
       setQuestionIndex(0);
       setWrongAttempts(0);
@@ -256,7 +260,7 @@ export function StoryCreator() {
     setGatewayUnavailable(false);
     setLevel("paso");
     setAdultReviewed(false);
-    setPageIndex(0);
+    setPosition({ paragraph: 0, word: 0 });
     setQuestionIndex(0);
     setSelectedAnswer(null);
     setWrongAttempts(0);
@@ -265,8 +269,19 @@ export function StoryCreator() {
 
   function turnPage(next: number) {
     stopSpeaking();
-    setDirection(next > currentPageIndex ? "next" : "previous");
-    setPageIndex(Math.max(0, Math.min(next, pages.length - 1)));
+    const target = pages[Math.max(0, Math.min(next, pages.length - 1))];
+    if (target)
+      setPosition({ paragraph: target.paragraph, word: target.start });
+  }
+
+  function resizeFont(next: number) {
+    stopSpeaking();
+    if (currentPage)
+      setPosition({
+        paragraph: currentPage.paragraph,
+        word: currentPage.start,
+      });
+    setFontSize(next);
   }
 
   function readCurrentPage() {
@@ -532,7 +547,7 @@ export function StoryCreator() {
                 type="button"
                 aria-label="Reducir tamaño de letra"
                 disabled={fontSize === 0}
-                onClick={() => setFontSize((size) => Math.max(0, size - 1))}
+                onClick={() => resizeFont(Math.max(0, fontSize - 1))}
               >
                 <Minus size={16} aria-hidden="true" />
               </button>
@@ -542,9 +557,7 @@ export function StoryCreator() {
                 aria-label="Aumentar tamaño de letra"
                 disabled={fontSize === fontSteps.length - 1}
                 onClick={() =>
-                  setFontSize((size) =>
-                    Math.min(fontSteps.length - 1, size + 1),
-                  )
+                  resizeFont(Math.min(fontSteps.length - 1, fontSize + 1))
                 }
               >
                 <Plus size={16} aria-hidden="true" />
@@ -573,84 +586,58 @@ export function StoryCreator() {
             </div>
           </div>
 
-          <div
-            className={`creator-open-book ${animate ? "art-motion user-motion-on" : ""}`}
-            tabIndex={0}
-            role="region"
-            aria-label="Libro ilustrado. Usa las flechas para pasar páginas."
-            onKeyDown={(event) => {
-              if (event.key === "ArrowRight" || event.key === "ArrowLeft") {
-                event.preventDefault();
-                turnPage(
-                  currentPageIndex + (event.key === "ArrowRight" ? 1 : -1),
-                );
-              }
-            }}
-          >
-            <div className="creator-cover-page">
-              {cover ? (
+          <BookSpread
+            animated={animate}
+            fontSize={fontSteps[fontSize].pixels}
+            onNavigate={(offset) => turnPage(currentPageIndex + offset)}
+            page={{
+              id: `${story.title}-${fontSize}-${compact}-${currentPageIndex}`,
+              book: `${story.title}-${fontSize}-${compact}`,
+              number: currentPageIndex + 1,
+              text: currentPage?.text ?? "",
+              chapter:
+                currentPageIndex === 0
+                  ? "Érase una vez…"
+                  : currentPageIndex === pages.length - 1
+                    ? "Y al final…"
+                    : "La historia continúa…",
+              illustration: cover ? (
                 <div
-                  className={`story-art ${coverIsAtlas ? "scene-art-grid" : ""}`}
+                  className="story-art"
                   style={
                     {
-                      "--scene-x": `${getIllustrationScene(currentPage?.paragraph ?? 0, story.paragraphs.length) % 2 ? -100 : 0}%`,
-                      "--scene-y": `${getIllustrationScene(currentPage?.paragraph ?? 0, story.paragraphs.length) > 1 ? -100 : 0}%`,
+                      "--atlas-columns": coverIsAtlas ? 2 : 1,
+                      "--atlas-rows": coverIsAtlas ? 2 : 1,
+                      "--scene-x": `${coverIsAtlas && Math.floor((currentPageIndex * 4) / pages.length) % 2 ? -100 : 0}%`,
+                      "--scene-y": `${coverIsAtlas && Math.floor((currentPageIndex * 4) / pages.length) > 1 ? -100 : 0}%`,
+                      "--art-zoom": 1.035 + (currentPageIndex % 3) * 0.025,
                     } as CSSProperties
                   }
                 >
-                  <img
-                    src={cover}
-                    width={1024}
-                    height={1024}
-                    alt={
-                      coverFromCollection
-                        ? "Paisaje imaginario de nuestra colección de lectura"
-                        : `Escena ${getIllustrationScene(currentPage?.paragraph ?? 0, story.paragraphs.length) + 1} del cuento: ${story.title}`
-                    }
-                  />
+                  <div className="art-camera">
+                    <img
+                      src={cover}
+                      width={1024}
+                      height={1024}
+                      alt={
+                        coverFromCollection
+                          ? "Paisaje imaginario de nuestra colección de lectura"
+                          : `Ilustración del cuento: ${story.title}`
+                      }
+                    />
+                  </div>
                 </div>
               ) : (
                 <div className="creator-cover-placeholder" aria-hidden="true">
                   {coverState === "loading" ? (
                     <LoaderCircle className="creator-spinner" size={36} />
                   ) : (
-                    <>
-                      <BookOpen size={45} />
-                      <span>UN CUENTO PARA IMAGINAR</span>
-                    </>
+                    <BookOpen size={45} />
                   )}
                 </div>
-              )}
-              <div className="creator-cover-title">
-                <span>UN CUENTO HECHO PARA TI</span>
-                <strong>{story.title}</strong>
-              </div>
-            </div>
-            <article
-              key={`${currentPageIndex}-${fontSize}`}
-              className={`creator-book-page ${animate ? `page-turn-${direction}` : ""}`}
-              style={
-                {
-                  "--reading-font": `${fontSteps[fontSize].pixels}px`,
-                } as CSSProperties
-              }
-              aria-label={`Página ${currentPageIndex + 1}`}
-            >
-              <span className="book-chapter">
-                {currentPageIndex === 0
-                  ? "Érase una vez…"
-                  : currentPageIndex === pages.length - 1
-                    ? "Y al final…"
-                    : "La historia continúa…"}
-              </span>
-              <p className="book-page-text" aria-live="polite">
-                {currentPage?.text}
-              </p>
-              <span className="book-page-number" aria-hidden="true">
-                {currentPageIndex + 1}
-              </span>
-            </article>
-          </div>
+              ),
+            }}
+          />
 
           <progress
             className="book-progress"
@@ -908,7 +895,7 @@ export function StoryCreator() {
               className="button button-outline"
               type="button"
               onClick={() => {
-                setPageIndex(0);
+                setPosition({ paragraph: 0, word: 0 });
                 setScreen("book");
               }}
             >

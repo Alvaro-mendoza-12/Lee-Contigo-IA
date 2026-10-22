@@ -4,12 +4,12 @@ export const fontSteps = [
   { label: "Pequeña", pixels: 16, words: 64 },
   { label: "Normal", pixels: 18, words: 64 },
   { label: "Cómoda", pixels: 20, words: 60 },
-  { label: "Grande", pixels: 24, words: 52 },
-  { label: "Muy grande", pixels: 28, words: 44 },
-  { label: "Extra grande", pixels: 32, words: 36 },
-  { label: "Máxima", pixels: 36, words: 28 },
-  { label: "Inmensa", pixels: 40, words: 24 },
-  { label: "Monumental", pixels: 44, words: 20 },
+  { label: "Grande", pixels: 24, words: 38 },
+  { label: "Muy grande", pixels: 28, words: 30 },
+  { label: "Extra grande", pixels: 32, words: 24 },
+  { label: "Máxima", pixels: 36, words: 18 },
+  { label: "Inmensa", pixels: 40, words: 15 },
+  { label: "Monumental", pixels: 44, words: 12 },
 ] as const;
 
 export type ReadingPage = {
@@ -25,20 +25,35 @@ export function paginateStory(
 ): ReadingPage[] {
   const baseLimit =
     fontSteps[Math.max(0, Math.min(size, fontSteps.length - 1))].words;
-  const mobileScale = size >= 6 ? 0.45 : 0.58;
+  const mobileScale = 0.45;
   const limit = compact
-    ? Math.max(8, Math.floor(baseLimit * mobileScale))
+    ? Math.max(size >= 8 ? 4 : 8, Math.floor(baseLimit * mobileScale))
     : baseLimit;
   return paragraphs.flatMap((paragraph, index) => {
     const words = paragraph.split(/\s+/);
     const pages: ReadingPage[] = [];
-    for (let start = 0; start < words.length; start += limit) {
+    for (let start = 0; start < words.length;) {
+      let end = Math.min(start + limit, words.length);
+      if (end < words.length) {
+        // Prefer a sentence boundary without making very short fragments.
+        for (
+          let candidate = end;
+          candidate >= start + Math.ceil(limit * 0.55);
+          candidate--
+        ) {
+          if (/[.!?…][»”\"]?$/.test(words[candidate - 1])) {
+            end = candidate;
+            break;
+          }
+        }
+      }
       pages.push({
-        text: words.slice(start, start + limit).join(" "),
+        text: words.slice(start, end).join(" "),
         paragraph: index,
         start,
-        end: Math.min(start + limit, words.length),
+        end,
       });
+      start = end;
     }
     return pages;
   });

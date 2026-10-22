@@ -8,7 +8,6 @@ import {
   AlignLeft,
   BookOpen,
   Check,
-  Clock3,
   HeartHandshake,
   Leaf,
   Maximize2,
@@ -26,6 +25,7 @@ import {
   type ReadingGoal,
 } from "@/lib/reading";
 import { StoryArt } from "./art";
+import { BookSpread } from "./book-spread";
 import { Journey } from "./journey";
 import { ReadingPause } from "./reading-pause";
 import { useReadingLevel } from "./use-reading-level";
@@ -45,7 +45,6 @@ export function Reader({
   const [level, changeLevel] = useReadingLevel(initialLevel);
   const [size, setSize] = useState(5);
   const [position, setPosition] = useState({ paragraph: 0, word: 0 });
-  const [direction, setDirection] = useState("next");
   const [fullText, setFullText] = useState(false);
   const [expanded, setExpanded] = useState(false);
   const dialogRef = useRef<HTMLElement>(null);
@@ -80,7 +79,7 @@ export function Reader({
     };
     update();
     preference.addEventListener("change", update);
-    const compactPreference = window.matchMedia("(max-width: 760px)");
+    const compactPreference = window.matchMedia("(max-width: 900px)");
     const updateCompact = () => setCompact(compactPreference.matches);
     updateCompact();
     compactPreference.addEventListener("change", updateCompact);
@@ -111,7 +110,7 @@ export function Reader({
       if (event.key !== "Tab" || !dialogRef.current) return;
       const focusable = Array.from(
         dialogRef.current.querySelectorAll<HTMLElement>(
-          'a[href], button:not(:disabled), input:not(:disabled), [tabindex]:not([tabindex="-1"])',
+          'a[href], button:not(:disabled), input:not(:disabled), summary, select, textarea, [tabindex]:not([tabindex="-1"])',
         ),
       ).filter((element) => element.getClientRects().length > 0);
       if (!focusable.length) {
@@ -141,7 +140,7 @@ export function Reader({
       window.cancelAnimationFrame(focusFrame);
       document.body.style.overflow = previousOverflow;
       window.removeEventListener("keydown", manageDialogKeys);
-      previousFocus?.focus();
+      previousFocus?.focus({ preventScroll: true });
     };
   }, [expanded]);
 
@@ -157,7 +156,6 @@ export function Reader({
   }
   function turnPage(next: number) {
     stopVoice();
-    setDirection(next > index ? "next" : "previous");
     const target = pages[Math.max(0, Math.min(next, pages.length - 1))];
     setPosition({ paragraph: target.paragraph, word: target.start });
   }
@@ -212,43 +210,41 @@ export function Reader({
           tabIndex={expanded ? -1 : undefined}
         >
           <div className="reading-content">
-            <div className="reading-meta">
-              <span className="small-label">UN LIBRO PARA LEER A TU RITMO</span>
-              <span>
-                <Clock3 size={15} aria-hidden="true" />
-                {story.minutes} min
-              </span>
+            <div className="reader-book-heading">
+              <div>
+                <span className="small-label">TU MOMENTO DE LECTURA</span>
+                <h1 id="reader-title">{story.title}</h1>
+                <p className="story-subtitle">{story.subtitle}</p>
+              </div>
+              <div
+                className="reader-level-picker"
+                role="group"
+                aria-label="Nivel de lectura"
+              >
+                {(["paso", "reto"] as const).map((id) => (
+                  <button
+                    type="button"
+                    key={id}
+                    aria-pressed={level === id}
+                    onClick={() => selectLevel(id)}
+                  >
+                    {level === id ? (
+                      <Check size={15} aria-hidden="true" />
+                    ) : (
+                      <Leaf size={15} aria-hidden="true" />
+                    )}
+                    {levels[id].label}
+                  </button>
+                ))}
+              </div>
             </div>
-            <h1 id="reader-title">{story.title}</h1>
-            <p className="story-subtitle">{story.subtitle}</p>
-            <div
-              className="reader-level-picker"
-              role="group"
-              aria-label="Nivel de lectura"
-            >
-              {(["paso", "reto"] as const).map((id) => (
-                <button
-                  type="button"
-                  key={id}
-                  aria-pressed={level === id}
-                  onClick={() => selectLevel(id)}
-                >
-                  {level === id ? (
-                    <Check size={15} aria-hidden="true" />
-                  ) : (
-                    <Leaf size={15} aria-hidden="true" />
-                  )}
-                  {levels[id].label}
-                </button>
-              ))}
-            </div>
-            <p className="reader-level-feedback" role="status">
-              <strong>{levels[level].label}:</strong>{" "}
+            <p className="sr-only" role="status">
+              {levels[level].label}:{" "}
               {level === "paso"
                 ? "frases más cortas para avanzar con calma."
                 : "más vocabulario e ideas para relacionar."}
             </p>
-            <div className="reading-toolbar">
+            <div className="reading-toolbar book-tools">
               <div
                 className="font-controls"
                 role="group"
@@ -273,73 +269,75 @@ export function Reader({
                   <Plus size={16} aria-hidden="true" />
                 </button>
               </div>
-              {canSpeak ? (
+              <div className="book-tool-actions">
+                {canSpeak ? (
+                  <button
+                    type="button"
+                    className="text-button audio-button"
+                    onClick={readAloud}
+                  >
+                    {speaking ? (
+                      <Square size={17} aria-hidden="true" />
+                    ) : (
+                      <Volume2 size={18} aria-hidden="true" />
+                    )}
+                    {speaking ? "Detener lectura" : "Escuchar"}
+                  </button>
+                ) : null}
                 <button
+                  ref={expandControlRef}
                   type="button"
-                  className="text-button audio-button"
-                  onClick={readAloud}
+                  className="text-button book-expand-control"
+                  aria-pressed={expanded}
+                  aria-label={
+                    expanded ? "Cerrar página ampliada" : "Ampliar página"
+                  }
+                  onClick={() => setExpanded((value) => !value)}
                 >
-                  {speaking ? (
-                    <Square size={17} aria-hidden="true" />
+                  {expanded ? (
+                    <Minimize2 size={16} aria-hidden="true" />
                   ) : (
-                    <Volume2 size={18} aria-hidden="true" />
+                    <Maximize2 size={16} aria-hidden="true" />
                   )}
-                  {speaking ? "Detener lectura" : "Escuchar"}
+                  {expanded ? "Cerrar ampliación" : "Ampliar"}
                 </button>
-              ) : null}
-            </div>
-            <div className="book-view-options">
-              <button
-                type="button"
-                className="text-button"
-                aria-pressed={fullText}
-                onClick={() => {
-                  stopVoice();
-                  setFullText((value) => !value);
-                }}
-              >
-                {fullText ? (
-                  <BookOpen size={16} aria-hidden="true" />
-                ) : (
-                  <AlignLeft size={16} aria-hidden="true" />
-                )}
-                {fullText ? "Volver al libro" : "Ver relato completo"}
-              </button>
-              <button
-                ref={expandControlRef}
-                type="button"
-                className="text-button book-expand-control"
-                aria-pressed={expanded}
-                aria-label={
-                  expanded ? "Cerrar página ampliada" : "Ampliar página"
-                }
-                onClick={() => setExpanded((value) => !value)}
-              >
-                {expanded ? (
-                  <Minimize2 size={16} aria-hidden="true" />
-                ) : (
-                  <Maximize2 size={16} aria-hidden="true" />
-                )}
-                {expanded ? "Cerrar ampliación" : "Ampliar página"}
-              </button>
-              {!fullText ? (
                 <label className="book-animation-control">
                   <input
                     type="checkbox"
                     checked={animate}
-
                     onChange={(event) => setAnimate(event.target.checked)}
                   />
                   Animar páginas
                 </label>
-              ) : null}
+                <details className="book-settings">
+                  <summary>Opciones</summary>
+                  <div>
+                    {reducedMotion ? (
+                      <p>
+                        Empiezas sin movimiento por la preferencia de tu
+                        dispositivo. Puedes activarlo aquí.
+                      </p>
+                    ) : null}
+                    <button
+                      type="button"
+                      className="text-button"
+                      aria-pressed={fullText}
+                      onClick={() => {
+                        stopVoice();
+                        setFullText((value) => !value);
+                      }}
+                    >
+                      {fullText ? (
+                        <BookOpen size={16} aria-hidden="true" />
+                      ) : (
+                        <AlignLeft size={16} aria-hidden="true" />
+                      )}
+                      {fullText ? "Volver al libro" : "Ver relato completo"}
+                    </button>
+                  </div>
+                </details>
+              </div>
             </div>
-            {reducedMotion && !fullText ? (
-              <p className="motion-preference-note">
-                Tu dispositivo prefiere menos movimiento. Puedes activar «Animar
-                páginas» si te resulta cómodo.
-              </p>
-            ) : null}
             {fullText ? (
               <div
                 className="story-text book-full-text"
@@ -356,57 +354,38 @@ export function Reader({
               </div>
             ) : (
               <>
-                <div
-                  className={`open-storybook ${animate ? "art-motion user-motion-on" : ""}`}
-                  tabIndex={0}
-                  role="region"
-                  aria-label="Libro ilustrado. Usa las flechas para pasar páginas."
-                  onKeyDown={(event) => {
-                    if (
-                      event.key === "ArrowRight" ||
-                      event.key === "ArrowLeft"
-                    ) {
-                      event.preventDefault();
-                      turnPage(index + (event.key === "ArrowRight" ? 1 : -1));
-                    }
-                  }}
-                  style={
-                    {
-                      "--reading-font": `${fontSteps[size].pixels}px`,
-                    } as CSSProperties
-                  }
-                >
-                  <div className="book-illustration">
-                    <StoryArt
-                      variant={story.art}
-                      scene={getIllustrationScene(
-                        current.paragraph,
-                        version.paragraphs.length,
-                      )}
-                      priority
-                    />
-                    <span>{story.theme}</span>
-                  </div>
-                  <section
-                    key={`${level}-${index}-${size}`}
-                    className={`book-leaf ${animate ? "page-turn-" + direction : ""}`}
-                    aria-label={`Página ${index + 1}`}
-                  >
-                    <span className="book-chapter">
-                      {index === 0
+                <BookSpread
+                  animated={animate}
+                  fontSize={fontSteps[size].pixels}
+                  onNavigate={(offset) => turnPage(index + offset)}
+                  page={{
+                    id: `${story.id}-${level}-${size}-${compact}-${index}`,
+                    book: `${story.id}-${level}-${size}-${compact}`,
+                    number: index + 1,
+                    text: current.text,
+                    chapter:
+                      index === 0
                         ? "Érase una vez…"
                         : lastPage
                           ? "Y al final…"
-                          : "La historia continúa…"}
-                    </span>
-                    <p className="book-page-text" id="lectura">
-                      {current.text}
-                    </p>
-                    <span className="book-page-number" aria-hidden="true">
-                      {index + 1}
-                    </span>
-                  </section>
-                </div>
+                          : "La historia continúa…",
+                    illustration: (
+                      <StoryArt
+                        variant={story.art}
+                        scene={
+                          lastPage
+                            ? 7
+                            : Math.min(
+                                7,
+                                Math.floor((index * 8) / pages.length),
+                              )
+                        }
+                        frame={index}
+                        priority
+                      />
+                    ),
+                  }}
+                />
                 <progress
                   className="book-progress"
                   max={pages.length}
@@ -437,15 +416,23 @@ export function Reader({
                     <ArrowRight size={17} aria-hidden="true" />
                   </button>
                 </div>
-                <ReadingPause
-                  key={`${level}-${current.paragraph}`}
-                  scene={getIllustrationScene(
-                    current.paragraph,
-                    version.paragraphs.length,
-                  )}
-                />
               </>
             )}
+            <div className="reader-next-step">
+              {lastPage || fullText ? (
+                <Link
+                  className="button"
+                  href={`/practicar/${story.id}?nivel=${level}`}
+                >
+                  Ya leí, vamos a explorar
+                  <ArrowRight size={19} aria-hidden="true" />
+                </Link>
+              ) : (
+                <p className="reading-reassurance">
+                  A tu ritmo. Las preguntas te esperan al final.
+                </p>
+              )}
+            </div>
             {accompanied ? (
               <div className="reading-companion-inline">
                 <HeartHandshake size={20} aria-hidden="true" />
@@ -455,75 +442,16 @@ export function Reader({
                 </p>
               </div>
             ) : null}
-            {lastPage || fullText ? (
-              <div className="book-finish">
-                <span className="small-label">LO LEÍSTE, AHORA EXPLOREMOS</span>
-                <Link
-                  className="button full-width"
-                  href={`/practicar/${story.id}?nivel=${level}`}
-                >
-                  Ya leí, vamos a explorar{" "}
-                  <ArrowRight size={19} aria-hidden="true" />
-                </Link>
-              </div>
-            ) : (
-              <p className="reading-reassurance">
-                Avanza página a página. Al final encontrarás las preguntas.
-              </p>
-            )}
+            {!fullText ? (
+              <ReadingPause
+                scene={getIllustrationScene(
+                  current.paragraph,
+                  version.paragraphs.length,
+                )}
+              />
+            ) : null}
           </div>
         </article>
-        <aside className="reader-sidebar">
-          <div className="companion-card">
-            <span className="companion-icon">
-              {accompanied ? (
-                <HeartHandshake size={26} aria-hidden="true" />
-              ) : (
-                <BookOpen size={26} aria-hidden="true" />
-              )}
-            </span>
-            <span className="small-label">
-              {accompanied ? "SU MISIÓN DE LECTURA" : "ESTE ES TU MOMENTO"}
-            </span>
-            <h2>
-              {accompanied
-                ? readingGoals[goal].title
-                : "No hay prisa por llegar al final."}
-            </h2>
-            <p aria-live={accompanied ? "polite" : "off"}>
-              {accompanied
-                ? conversation
-                : "Cada página es un pequeño paso. Imagina el lugar y disfruta la historia."}
-            </p>
-            <div className="sidebar-check">
-              <Check size={17} aria-hidden="true" />
-              Once tamaños de letra.
-            </div>
-            <div className="sidebar-check">
-              <Check size={17} aria-hidden="true" />
-              Puedes detener la animación.
-            </div>
-            <div className="sidebar-check">
-              <Check size={17} aria-hidden="true" />
-              Sin notas ni cronómetro.
-            </div>
-          </div>
-          <div className="level-summary">
-            <span className="small-label">TU FORMA DE LEER</span>
-            <strong>
-              <Leaf size={17} aria-hidden="true" />
-              {levels[level].label}
-            </strong>
-            <button
-              type="button"
-              className="text-button"
-              onClick={() => selectLevel(level === "paso" ? "reto" : "paso")}
-            >
-              Probar {level === "paso" ? "un nuevo reto" : "paso a paso"}
-              <ArrowRight size={14} aria-hidden="true" />
-            </button>
-          </div>
-        </aside>
       </div>
     </div>
   );

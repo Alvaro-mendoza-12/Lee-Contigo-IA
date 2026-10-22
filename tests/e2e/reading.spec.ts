@@ -12,7 +12,7 @@ test("recorrido completo, reintento y pista de respaldo", async ({ page }) => {
   await page.getByRole("button", { name: "Aumentar tamaño de letra" }).click();
   await expect(page.getByText("Muy grande", { exact: true })).toBeVisible();
   const explore = page.getByRole("link", { name: "Ya leí, vamos a explorar" });
-  for (let turns = 0; turns < 12 && !(await explore.isVisible()); turns++) {
+  for (let turns = 0; turns < 40 && !(await explore.isVisible()); turns++) {
     const next = page.getByRole("button", { name: "Página siguiente" });
     await next.scrollIntoViewIfNeeded();
     await next.click();
@@ -64,10 +64,10 @@ test("nuevo reto y otra historia preservan el nivel en las rutas", async ({
     .click();
   await expect(page).toHaveURL(/semilla-viajera\?nivel=reto/);
   await expect(
-    page.getByText(/En lugar de tirarla, decidió averiguar/),
+    page.getByText(/Al guardar su abrigo, Nico descubrió/),
   ).toBeVisible();
   const explore = page.getByRole("link", { name: "Ya leí, vamos a explorar" });
-  for (let turns = 0; turns < 12 && !(await explore.isVisible()); turns++) {
+  for (let turns = 0; turns < 40 && !(await explore.isVisible()); turns++) {
     const next = page.getByRole("button", { name: "Página siguiente" });
     await next.scrollIntoViewIfNeeded();
     await next.click();
@@ -85,8 +85,21 @@ test("el libro cambia nivel, conserva tamaño y responde al pasar páginas", asy
   await expect(page.getByText(/^Página 1 de \d+$/)).toBeVisible();
   const next = page.getByRole("button", { name: "Página siguiente" });
   await next.scrollIntoViewIfNeeded();
+  const before = await page.locator(".paper-book").boundingBox();
+  const scene = await page
+    .locator(".paper-spread .story-art")
+    .getAttribute("data-scene");
+  const scroll = await page.evaluate(() => window.scrollY);
   await next.click();
   await expect(page.getByText(/^Página 2 de \d+$/)).toBeVisible();
+  const after = await page.locator(".paper-book").boundingBox();
+  expect(after?.height).toBe(before?.height);
+  expect(after?.y).toBe(before?.y);
+  expect(await page.evaluate(() => window.scrollY)).toBe(scroll);
+  expect(
+    await page.locator(".paper-spread .story-art").getAttribute("data-scene"),
+  ).not.toBe(scene);
+  await expect(page.locator(".paper-spread")).toHaveClass(/text-on-right/);
   await page.getByRole("button", { name: "Aumentar tamaño de letra" }).click();
   await expect(page.locator(".book-page-text")).toHaveCSS("font-size", "28px");
   await page
@@ -102,14 +115,13 @@ test("el libro cambia nivel, conserva tamaño y responde al pasar páginas", asy
     await animation.uncheck();
     await next.scrollIntoViewIfNeeded();
     await next.click();
-    await expect(page.locator(".book-leaf")).not.toHaveClass(/page-turn-/);
+    await expect(page.locator(".book-turn-sheet")).toHaveCount(0);
     await animation.check();
     await next.scrollIntoViewIfNeeded();
     await next.click();
-    await expect(page.locator(".book-leaf")).toHaveClass(/page-turn-/);
-    await expect(page.locator(".book-leaf")).toHaveCSS(
+    await expect(page.locator(".book-turn-sheet")).toHaveCSS(
       "animation-name",
-      "page-flip-in-next",
+      "paper-turn-next",
     );
   }
 });
@@ -134,6 +146,8 @@ test("accesibilidad automática y ausencia de desbordamiento", async ({
     "/",
     "/biblioteca",
     "/leer/luz-del-bosque?nivel=paso",
+    "/leer/camino-al-faro?nivel=reto",
+    "/leer/cometa-en-equipo?nivel=paso",
     "/practicar/luz-del-bosque?nivel=paso",
     "/acompanar",
     "/leer/semilla-viajera?nivel=reto&juntos=1&objetivo=imaginar",
