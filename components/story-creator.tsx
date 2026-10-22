@@ -329,7 +329,7 @@ export function StoryCreator() {
 
   return (
     <div className="container creator-page">
-      <Link href="/biblioteca" className="back-link">
+      <Link href="/" className="back-link">
         <ArrowLeft size={16} aria-hidden="true" /> Volver a las historias
       </Link>
 
@@ -467,7 +467,7 @@ export function StoryCreator() {
                   {error}
                 </p>
                 {gatewayUnavailable ? (
-                  <Link className="creator-error-link" href="/biblioteca">
+                  <Link className="creator-error-link" href="/">
                     Leer un cuento de la biblioteca <ArrowRight size={16} />
                   </Link>
                 ) : null}
@@ -905,7 +905,7 @@ export function StoryCreator() {
               <Sparkles size={17} /> Crear otro cuento
             </button>
           </div>
-          <Link className="inline-link" href="/biblioteca">
+          <Link className="inline-link" href="/">
             Explorar los cuentos de la biblioteca <ArrowRight size={16} />
           </Link>
         </section>

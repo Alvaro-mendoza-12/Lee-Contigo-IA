@@ -10,6 +10,70 @@ import kiteBook from "@/public/images/cometa-libro-8.png";
 import type { StoryArtVariant } from "@/lib/stories";
 import type { CSSProperties } from "react";
 
+type PictureVariant = "night" | "seed" | "lighthouse" | "kite";
+type Scene = { main: string; extras: string[]; label: string };
+
+// Bright, emoji-based scenes for the stories without painted illustrations.
+const emojiScenes: Record<
+  Exclude<StoryArtVariant, PictureVariant>,
+  { colors: [string, string]; scenes: Scene[] }
+> = {
+  dragon: {
+    colors: ["#b9f6ca", "#ffd6f5"],
+    scenes: [
+      { main: "🐉", extras: ["🌸", "🌼", "🌷"], label: "Bruno, el dragón verde, estornuda flores." },
+      { main: "🐲", extras: ["🏔️", "😳", "🌸"], label: "Bruno se esconde en su cueva." },
+      { main: "🎪", extras: ["🎉", "🍰", "🎈"], label: "El pueblo prepara una fiesta." },
+      { main: "🐉", extras: ["💐", "🌺", "👏"], label: "Las flores de Bruno adornan la fiesta." },
+    ],
+  },
+  ocean: {
+    colors: ["#7fd8ff", "#2f7cf6"],
+    scenes: [
+      { main: "⭐", extras: ["🪸", "🐠", "🫧"], label: "Estela vive en una roca del mar." },
+      { main: "🐟", extras: ["💧", "🫧", "🌿"], label: "Pipo, el pez amarillo, está perdido." },
+      { main: "⭐", extras: ["🐟", "💬", "🫧"], label: "Estela escucha a Pipo." },
+      { main: "🐠", extras: ["🪸", "🐟", "💛"], label: "Pipo vuelve con su familia." },
+    ],
+  },
+  space: {
+    colors: ["#5b3cc4", "#ff8ad8"],
+    scenes: [
+      { main: "📦", extras: ["🖍️", "🐱", "✨"], label: "Sofi construye un cohete de cartón." },
+      { main: "🚀", extras: ["☁️", "⭐", "🌟"], label: "El cohete despega hacia las estrellas." },
+      { main: "🌕", extras: ["👧", "🐱", "✨"], label: "Sofi y Lunares saltan en la luna." },
+      { main: "🏠", extras: ["🌙", "🍽️", "💜"], label: "Sofi vuelve a casa para la cena." },
+    ],
+  },
+  farm: {
+    colors: ["#fff176", "#ffb74d"],
+    scenes: [
+      { main: "🐔", extras: ["🐥", "🐥", "🐥"], label: "Clara cuenta a sus pollitos." },
+      { main: "🐔", extras: ["❓", "🐥", "🌾"], label: "¡Falta un pollito!" },
+      { main: "🐄", extras: ["🐶", "💬", "🌾"], label: "Clara pregunta a la vaca y al perro." },
+      { main: "🐥", extras: ["🌾", "🐔", "💛"], label: "Pío duerme en la paja." },
+    ],
+  },
+  rain: {
+    colors: ["#9be7ff", "#c5b3ff"],
+    scenes: [
+      { main: "☂️", extras: ["🌧️", "👦", "💧"], label: "Leo abre su paraguas de colores." },
+      { main: "🐶", extras: ["💧", "☂️", "💧"], label: "Leo cubre al perrito mojado." },
+      { main: "☂️", extras: ["👦", "👧", "🐶"], label: "Leo, Ana y el perrito caminan juntos." },
+      { main: "🌈", extras: ["☀️", "😄", "🐶"], label: "Sale un arcoíris en el cielo." },
+    ],
+  },
+  music: {
+    colors: ["#a5f3a0", "#4fc3f7"],
+    scenes: [
+      { main: "🎶", extras: ["🐦", "🥁", "🦗"], label: "Los animales preparan un concierto." },
+      { main: "🐸", extras: ["😢", "💧", "🌿"], label: "Rita la rana se va triste a su charca." },
+      { main: "🦉", extras: ["🎼", "❓", "🌙"], label: "El búho dice que algo falta." },
+      { main: "🐸", extras: ["🎵", "🥁", "👏"], label: "Rita canta y la música suena perfecta." },
+    ],
+  },
+};
+
 const illustrations = { night: forest, seed, lighthouse, kite };
 const bookIllustrations = {
   night: forestBook,
@@ -89,14 +153,55 @@ export function StoryArt({
   frame?: number;
 }) {
   const book = scene !== undefined;
-  const atlas = book || variant === "lighthouse" || variant === "kite";
+  if (!(variant in illustrations)) {
+    const art = emojiScenes[variant as keyof typeof emojiScenes];
+    const panel = Math.min(Math.max(scene ?? 0, 0), 7);
+    const current = art.scenes[book ? Math.floor(panel / 2) : 0];
+    return (
+      <div
+        className={`story-art emoji-art ${className}`}
+        role="img"
+        aria-label={current.label}
+        style={
+          {
+            "--emoji-a": art.colors[0],
+            "--emoji-b": art.colors[1],
+          } as CSSProperties
+        }
+        data-scene={book ? panel : "cover"}
+        data-frame={frame}
+      >
+        <span className="emoji-main" aria-hidden="true">
+          {current.main}
+        </span>
+        {current.extras.map((extra, i) => (
+          <span
+            key={i}
+            className={`emoji-extra emoji-extra-${i}`}
+            aria-hidden="true"
+          >
+            {extra}
+          </span>
+        ))}
+      </div>
+    );
+  }
+  const pictureVariant = variant as PictureVariant;
+  const atlas =
+    book || pictureVariant === "lighthouse" || pictureVariant === "kite";
   const panel = Math.min(Math.max(scene ?? 0, 0), book ? 7 : 3);
   const sourcePanel =
-    book && variant === "kite" ? [0, 1, 2, 3, 5, 4, 6, 7][panel] : panel;
+    book && pictureVariant === "kite" ? [0, 1, 2, 3, 5, 4, 6, 7][panel] : panel;
   const picture = (
     <Image
-      src={book ? bookIllustrations[variant] : illustrations[variant]}
-      alt={book ? bookDescriptions[variant][panel] : descriptions[variant][0]}
+      src={
+        book ? bookIllustrations[pictureVariant] : illustrations[pictureVariant]
+      }
+      alt={
+        book
+          ? bookDescriptions[pictureVariant][panel]
+          : descriptions[pictureVariant][0]
+      }
       sizes="(max-width: 600px) 100vw, 1100px"
       preload={priority}
       placeholder="blur"

@@ -144,7 +144,7 @@ export default function Privacy() {
         Recarga la página o cierra la web para borrar el estado local de la
         historia. No hay una cuenta que debas eliminar.
       </p>
-      <Link className="button button-outline" href="/biblioteca">
+      <Link className="button button-outline" href="/">
         Volver a las historias
       </Link>
     </article>

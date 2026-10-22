@@ -128,7 +128,7 @@ export default function Guide() {
       <div className="guide-cta">
         <Check size={20} />
         <p>Sin cuentas, sin anuncios y con espacio para volver a intentarlo.</p>
-        <Link href="/biblioteca" className="button">
+        <Link href="/" className="button">
           Explorar las historias <ArrowRight size={18} />
         </Link>
       </div>

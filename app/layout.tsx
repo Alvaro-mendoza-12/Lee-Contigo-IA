@@ -3,6 +3,7 @@ import { Nunito_Sans } from "next/font/google";
 import { Header, Footer } from "@/components/shell";
 import "./globals.css";
 import "./book.css";
+import "./kids.css";
 const nunito = Nunito_Sans({
   subsets: ["latin"],
   variable: "--font-nunito",

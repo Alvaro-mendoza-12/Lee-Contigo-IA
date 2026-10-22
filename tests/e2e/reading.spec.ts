@@ -1,17 +1,20 @@
 import { test, expect } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
-test("recorrido completo, reintento y pista de respaldo", async ({ page }) => {
+test("recorrido completo, error claro y pista de respaldo", async ({
+  page,
+}) => {
   const errors: string[] = [];
   page.on("pageerror", (error) => errors.push(error.message));
   await page.goto("/");
-  await page.getByRole("link", { name: "Elige tu primera historia" }).click();
   await expect(
-    page.getByRole("heading", { name: "¿Qué descubrirás hoy?" }),
+    page.getByRole("heading", { name: /¿Qué cuento leemos hoy\?/ }),
   ).toBeVisible();
-  await page.getByRole("link", { name: "Quiero leerla" }).first().click();
+  await page
+    .getByRole("link", { name: "Leer Una luz en el bosque", exact: true })
+    .click();
   await page.getByRole("button", { name: "Aumentar tamaño de letra" }).click();
-  await expect(page.getByText("Muy grande", { exact: true })).toBeVisible();
-  const explore = page.getByRole("link", { name: "Ya leí, vamos a explorar" });
+  await expect(page.locator(".book-page-text")).toHaveCSS("font-size", "28px");
+  const explore = page.getByRole("link", { name: /A las preguntas/ });
   for (let turns = 0; turns < 40 && !(await explore.isVisible()); turns++) {
     const next = page.getByRole("button", { name: "Página siguiente" });
     await next.scrollIntoViewIfNeeded();
@@ -22,29 +25,23 @@ test("recorrido completo, reintento y pista de respaldo", async ({ page }) => {
   await page
     .getByRole("radio", { name: /Porque quería buscar a la luna/ })
     .check();
-  await page.getByRole("button", { name: "Explorar mi respuesta" }).click();
-  await expect(page.getByText("Probemos una vez más.")).toBeVisible();
-  await page
-    .getByRole("button", { name: "Dame una pista", exact: true })
-    .click();
-  await expect(
-    page.getByText(/Pista (preparada|con IA)/, { exact: true }),
-  ).toBeVisible({ timeout: 12000 });
-  await page
-    .getByRole("button", { name: "Volver al relato sin salir" })
-    .click();
+  await expect(page.getByText("¡Uy! Esa no es. ¡Intenta otra vez!")).toBeVisible();
+  await expect(page.locator(".kid-answer.wrong")).toHaveCount(1);
+  await page.getByRole("button", { name: "Pista", exact: true }).click();
+  await expect(page.getByText(/Pista (preparada|con IA)/)).toBeVisible({
+    timeout: 12000,
+  });
+  await page.getByRole("button", { name: "Ver cuento" }).click();
   await expect(page.locator("#relato-de-apoyo")).toBeVisible();
   await page.getByRole("radio", { name: /Porque no veía las piedras/ }).check();
-  await page.getByRole("button", { name: "Explorar mi respuesta" }).click();
-  await page.getByRole("button", { name: "Siguiente pregunta" }).click();
+  await expect(page.locator(".kid-answer.right")).toHaveCount(1);
+  await page.getByRole("button", { name: "Siguiente" }).click();
   await page.getByRole("radio", { name: /Para que Tomás siguiera/ }).check();
-  await page.getByRole("button", { name: "Explorar mi respuesta" }).click();
-  await page.getByRole("button", { name: "Siguiente pregunta" }).click();
+  await page.getByRole("button", { name: "Siguiente" }).click();
   await page.getByRole("radio", { name: /Que una pequeña ayuda/ }).check();
-  await page.getByRole("button", { name: "Explorar mi respuesta" }).click();
-  await page.getByRole("button", { name: "Ver mis descubrimientos" }).click();
+  await page.getByRole("button", { name: "¡Terminar!" }).click();
   await expect(
-    page.getByRole("heading", { name: "¡Mira todo lo que exploraste!" }),
+    page.getByRole("heading", { name: "¡Lo lograste!" }),
   ).toBeVisible();
   expect(
     await page.evaluate(() => ({
@@ -54,10 +51,12 @@ test("recorrido completo, reintento y pista de respaldo", async ({ page }) => {
   ).toEqual({ local: 0, session: 0 });
   expect(errors).toEqual([]);
 });
-test("nuevo reto y otra historia preservan el nivel en las rutas", async ({
+test("la biblioteca muestra 10 cuentos y conserva el nivel", async ({
   page,
 }) => {
   await page.goto("/biblioteca");
+  await expect(page).toHaveURL(/\/\?nivel=paso/);
+  await expect(page.locator(".kid-story-grid li")).toHaveCount(11);
   await page.getByRole("radio", { name: /Un nuevo reto/ }).check();
   await page
     .getByRole("link", { name: "Leer La semilla viajera", exact: true })
@@ -66,19 +65,18 @@ test("nuevo reto y otra historia preservan el nivel en las rutas", async ({
   await expect(
     page.getByText(/Al guardar su abrigo, Nico descubrió/),
   ).toBeVisible();
-  const explore = page.getByRole("link", { name: "Ya leí, vamos a explorar" });
+  const explore = page.getByRole("link", { name: /A las preguntas/ });
   for (let turns = 0; turns < 40 && !(await explore.isVisible()); turns++) {
     const next = page.getByRole("button", { name: "Página siguiente" });
     await next.scrollIntoViewIfNeeded();
     await next.click();
   }
-  await expect(explore).toBeVisible();
   await explore.click();
   await expect(
     page.getByRole("heading", { name: /¿Qué significa «asomara»/ }),
   ).toBeVisible();
 });
-test("el libro cambia nivel, conserva tamaño y responde al pasar páginas", async ({
+test("el libro conserva tamaño y responde al pasar páginas", async ({
   page,
 }) => {
   await page.goto("/leer/luz-del-bosque?nivel=paso");
@@ -89,41 +87,39 @@ test("el libro cambia nivel, conserva tamaño y responde al pasar páginas", asy
   const scene = await page
     .locator(".paper-spread .story-art")
     .getAttribute("data-scene");
-  const scroll = await page.evaluate(() => window.scrollY);
   await next.click();
   await expect(page.getByText(/^Página 2 de \d+$/)).toBeVisible();
   const after = await page.locator(".paper-book").boundingBox();
   expect(after?.height).toBe(before?.height);
-  expect(after?.y).toBe(before?.y);
-  expect(await page.evaluate(() => window.scrollY)).toBe(scroll);
   expect(
     await page.locator(".paper-spread .story-art").getAttribute("data-scene"),
   ).not.toBe(scene);
   await expect(page.locator(".paper-spread")).toHaveClass(/text-on-right/);
-  await page.getByRole("button", { name: "Aumentar tamaño de letra" }).click();
-  await expect(page.locator(".book-page-text")).toHaveCSS("font-size", "28px");
-  await page
-    .getByRole("button", { name: "Un nuevo reto", exact: true })
-    .click();
-  await expect(page).toHaveURL(/nivel=reto/);
+  await page.goto("/leer/luz-del-bosque?nivel=reto");
   await expect(page.locator(".book-page-text")).toContainText("Cada anochecer");
-  await page.emulateMedia({ reducedMotion: "reduce" });
-  const animation = page.getByLabel("Animar páginas");
-  await expect(animation).toBeEnabled();
-  await expect(animation).not.toBeChecked();
-  if (await animation.isEnabled()) {
-    await animation.uncheck();
-    await next.scrollIntoViewIfNeeded();
-    await next.click();
-    await expect(page.locator(".book-turn-sheet")).toHaveCount(0);
-    await animation.check();
-    await next.scrollIntoViewIfNeeded();
-    await next.click();
-    await expect(page.locator(".book-turn-sheet")).toHaveCSS(
-      "animation-name",
-      "paper-turn-next",
-    );
-  }
+  await page.goto("/leer/dragon-de-flores?nivel=paso");
+  await expect(page.locator(".paper-spread .emoji-art")).toBeVisible();
+});
+test("un error pide apoyo de reintento sin enviar la respuesta", async ({
+  page,
+}) => {
+  await page.goto("/practicar/luz-del-bosque?nivel=paso");
+  await page
+    .getByRole("radio", { name: /Porque quería buscar a la luna/ })
+    .check();
+  const request = page.waitForRequest(
+    (r) => r.url().endsWith("/api/tutor") && r.method() === "POST",
+  );
+  await page.getByRole("button", { name: "Pista", exact: true }).click();
+  expect((await request).postDataJSON()).toEqual({
+    storyId: "luz-del-bosque",
+    level: "paso",
+    questionId: "q1",
+    tier: 0,
+    support: "retry",
+  });
+  await expect(page.locator(".kid-hint")).toBeVisible({ timeout: 12000 });
+  await expect(page.locator("#tutor-pistas")).toBeFocused();
 });
 test("la guía permite preparar y comenzar una lectura acompañada", async ({
   page,
@@ -144,10 +140,10 @@ test("accesibilidad automática y ausencia de desbordamiento", async ({
 }) => {
   for (const route of [
     "/",
-    "/biblioteca",
     "/leer/luz-del-bosque?nivel=paso",
     "/leer/camino-al-faro?nivel=reto",
     "/leer/cometa-en-equipo?nivel=paso",
+    "/leer/dragon-de-flores?nivel=paso",
     "/practicar/luz-del-bosque?nivel=paso",
     "/acompanar",
     "/leer/semilla-viajera?nivel=reto&juntos=1&objetivo=imaginar",

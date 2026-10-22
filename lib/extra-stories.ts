@@ -1,6 +1,6 @@
 import type { Story, Question } from "./stories.ts";
 
-function question(
+export function question(
   id: string,
   skill: string,
   prompt: string,

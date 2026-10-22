@@ -1,12 +1,11 @@
-import type { Metadata } from "next";
-import { Library } from "@/components/library";
+import { redirect } from "next/navigation";
 import { getLevel } from "@/lib/stories";
-export const metadata: Metadata = { title: "Elige una historia" };
+// The library now lives on the home page; keep old links working.
 export default async function LibraryPage({
   searchParams,
 }: {
   searchParams: Promise<{ nivel?: string }>;
 }) {
   const { nivel } = await searchParams;
-  return <Library key={getLevel(nivel)} initialLevel={getLevel(nivel)} />;
+  redirect(`/?nivel=${getLevel(nivel)}`);
 }
