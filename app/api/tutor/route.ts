@@ -2,6 +2,7 @@ import { createHash } from "node:crypto";
 import { generateText, Output } from "ai";
 import { z } from "zod";
 import { getGatewayFailureDetails } from "@/lib/ai-diagnostics";
+import { getTextAiFallbackModels, getTextAiModel } from "@/lib/ai-models";
 import {
   tutorInput,
   getTutorContext,
@@ -93,7 +94,8 @@ export async function POST(request: Request) {
     }
   }
   if (++limit.count > 12) return prepared("rate_limited", 429);
-  const model = process.env.AI_MODEL || "google/gemini-3.8-flash";
+  const model = getTextAiModel();
+  const fallbackModels = getTextAiFallbackModels(model);
   try {
     const { output } = await generateText({
       model,
@@ -124,6 +126,7 @@ export async function POST(request: Request) {
       providerOptions: {
         gateway: {
           tags: ["product:lee-contigo", "feature:reading-tutor"],
+          ...(fallbackModels.length > 0 ? { models: fallbackModels } : {}),
         },
       },
       maxOutputTokens: 600,

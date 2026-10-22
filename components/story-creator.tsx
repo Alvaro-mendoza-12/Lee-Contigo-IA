@@ -365,11 +365,14 @@ export function StoryCreator() {
                 <strong>Hagámoslo con cuidado</strong>
                 <p>
                   No escribas tu nombre, dirección, colegio, ciudad, teléfono ni
-                  correo. La idea y el nivel se envían a la IA para crear el
-                  cuento, las preguntas y las pistas. Tus respuestas no se
-                  envían al modelo. La portada es opcional: una persona adulta
-                  puede revisar las condiciones y el costo antes de pedirla. El
-                  cuento vive solo mientras esta página está abierta.
+                  correo. La idea y el nivel se envían a Vercel AI Gateway para
+                  crear el cuento, las preguntas y las pistas. Si Gemini no
+                  responde, puede intentarlo con GPT-5.4 Nano. El proveedor
+                  puede variar y aplica sus propias políticas. Tus respuestas no
+                  se envían al modelo. La portada es opcional: una persona
+                  adulta puede revisar las condiciones y el costo antes de
+                  pedirla. El cuento vive solo mientras esta página está
+                  abierta.
                 </p>
                 <Link href="/privacidad">
                   Lee cómo se usa la IA y tus datos

@@ -9,11 +9,12 @@ El Reglamento peruano de la Ley 29733 establece salvaguardas para servicios digi
 ## Controles por etapa
 
 ### MVP de hackathon
+
 - Sin perfiles de niños ni respuestas persistentes.
 - No pedir nombre, correo, escuela, ubicación o edad exacta.
 - En biblioteca y tutor, usar respuestas seleccionables; no enviar texto libre del estudiante al tutor.
 - El creador de cuentos es una excepción deliberada: remite una idea breve y el nivel a un modelo generativo con revisión adulta; la imagen es opcional y requiere otra confirmación adulta antes de enviar la descripción visual generada a un generador de imágenes. Informar proveedor, precio y tratamiento antes de solicitarla.
-- No se fuerza `disallowPromptTraining` en las solicitudes del creador: los proveedores seleccionados para texto e imagen no muestran una ruta compatible con ese filtro. Vercel declara que AI Gateway no usa solicitudes para entrenar; las políticas de los proveedores pueden variar y deben revisarse.
+- No se fuerza `disallowPromptTraining` para los modelos de texto elegidos: las tablas públicas de AI Gateway consultadas no marcan sus rutas como elegibles para ese filtro. Los prompts pasan al proveedor disponible y quedan sujetos a sus políticas; no se promete exclusión del entrenamiento ni retención cero. El modelo de portada también tiene condiciones propias que la persona adulta debe revisar.
 - Avisar que los filtros de correos, teléfonos, enlaces y frases personales son incompletos; no prometer detección de nombres ni de todos los datos personales.
 - No grabar audio ni imágenes.
 - Sin anuncios, contacto directo ni chat abierto.
@@ -21,6 +22,7 @@ El Reglamento peruano de la Ley 29733 establece salvaguardas para servicios digi
 - Ante un fallo del modelo, los registros técnicos guardan el tipo de error, el modelo y metadatos operativos del Gateway si están disponibles (código HTTP e identificador de generación). Los errores de formato pueden incluir longitud de salida y uso de tokens, nunca texto; no se guardan prompts, relatos, pistas ni respuestas del estudiante en esos eventos.
 
 ### Piloto con institución
+
 - Aprobación institucional y consentimiento aplicable.
 - Aviso de privacidad y canal de retiro.
 - Códigos aleatorios de sesión, sin nombres visibles.
@@ -30,6 +32,7 @@ El Reglamento peruano de la Ley 29733 establece salvaguardas para servicios digi
 - Documentar evaluación de impacto de privacidad antes del tratamiento sistemático.
 
 ### Producto comercial
+
 - Revisión legal para cada país.
 - Contratos con escuelas, organizaciones y proveedores.
 - Acceso por rol y cifrado en tránsito y reposo.
@@ -40,21 +43,21 @@ El Reglamento peruano de la Ley 29733 establece salvaguardas para servicios digi
 
 ## Registro de riesgos
 
-| Riesgo | Probabilidad / impacto | Tratamiento |
-|---|---|---|
-| La IA inventa pistas o contradice el relato | Media / alta | Textos revisados, validación, fallback y auditoría docente. |
-| Contenido inadecuado para la edad | Baja-media / alta | Revisión humana previa, política de contenido y reporte. |
-| Un niño comparte información privada | Media / alta | La biblioteca y el tutor no aceptan texto libre; el creador sí envía una idea breve a un modelo y una descripción derivada a otro. Aviso previo, revisión adulta, filtros básicos y sesión sin cuenta; no repetir datos personales. |
-| Una idea libre o un cuento generado contiene datos personales o contenido inadecuado | Media / alta | Aviso previo y acompañamiento adulto, límites de longitud, filtros básicos de datos, indicaciones de seguridad, validación de salida y opción de cerrar o generar otra historia; revisar contenido por persona adulta. Los filtros automáticos son incompletos. |
-| Se expone una llave de API | Baja / alta | Llamadas desde servidor, secreto fuera del navegador, rotación y límites. |
-| Un proveedor externo retiene prompts | Variable / alta | Revisar contrato y retención; enviar datos mínimos. |
-| El producto etiqueta o avergüenza | Media / alta | Sin rankings; lenguaje motivador y niveles modificables. |
-| La IA reemplaza o desacredita al docente | Baja-media / media | Práctica complementaria; interpretación queda con docente. |
-| Se exageran resultados en el pitch | Media / alta | Separar hipótesis, metas y resultados observados. |
-| Conexión inestable | Media / media | Pistas de respaldo, mensaje claro y opción de volver. |
-| Modelo u hosting supera presupuesto | Media / media | Limitar llamadas, longitud, costo y uso. |
-| Derechos de autor no están claros | Baja-media / alta | Obra original o licencia documentada. |
-| Falta de accesibilidad excluye estudiantes | Media / alta | Objetivo WCAG 2.2 AA y revisión con usuarios. |
+| Riesgo                                                                               | Probabilidad / impacto | Tratamiento                                                                                                                                                                                                                                                     |
+| ------------------------------------------------------------------------------------ | ---------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| La IA inventa pistas o contradice el relato                                          | Media / alta           | Textos revisados, validación, fallback y auditoría docente.                                                                                                                                                                                                     |
+| Contenido inadecuado para la edad                                                    | Baja-media / alta      | Revisión humana previa, política de contenido y reporte.                                                                                                                                                                                                        |
+| Un niño comparte información privada                                                 | Media / alta           | La biblioteca y el tutor no aceptan texto libre; el creador sí envía una idea breve a un modelo y una descripción derivada a otro. Aviso previo, revisión adulta, filtros básicos y sesión sin cuenta; no repetir datos personales.                             |
+| Una idea libre o un cuento generado contiene datos personales o contenido inadecuado | Media / alta           | Aviso previo y acompañamiento adulto, límites de longitud, filtros básicos de datos, indicaciones de seguridad, validación de salida y opción de cerrar o generar otra historia; revisar contenido por persona adulta. Los filtros automáticos son incompletos. |
+| Se expone una llave de API                                                           | Baja / alta            | Llamadas desde servidor, secreto fuera del navegador, rotación y límites.                                                                                                                                                                                       |
+| Un proveedor externo retiene prompts                                                 | Variable / alta        | Revisar contrato y retención; enviar datos mínimos.                                                                                                                                                                                                             |
+| El producto etiqueta o avergüenza                                                    | Media / alta           | Sin rankings; lenguaje motivador y niveles modificables.                                                                                                                                                                                                        |
+| La IA reemplaza o desacredita al docente                                             | Baja-media / media     | Práctica complementaria; interpretación queda con docente.                                                                                                                                                                                                      |
+| Se exageran resultados en el pitch                                                   | Media / alta           | Separar hipótesis, metas y resultados observados.                                                                                                                                                                                                               |
+| Conexión inestable                                                                   | Media / media          | Pistas de respaldo, mensaje claro y opción de volver.                                                                                                                                                                                                           |
+| Modelo u hosting supera presupuesto                                                  | Media / media          | Limitar llamadas, longitud, costo y uso.                                                                                                                                                                                                                        |
+| Derechos de autor no están claros                                                    | Baja-media / alta      | Obra original o licencia documentada.                                                                                                                                                                                                                           |
+| Falta de accesibilidad excluye estudiantes                                           | Media / alta           | Objetivo WCAG 2.2 AA y revisión con usuarios.                                                                                                                                                                                                                   |
 
 ## Normativa consultada
 

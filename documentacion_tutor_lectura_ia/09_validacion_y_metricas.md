@@ -29,6 +29,7 @@
 - ¿Funciona en dispositivos disponibles?
 - ¿Qué proporción de sesiones se completa?
 - ¿Cuántas llamadas al modelo se necesitan?
+- ¿Qué proporción de solicitudes completa el modelo principal, el respaldo o ninguna ruta disponible?
 - ¿Cuál es el costo por sesión y por grupo?
 - ¿Qué porcentaje de salidas requiere corrección o fallback?
 

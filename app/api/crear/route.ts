@@ -2,6 +2,7 @@ import { createHash } from "node:crypto";
 import { generateText, NoObjectGeneratedError, Output } from "ai";
 import { z } from "zod";
 import { getGatewayFailureDetails } from "@/lib/ai-diagnostics";
+import { getTextAiFallbackModels, getTextAiModel } from "@/lib/ai-models";
 import {
   containsPersonalDetails,
   createStoryInput,
@@ -106,7 +107,8 @@ export async function POST(request: Request) {
       503,
     );
 
-  const model = process.env.AI_MODEL || "google/gemini-3.8-flash";
+  const model = getTextAiModel();
+  const fallbackModels = getTextAiFallbackModels(model);
   try {
     let story: z.infer<typeof generatedStorySchema> | undefined;
     for (let attempt = 0; attempt < 2; attempt++) {
@@ -136,6 +138,7 @@ export async function POST(request: Request) {
           providerOptions: {
             gateway: {
               tags: ["product:lee-contigo", "feature:generated-story"],
+              ...(fallbackModels.length > 0 ? { models: fallbackModels } : {}),
             },
           },
           maxOutputTokens: 1900,
@@ -197,7 +200,7 @@ export async function POST(request: Request) {
     const errorMessage = modelCouldNotFormatStory
       ? "La IA no pudo terminar el cuento esta vez. Tu idea sigue en el formulario; inténtalo de nuevo en un momento."
       : gatewayAccessUnavailable
-        ? "Ahora no podemos crear el cuento. Tu idea sigue aquí; puedes leer una historia de la biblioteca mientras se restablece el servicio."
+        ? "La creación con IA no está disponible ahora. Tu idea sigue aquí; puedes leer una historia de la biblioteca o volver a intentarlo más tarde."
         : "El servicio de cuentos tuvo un problema. Tu idea sigue en el formulario; inténtalo de nuevo en un momento.";
     return reply(
       {

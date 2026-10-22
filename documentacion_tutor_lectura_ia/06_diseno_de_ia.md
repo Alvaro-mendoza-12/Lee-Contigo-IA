@@ -32,6 +32,7 @@ En el creador de cuentos, una sola generación produce el relato, tres preguntas
 5. Validar longitud, formato y relación con evidencia del relato.
 6. Revisar muestras de salida por una persona durante el piloto.
 7. Sustituir la salida por una pista preparada ante errores, contenido fuera de tema o latencia alta.
+8. Enrutar primero a Gemini 3.8 Flash y permitir el respaldo GPT-5.4 Nano si falla el modelo principal. El catálogo consultado no marca las rutas disponibles de estos modelos como compatibles con el filtro de no entrenamiento, por eso no se activa. Se informa que la política del proveedor seleccionado aplica; si no hay ruta disponible, el producto conserva su alternativa preparada o lleva a la biblioteca.
 
 ### Diseño de preguntas y pistas para cuentos generados
 

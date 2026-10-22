@@ -37,15 +37,15 @@ npm.cmd test
 npx.cmd playwright test
 ```
 
-Comprobación de este corte: diez pruebas unitarias, typecheck y build aprobados; 20 recorridos de navegador aprobados en escritorio y móvil, incluidos el creador simulado, la cita de evidencia, lectura y acompañamiento. El recorrido del creador usa una respuesta de prueba y no confirma acceso real a AI Gateway.
+Comprobación de este corte: 12 pruebas unitarias, typecheck y build aprobados; 20 recorridos de navegador aprobados en escritorio y móvil, incluidos el creador simulado, la cita de evidencia, lectura y acompañamiento. El recorrido del creador usa una respuesta de prueba y no confirma acceso real a AI Gateway ni que el respaldo haya funcionado en producción.
 
 Para las comprobaciones de navegador hay que instalar Chromium con `npx.cmd playwright install chromium`. Se pueden dirigir al despliegue público mediante `TEST_BASE_URL`.
 
 ## IA y configuración
 
-Se usa Vercel AI SDK con AI Gateway. Modelo predeterminado: `google/gemini-3.8-flash`, consultado en el catálogo oficial el 21 de octubre de 2026. Las etiquetas de AI Gateway separan generación de cuentos y pistas editoriales para revisar uso y costo. La disponibilidad y el precio pueden cambiar; verificar catálogo y saldo antes de una demo.
+Se usa Vercel AI SDK con AI Gateway. La generación de cuentos y las pistas del tutor intentan primero `google/gemini-3.8-flash` y usan `openai/gpt-5.4-nano` si falla el modelo principal. El catálogo consultado el 21 de octubre de 2026 incluye ambos modelos y el modelo de respaldo admite salida estructurada. AI Gateway cobra el modelo que logra completar la solicitud; el respaldo se intenta ante un fallo del principal. No activamos `disallowPromptTraining`: el catálogo no marca las rutas disponibles para estos modelos como compatibles con ese filtro. Las solicitudes pueden ser servidas por Google/Google Vertex, OpenAI o Azure según disponibilidad y configuración; consulta sus políticas. No se fuerza Zero Data Retention. Los modelos, proveedores y precios pueden cambiar.
 
-En Vercel se usa autenticación OIDC del proyecto. Para desarrollo se puede usar `vercel env pull .env.local` con una sesión autorizada o definir `AI_GATEWAY_API_KEY` en `.env.local`. La variable opcional `AI_MODEL` permite cambiar el modelo. Ver `.env.example`. Nunca subir claves, tokens ni `.env.local` a GitHub.
+En Vercel se usa autenticación OIDC del proyecto. Para desarrollo se puede usar `vercel env pull .env.local` con una sesión autorizada o definir `AI_GATEWAY_API_KEY` en `.env.local`. Las variables `AI_MODEL` y `AI_FALLBACK_MODEL` permiten cambiar el modelo principal y el de respaldo. Ver `.env.example`. Nunca subir claves, tokens ni `.env.local` a GitHub.
 
 Si la IA no está configurada, se agota el saldo, hay un límite de uso o la salida no pasa los controles, se muestra una **pista preparada** claramente identificada. Una pista de respaldo no se presenta como generación de IA.
 
@@ -53,7 +53,7 @@ La documentación vigente de Vercel anuncia USD 5 de crédito mensual en el nive
 
 ## Privacidad y alcance
 
-La biblioteca y el tutor no solicitan texto libre; el tutor recibe identificadores editoriales, no las respuestas. El creador sí envía la idea escrita a AI Gateway para generar el relato, y envía al modelo de imagen una descripción visual derivada del cuento. No escribir nombres reales, colegio, dirección, teléfono, correo ni ubicación: los filtros no detectan todos los datos personales. El servidor solicita enrutamiento sin entrenamiento cuando hay un proveedor compatible; las reglas de retención dependen del proveedor. El texto y la imagen quedan en memoria de la página y no se guardan en una base de datos. El hosting y el proveedor de IA pueden procesar datos técnicos de conexión. El límite de solicitudes es temporal y por instancia; no sustituye protección distribuida para un lanzamiento masivo.
+La biblioteca y el tutor no solicitan texto libre; el tutor recibe identificadores editoriales, no las respuestas. El creador sí envía la idea escrita a AI Gateway para generar el relato, con un modelo de respaldo si falla el principal. También envía al modelo de imagen una descripción visual derivada del cuento. No escribir nombres reales, colegio, dirección, teléfono, correo ni ubicación: los filtros no detectan todos los datos personales. Los proveedores de texto pueden procesar o conservar solicitudes conforme a sus propias condiciones; revisa sus políticas antes de usar la función con menores. El texto y la imagen quedan en memoria de la página y no se guardan en una base de datos. El hosting y el proveedor de IA pueden procesar datos técnicos de conexión. El límite de solicitudes es temporal y por instancia; no sustituye protección distribuida para un lanzamiento masivo.
 
 No incluye cuentas institucionales, cobros, estadísticas longitudinales ni un piloto educativo realizado. El modelo comercial propuesto es licencia institucional o acceso patrocinado; debe validarse con compradores y requiere alojamiento compatible con uso comercial.
 
