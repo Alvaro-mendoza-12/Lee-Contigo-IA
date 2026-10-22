@@ -46,6 +46,7 @@ export function completeReadingHelp(
   value: ReadingHelpOutput,
 ): ReadingHelpOutput | null {
   function complete(text: string) {
+    text = text.replace(/\*\*|__|\u0060/g, "").trim();
     if (/[.!?…][»”]?$/u.test(text)) return text;
     const endings = [...text.matchAll(/[.!?…][»”]?(?=\s|$)/gu)];
     const end = endings.at(-1);
@@ -53,6 +54,7 @@ export function completeReadingHelp(
   }
   const result = readingHelpOutput.safeParse({
     ...value,
+    reflection: value.reflection.replace(/\*\*|__|\u0060/g, "").trim(),
     explanation: complete(value.explanation),
     example: complete(value.example),
   });

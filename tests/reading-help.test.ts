@@ -29,6 +29,13 @@ test("una explicación recortada conserva solo frases completas o usa el respald
     null,
   );
   assert.deepEqual(completeReadingHelp(prepared), prepared);
+  assert.equal(
+    completeReadingHelp({
+      ...prepared,
+      explanation: "**Diminuta** significa muy pequeña.",
+    })?.explanation,
+    "Diminuta significa muy pequeña.",
+  );
 });
 
 test("la ayuda solo acepta partes canónicas, etapas acotadas y ningún prompt libre", () => {
