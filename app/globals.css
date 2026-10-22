@@ -334,26 +334,103 @@ svg {
 }
 .hero-visual {
   position: relative;
-  padding: 26px 10px 10px 0;
+  min-width: 0;
+  padding: 26px 22px 10px 0;
+  isolation: isolate;
+}
+.hero-deck-stage {
+  padding: 34px 30px 22px 14px;
+  margin: -34px -30px -22px -14px;
+  overflow: clip;
+}
+.hero-book-stack {
+  position: relative;
+  aspect-ratio: 1.12;
+}
+.hero-book-stack::before,
+.hero-book-stack::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border: 1px solid #d8dfd1;
+  border-radius: 24px;
+  background: #eef1e8;
+  transform: translate(9px, -12px) rotate(4deg);
+}
+.hero-book-stack::after {
+  background: #f6f4eb;
+  transform: translate(14px, -22px) rotate(7deg) scale(0.98);
 }
 .hero-story {
+  position: absolute;
+  inset: 0;
   background: #fffefa;
   border: 1px solid #e0e5d9;
   border-radius: 24px;
   padding: 12px;
   box-shadow: 0 17px 40px -24px #43604b70;
-  transform: rotate(2deg);
+  transform-origin: 50% 65%;
+}
+.hero-story.is-front {
+  z-index: 3;
+  transform: rotate(-2deg);
+}
+.hero-story.is-behind {
+  z-index: 1;
+  transform: translate(16px, -17px) rotate(5deg) scale(0.98);
+}
+.hero-book-stack.has-moved .is-front {
+  animation: book-to-front 850ms cubic-bezier(0.22, 0.7, 0.25, 1) both;
+}
+.hero-book-stack.has-moved .is-behind {
+  animation: book-to-back 850ms cubic-bezier(0.22, 0.7, 0.25, 1) both;
+}
+@keyframes book-to-front {
+  from {
+    transform: translate(16px, -17px) rotate(5deg) scale(0.98);
+  }
+  to {
+    transform: rotate(-2deg);
+  }
+}
+@keyframes book-to-back {
+  0% {
+    transform: rotate(-2deg);
+    z-index: 4;
+  }
+  42% {
+    transform: translate(15%, -7%) rotate(9deg);
+    z-index: 4;
+  }
+  52% {
+    z-index: 1;
+  }
+  100% {
+    transform: translate(16px, -17px) rotate(5deg) scale(0.98);
+    z-index: 1;
+  }
+}
+.hero-story-link {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  border-radius: 17px;
 }
 .hero-art {
+  flex: 1;
+  min-height: 0;
   overflow: hidden;
   border-radius: 17px;
 }
 .hero-art img {
   display: block;
   width: 100%;
-  height: auto;
+  height: 100%;
+  object-fit: cover;
 }
 .hero-book-caption {
+  flex-shrink: 0;
+  min-height: 96px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -364,6 +441,68 @@ svg {
   font-size: 21px;
   margin-top: 6px;
   letter-spacing: -0.6px;
+}
+.hero-book-caption > div {
+  min-width: 0;
+}
+.hero-book-caption .circle-link {
+  flex-shrink: 0;
+}
+.hero-story-link:hover .circle-link {
+  background: var(--sage);
+}
+.book-deck-controls {
+  position: relative;
+  z-index: 5;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  margin-top: 33px;
+}
+.book-deck-navigation {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+}
+.book-deck-control {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  color: var(--forest);
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  background: var(--white);
+  touch-action: manipulation;
+}
+.book-deck-control:hover {
+  background: var(--sage);
+  border-color: #8ca18b;
+}
+.book-deck-position {
+  color: var(--muted);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.book-deck-play,
+.book-deck-manual {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+  padding: 4px 7px;
+  border: 0;
+  border-radius: 9px;
+  color: var(--forest);
+  background: transparent;
+  font-size: 12px;
+  font-weight: 750;
+}
+.book-deck-play:hover {
+  background: var(--sage);
 }
 .hero-book-caption .small-label {
   font-size: 9px;
@@ -395,7 +534,7 @@ svg {
   font-size: 11px;
   line-height: 1.55;
   box-shadow: 0 8px 30px -20px #33563f60;
-  z-index: 1;
+  z-index: 6;
   color: var(--muted);
 }
 .floating-note strong {
@@ -408,7 +547,7 @@ svg {
   transform: rotate(-5deg);
 }
 .note-bottom {
-  bottom: -16px;
+  bottom: 66px;
   right: -8px;
   transform: rotate(-4deg);
 }
@@ -1281,6 +1420,13 @@ svg {
   font-weight: 850;
   color: #735b32;
 }
+.hint-adaptation {
+  display: block;
+  margin-top: 8px;
+  font-size: 11px;
+  font-weight: 750;
+  color: #66532f;
+}
 .hint-result details {
   margin-top: 15px;
   font-size: 12px;
@@ -1753,7 +1899,20 @@ svg {
   }
   .hero-story {
     padding: 10px;
-    transform: rotate(1deg);
+  }
+  .hero-book-stack {
+    aspect-ratio: 1.03;
+  }
+  .hero-book-caption h2 {
+    font-size: 18px;
+  }
+  .book-deck-navigation {
+    gap: 7px;
+  }
+  .book-deck-position,
+  .book-deck-play,
+  .book-deck-manual {
+    font-size: 11px;
   }
   .hero-book-caption {
     padding: 15px 9px 10px;
@@ -1763,7 +1922,7 @@ svg {
     left: -16px;
   }
   .note-bottom {
-    bottom: -20px;
+    bottom: 72px;
     right: -13px;
   }
   .floating-note {
@@ -2219,4 +2378,3 @@ svg {
     transform: none;
   }
 }
-

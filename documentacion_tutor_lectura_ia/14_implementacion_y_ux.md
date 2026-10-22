@@ -10,7 +10,7 @@ Este documento describe el producto construido. Los documentos 00 a 13 son el an
 
 | Sección | Ruta | Función |
 |---|---|---|
-| Inicio | `/` | Explica la experiencia y ofrece una acción principal para comenzar. |
+| Inicio | `/` | Explica la experiencia y presenta portadas apiladas con cambio suave, pausa y navegación manual. |
 | Biblioteca | `/biblioteca` | Dos relatos originales, elección entre dos niveles y acceso a lectura. |
 | Lectura | `/leer/[id]?nivel=paso` o `reto` | Relato adaptado, tamaño de letra, lectura en voz del navegador y acceso a preguntas. |
 | Práctica | `/practicar/[id]?nivel=...` | Tres preguntas, retroalimentación, reintentos, dos grados de pista, consulta del texto y cierre. |
@@ -24,13 +24,17 @@ Este documento describe el producto construido. Los documentos 00 a 13 son el an
 1. **Una luz en el bosque:** Lina, una luciérnaga, ayuda al grillo Tomás a cruzar un río.
 2. **La semilla viajera:** Nico aprende a cuidar una semilla y a esperar su crecimiento.
 
-Cada relato tiene una versión **Paso a paso**, con frases más sencillas, y otra **Un pequeño reto**, con mayor riqueza de lenguaje y relaciones que explorar. Las preguntas y las pistas de respaldo pertenecen a esa versión. La selección se conserva en la URL al pasar de biblioteca a lectura y práctica.
+Cada relato tiene una versión **Paso a paso**, con frases más sencillas, y otra **Un nuevo reto**, con mayor riqueza de lenguaje y relaciones que explorar. Las preguntas y las pistas de respaldo pertenecen a esa versión. La selección se conserva en la URL al pasar de biblioteca a lectura y práctica.
 
 La adaptación del relato es editorial y está incluida en el catálogo. La IA genera pistas durante la práctica; no genera cuentos ilimitados, no determina automáticamente el grado del niño y no diagnostica dificultades. Los niveles son opciones de práctica, no equivalencias certificadas de edad o grado escolar.
 
 ## 2. Qué aporta la IA
 
-El servidor recibe únicamente `storyId`, `level`, `questionId` y `tier`. Recupera el relato, las opciones y un fragmento de evidencia desde el catálogo. El prompt pide una pista de una o dos frases que oriente hacia el texto sin dar la respuesta. Para Paso a paso pide frases muy cortas; para Un pequeño reto invita a relacionar hechos.
+El servidor recibe únicamente `storyId`, `level`, `questionId`, `tier` y `support`. Este último campo solo admite `explore` o `retry`: el modo de ayuda solicitado. No contiene la opción seleccionada ni un identificador del estudiante. Recupera el relato, las opciones y un fragmento de evidencia desde el catálogo. El prompt pide una pista de una o dos frases que oriente hacia el texto sin dar la respuesta. Para Paso a paso pide frases muy cortas; para Un nuevo reto invita a relacionar hechos.
+
+Al confirmar una respuesta incorrecta aparece una acción para pedir apoyo. En modo `retry`, se solicita una acción concreta sobre la evidencia y una pregunta de reflexión, sin asumir la causa del error. Esto cambia la estrategia de ayuda; no clasifica ni diagnostica al niño. El modelo recibe además el objetivo de comprensión de la pregunta. La caché distingue nivel, pregunta, grado de pista y modo de apoyo.
+
+Ejemplo de comprobación real: para la pregunta «¿Qué muestra la solución de Lina?», el modelo pidió revisar la limitación de su luz y lo que decidió hacer, y preguntó qué mostraba eso sobre el uso de lo que tenía. La respuesta provenía de AI Gateway con `source: "ai"` y `support: "retry"`. Es un ejemplo de funcionamiento, no evidencia de una mejora del aprendizaje.
 
 **Tecnología:** Vercel AI SDK 7, AI Gateway y modelo predeterminado `google/gemini-2.5-flash`. Se eligió este modelo después de comprobar que el modelo inicial no era elegible para el saldo gratuito de la cuenta. OIDC permite autenticar el despliegue sin colocar una clave en el navegador. `AI_MODEL` permite una sustitución posterior; antes de cambiarlo deben revisarse disponibilidad, costo y calidad de salida.
 
@@ -38,7 +42,7 @@ Controles implementados:
 
 - Esquema estricto de entrada: no acepta texto libre, nombres ni identificadores ajenos al catálogo.
 - Solicitud de hasta 1 KB; comprobación de origen cuando el navegador lo envía.
-- Salida estructurada con longitud limitada; filtro de URL, HTML y revelación literal de la opción correcta.
+- Salida estructurada con longitud limitada a 350 caracteres y 45 palabras; filtro de URL, HTML y revelación literal de la opción correcta.
 - Tiempo máximo de consulta al modelo de 6,5 segundos, sin reintentos automáticos; hasta 600 tokens de salida.
 - Caché en memoria para combinaciones editoriales repetidas. La caché no contiene respuestas del estudiante y puede desaparecer al reiniciar una instancia.
 - Límite de 12 solicitudes por 10 minutos y huella de conexión por instancia. No es una cuota global para todos los servidores.
@@ -89,13 +93,15 @@ Navegador → interfaz Next.js/React
 
 Enlaces para saltar al contenido, foco visible, HTML semántico, respuestas con controles de radio nativos, etiquetas para iconos que actúan como botones, anuncios de estado y cambios de pregunta con manejo de foco. La experiencia se adapta a móvil y respeta la preferencia de movimiento reducido. Se corrigieron textos pequeños con contraste insuficiente detectados en la revisión automática.
 
+Las portadas cambian cada siete segundos con un movimiento de 850 ms. Solo la portada visible se puede enfocar y abrir; las restantes están ocultas para tecnologías de apoyo e inactivas. Hay controles de anterior, siguiente y pausa. El cambio automático se detiene durante el uso con teclado, al pasar el cursor, cuando el bloque sale de pantalla o cuando se oculta la pestaña. La preferencia de movimiento reducido mantiene el cambio manual sin animación.
+
 El resultado sin infracciones detectadas por axe no equivale a una certificación completa de accesibilidad. Falta una prueba con lectores de pantalla y personas con distintas necesidades.
 
 ## 5. Comprobaciones realizadas
 
 - Compilación de producción y comprobación de TypeScript.
-- Cuatro comprobaciones unitarias: coherencia del catálogo, entradas estrictas, manejo de niveles y filtro de pistas.
-- Ocho comprobaciones de navegador sobre flujo completo, selección de relato/nivel, accesibilidad y API. Incluyen móvil y escritorio, seis rutas sin desbordamiento horizontal y las reglas WCAG A/AA seleccionadas por axe.
+- Cinco comprobaciones unitarias: coherencia del catálogo, entradas estrictas, manejo de niveles, plan de apoyo de reintento y filtro de pistas.
+- Catorce comprobaciones de navegador sobre flujo completo, selección de relato/nivel, accesibilidad, API, portadas, pausa, movimiento reducido y ayuda después de un error. Incluyen móvil y escritorio, seis rutas sin desbordamiento horizontal y las reglas WCAG A/AA seleccionadas por axe.
 - Revisión visual de inicio, lectura y práctica en pantallas de escritorio y móvil.
 - Solicitud real a AI Gateway después de habilitar los créditos; la respuesta del tutor se identifica con `source: "ai"`. Las respuestas preparadas se identifican por separado.
 - Ocho comprobaciones de navegador adicionales dirigidas a la URL pública: todas aprobadas. Se verificaron además pistas reales de ambas historias y de los dos niveles, y GitHub Actions terminó con resultado satisfactorio para la versión publicada.

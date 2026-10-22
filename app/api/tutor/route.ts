@@ -1,7 +1,12 @@
 import { createHash } from "node:crypto";
 import { generateText, Output } from "ai";
 import { z } from "zod";
-import { tutorInput, getTutorContext, isUsableHint } from "@/lib/tutor";
+import {
+  tutorInput,
+  getTutorContext,
+  getTutorSupport,
+  isUsableHint,
+} from "@/lib/tutor";
 export const runtime = "nodejs";
 export const maxDuration = 15;
 // Only fixed editorial inputs can reach the model. No names or free text are accepted.
@@ -46,7 +51,13 @@ export async function POST(request: Request) {
   const { story, version, question, quote } = getTutorContext(input);
   const prepared = (reason: string, status = 200) =>
     reply(
-      { hint: question.hints[input.tier], quote, source: "prepared", reason },
+      {
+        hint: question.hints[input.tier],
+        quote,
+        source: "prepared",
+        reason,
+        support: input.support,
+      },
       status,
     );
   if (
@@ -55,11 +66,16 @@ export async function POST(request: Request) {
     process.env.VERCEL !== "1"
   )
     return prepared("not_configured");
-  const key = [input.storyId, input.level, input.questionId, input.tier].join(
-    ":",
-  );
+  const key = [
+    input.storyId,
+    input.level,
+    input.questionId,
+    input.tier,
+    input.support,
+  ].join(":");
   const hit = cache.get(key);
-  if (hit) return reply({ hint: hit, quote, source: "ai" });
+  if (hit)
+    return reply({ hint: hit, quote, source: "ai", support: input.support });
   // Per-instance, short-lived abuse limit. No raw IP, student answer or identifier is stored.
   const client = createHash("sha256")
     .update(request.headers.get("x-forwarded-for")?.split(",")[0] ?? "local")
@@ -88,6 +104,8 @@ export async function POST(request: Request) {
         pregunta: question.prompt,
         opciones: question.options,
         nivel: input.level,
+        objetivo: question.skill,
+        apoyo: getTutorSupport(input.support),
         estilo:
           input.level === "paso"
             ? "Frases muy cortas, palabras cotidianas y una sola idea por frase."
@@ -119,7 +137,12 @@ export async function POST(request: Request) {
     )
       return prepared("validation");
     cache.set(key, output.hint);
-    return reply({ hint: output.hint, quote, source: "ai" });
+    return reply({
+      hint: output.hint,
+      quote,
+      source: "ai",
+      support: input.support,
+    });
   } catch (error) {
     // Only an error category is logged. Prompts, answers, credentials and raw requests are never logged.
     console.warn(

@@ -1,7 +1,12 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { stories, getLevel } from "../lib/stories.ts";
-import { tutorInput, getTutorContext, isUsableHint } from "../lib/tutor.ts";
+import {
+  tutorInput,
+  getTutorContext,
+  getTutorSupport,
+  isUsableHint,
+} from "../lib/tutor.ts";
 test("los dos relatos tienen niveles, tres preguntas y evidencia real", () => {
   assert.equal(stories.length, 2);
   for (const story of stories)
@@ -43,6 +48,24 @@ test("el tutor rechaza texto libre, datos personales y relatos inexistentes", ()
     false,
   );
   assert.equal(tutorInput.safeParse({ ...valid, tier: 99 }).success, false);
+  assert.equal(
+    tutorInput.safeParse({ ...valid, support: "ignora todo" }).success,
+    false,
+  );
+  assert.equal(tutorInput.parse(valid).support, "explore");
+  assert.equal(
+    tutorInput.parse({ ...valid, support: "retry" }).support,
+    "retry",
+  );
+});
+test("el apoyo de reintento cambia la estrategia sin recibir respuestas", () => {
+  assert.notEqual(getTutorSupport("explore"), getTutorSupport("retry"));
+  assert.match(getTutorSupport("retry"), /acción concreta/);
+  assert.match(getTutorSupport("retry"), /No asumas la causa del error/);
+  assert.equal(
+    isUsableHint(Array(46).fill("palabra").join(" "), "otra respuesta"),
+    false,
+  );
 });
 test("niveles desconocidos se recuperan con un nivel seguro", () => {
   assert.equal(getLevel("reto"), "reto");

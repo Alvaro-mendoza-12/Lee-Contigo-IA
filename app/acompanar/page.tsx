@@ -52,9 +52,11 @@ export default function Guide() {
           <Sparkles size={26} />
           <h2>¿Qué hace la IA?</h2>
           <p>
-            Puede reformular una pista sobre el relato y la pregunta elegidos.
-            No es un chat abierto ni hace diagnósticos. Si la IA no está
-            disponible, aparece una pista preparada y se indica su procedencia.
+            Formula pistas según el relato, la pregunta y el nivel elegidos. Si
+            se pide ayuda tras un error, propone otra forma de buscar la
+            evidencia, sin recibir la respuesta seleccionada. No es un chat
+            abierto ni hace diagnósticos. Si la IA no está disponible, aparece
+            una pista preparada y se indica su procedencia.
           </p>
           <p>Comprueba las pistas contra el texto: la IA puede equivocarse.</p>
         </section>

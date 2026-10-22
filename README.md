@@ -8,7 +8,9 @@ Tutor web de comprensión lectora para niños de aproximadamente 8 a 10 años. M
 
 ## Qué incluye
 
-Dos relatos originales, cada uno adaptado editorialmente a dos niveles: **Paso a paso** y **Un pequeño reto**. El estudiante puede ampliar la letra, escuchar la lectura con la voz del navegador y explorar tres preguntas. El tutor genera pistas breves con IA según el relato, la pregunta y el nivel. Cada pista permite consultar la evidencia en el texto.
+Dos relatos originales, cada uno adaptado editorialmente a dos niveles: **Paso a paso** y **Un nuevo reto**. El estudiante puede ampliar la letra, escuchar la lectura con la voz del navegador y explorar tres preguntas. El tutor genera pistas breves con IA según el relato, la pregunta y el nivel. Tras un error, el modo de reintento pide otra estrategia para buscar evidencia, sin enviar la respuesta seleccionada. Cada pista permite consultar la evidencia en el texto.
+
+La portada presenta los cuentos apilados, con un intercambio suave cada siete segundos. Incluye navegación manual y pausa; se detiene con foco de teclado, al pasar el cursor, al salir de pantalla o al ocultar la pestaña. Con movimiento reducido no hay reproducción automática ni animación.
 
 La adaptación del relato está preparada en el catálogo; la IA reformula las pistas durante la práctica. No se afirma que el modelo genere o valide automáticamente los cuentos ni que el producto ya haya demostrado mejorar el aprendizaje. El contenido está pendiente de revisión docente.
 

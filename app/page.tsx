@@ -9,7 +9,8 @@ import {
   Clock3,
   Leaf,
 } from "lucide-react";
-import { StoryArt } from "@/components/art";
+import { StoryShowcase } from "@/components/story-showcase";
+import { stories } from "@/lib/stories";
 export default function Home() {
   return (
     <>
@@ -47,49 +48,9 @@ export default function Home() {
             </span>
           </div>
         </div>
-        <div className="hero-visual">
-          <div className="floating-note note-top">
-            <span className="note-icon">
-              <Sparkles size={18} />
-            </span>
-            <span>
-              La curiosidad empieza
-              <br />
-              <strong>con una historia.</strong>
-            </span>
-          </div>
-          <div className="hero-story">
-            <div className="hero-art">
-              <StoryArt variant="night" priority />
-            </div>
-            <div className="hero-book-caption">
-              <div>
-                <span className="small-label">TU PRÓXIMA AVENTURA</span>
-                <h2>Una luz en el bosque</h2>
-              </div>
-              <Link
-                href="/leer/luz-del-bosque?nivel=paso"
-                className="circle-link"
-                aria-label="Leer Una luz en el bosque"
-              >
-                <ArrowRight size={23} />
-              </Link>
-            </div>
-          </div>
-          <div className="floating-note note-bottom">
-            <span className="note-icon warm">
-              <BookOpen size={18} />
-            </span>
-            <span>
-              Un paso a la vez.
-              <br />
-              <strong>Vas muy bien.</strong>
-            </span>
-          </div>
-          <span className="visual-dots" aria-hidden="true">
-            ···
-          </span>
-        </div>
+        <StoryShowcase
+          covers={stories.map(({ id, title, art }) => ({ id, title, art }))}
+        />
       </section>
       <section className="promise-strip">
         <div className="container promises">
@@ -165,4 +126,3 @@ export default function Home() {
     </>
   );
 }
-

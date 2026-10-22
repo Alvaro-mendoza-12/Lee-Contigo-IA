@@ -23,6 +23,7 @@ type Hint = {
   quote: string;
   source: "ai" | "prepared";
   reason?: string;
+  support?: "explore" | "retry";
 };
 export function Practice({ story, level }: { story: Story; level: Level }) {
   const version = story.versions[level];
@@ -36,7 +37,9 @@ export function Practice({ story, level }: { story: Story; level: Level }) {
   const [complete, setComplete] = useState(false),
     [reported, setReported] = useState(false);
   const [reportOpen, setReportOpen] = useState(false);
+  const [needsSupport, setNeedsSupport] = useState(false);
   const heading = useRef<HTMLHeadingElement>(null);
+  const hintPanel = useRef<HTMLElement>(null);
   const abort = useRef<AbortController | null>(null);
   const hintRequest = useRef(0);
   const question = version.questions[index];
@@ -56,6 +59,7 @@ export function Practice({ story, level }: { story: Story; level: Level }) {
     setShowStory(false);
     setReported(false);
     setReportOpen(false);
+    setNeedsSupport(false);
   }
   function next() {
     hintRequest.current++;
@@ -86,6 +90,7 @@ export function Practice({ story, level }: { story: Story; level: Level }) {
           level,
           questionId: question.id,
           tier,
+          support: needsSupport ? "retry" : "explore",
         }),
         signal: controller.signal,
       });
@@ -101,6 +106,7 @@ export function Practice({ story, level }: { story: Story; level: Level }) {
           quote: version.paragraphs[question.paragraph],
           source: "prepared",
           reason: "unavailable",
+          support: needsSupport ? "retry" : "explore",
         });
     } finally {
       clearTimeout(timer);
@@ -247,6 +253,23 @@ export function Practice({ story, level }: { story: Story; level: Level }) {
                   ? question.explanation
                   : "Vuelve al relato o pide una pista. Puedes cambiar tu respuesta; aquí estamos para aprender."}
               </p>
+              {feedback === "retry" && hintCount < 2 ? (
+                <button
+                  className="text-button"
+                  disabled={loading}
+                  aria-controls="tutor-pistas"
+                  onClick={() => {
+                    void askHint();
+                    hintPanel.current?.scrollIntoView({ block: "nearest" });
+                    hintPanel.current?.focus({ preventScroll: true });
+                  }}
+                >
+                  <Lightbulb size={16} aria-hidden="true" />
+                  {loading
+                    ? "Preparando una pista…"
+                    : "Pedir una pista para reintentar"}
+                </button>
+              ) : null}
             </div>
           ) : null}
           <div className="question-actions">
@@ -259,11 +282,12 @@ export function Practice({ story, level }: { story: Story; level: Level }) {
               <button
                 className="button"
                 disabled={selected === null}
-                onClick={() =>
+                onClick={() => {
                   setFeedback(
                     selected === question.correct ? "correct" : "retry",
-                  )
-                }
+                  );
+                  if (selected !== question.correct) setNeedsSupport(true);
+                }}
               >
                 Explorar mi respuesta <ArrowRight size={18} />
               </button>
@@ -288,7 +312,13 @@ export function Practice({ story, level }: { story: Story; level: Level }) {
             </div>
           ) : null}
         </section>
-        <aside className="hint-card">
+        <aside
+          className="hint-card"
+          id="tutor-pistas"
+          ref={hintPanel}
+          tabIndex={-1}
+          aria-label="Ayuda para comprender el relato"
+        >
           <div className="hint-top">
             <span className="hint-icon">
               <Lightbulb size={25} />
@@ -327,6 +357,11 @@ export function Practice({ story, level }: { story: Story; level: Level }) {
                   <Sparkles size={13} />
                   {hints.source === "ai" ? "Pista con IA" : "Pista preparada"}
                 </span>
+                {hints.support === "retry" ? (
+                  <span className="hint-adaptation">
+                    Una ayuda para volver a intentarlo
+                  </span>
+                ) : null}
                 <p>{hints.hint}</p>
                 <details>
                   <summary>Ver el fragmento del relato</summary>

@@ -18,11 +18,13 @@ export default function Privacy() {
       </p>
       <h2>Qué se envía al solicitar una pista</h2>
       <p>
-        Solo identificadores de relato, pregunta, nivel y número de pista. El
-        servidor puede enviar el relato original y la pregunta a un modelo
-        mediante Vercel AI Gateway. No enviamos el nombre, la voz, una respuesta
-        libre ni un identificador de estudiante. El proveedor y el hosting
-        pueden procesar información técnica de conexión según sus condiciones.
+        Solo identificadores de relato, pregunta, nivel, número de pista y un
+        modo de apoyo: explorar o volver a intentarlo. Este modo indica qué
+        ayuda se solicita; no incluye la respuesta seleccionada. El servidor
+        puede enviar el relato original y la pregunta a un modelo mediante
+        Vercel AI Gateway. No enviamos el nombre, la voz, una respuesta libre ni
+        un identificador de estudiante. El proveedor y el hosting pueden
+        procesar información técnica de conexión según sus condiciones.
       </p>
       <h2>Pistas con IA y pistas preparadas</h2>
       <p>
