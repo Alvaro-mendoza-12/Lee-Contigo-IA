@@ -79,6 +79,9 @@ test("nuevo reto y otra historia preservan el nivel en las rutas", async ({
   await expect(
     page.getByRole("radio", { name: "Un nuevo reto", exact: true }),
   ).toBeChecked();
+  await page.getByRole("radio", { name: "Paso a paso", exact: true }).check();
+  await expect(page.locator(".story-level-ribbon")).toHaveCount(0);
+  await page.getByRole("radio", { name: "Un nuevo reto", exact: true }).check();
   await page
     .getByRole("link", { name: "Leer La semilla viajera", exact: true })
     .click();

@@ -71,6 +71,38 @@ const story = {
   ],
 };
 
+test("las ideas ilustradas completan el campo sin crear un cuento automáticamente", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 320, height: 740 });
+  let requests = 0;
+  page.on("request", (request) => {
+    if (request.url().endsWith("/api/crear")) requests++;
+  });
+  await page.goto("/crear");
+  await page.getByText("Necesito una idea", { exact: true }).click();
+  const starters = page.getByRole("group", { name: "Ideas para empezar" });
+  await expect(starters.getByRole("button")).toHaveCount(3);
+  await starters.getByRole("button", { name: "Una nube", exact: true }).click();
+  await expect(page.getByLabel("Mi idea", { exact: true })).toHaveValue(
+    "Una nube quiere encontrar su camino a casa",
+  );
+  await expect(
+    starters.getByRole("button", { name: "Una nube", exact: true }),
+  ).toHaveAttribute("aria-pressed", "true");
+  await expect(page.getByLabel("Mi idea", { exact: true })).toBeFocused();
+  expect(requests).toBe(0);
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= innerWidth,
+    ),
+  ).toBe(true);
+  const axe = await new AxeBuilder({ page })
+    .withTags(["wcag2a", "wcag2aa", "wcag21aa", "wcag22aa"])
+    .analyze();
+  expect(axe.violations).toEqual([]);
+});
+
 test("las seis ilustraciones generadas cambian con la escena y se conservan al recargar", async ({
   page,
 }) => {

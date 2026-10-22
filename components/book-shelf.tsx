@@ -4,6 +4,7 @@ import { useState, type CSSProperties } from "react";
 import type { SavedBook } from "@/lib/book-shelf";
 import { levels } from "@/lib/stories";
 import { GeneratedScene } from "./generated-scene";
+import { ReadingFriend } from "./reading-friend";
 
 export function BookShelf({
   books,
@@ -131,7 +132,7 @@ export function BookShelf({
         </div>
       ) : (
         <div className="shelf-empty">
-          <BookOpen size={42} aria-hidden="true" />
+          <ReadingFriend />
           <h3>Aquí vivirán tus historias</h3>
           <p>Crea tu primer cuento y podrás volver a abrirlo después.</p>
           <button type="button" className="button" onClick={onCreate}>

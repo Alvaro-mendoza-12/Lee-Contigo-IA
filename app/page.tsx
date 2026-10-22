@@ -1,6 +1,7 @@
 import Link from "next/link";
-import { ArrowRight, BookOpen, Sparkles, Pencil, Star } from "lucide-react";
+import { ArrowRight, BookOpen, Sparkles, Pencil } from "lucide-react";
 import { StoryShowcase } from "@/components/story-showcase";
+import { ReadingFriend } from "@/components/reading-friend";
 import { stories } from "@/lib/stories";
 export default function Home() {
   return (
@@ -17,8 +18,8 @@ export default function Home() {
           </Link>
         </div>
         <div className="cover-stage">
-          <span className="cover-sun" aria-hidden="true">
-            <Star size={32} fill="currentColor" />
+          <span className="cover-friend" aria-hidden="true">
+            <ReadingFriend />
           </span>
           <StoryShowcase
             covers={stories

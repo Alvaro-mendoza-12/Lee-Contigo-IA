@@ -67,7 +67,7 @@ export function StoryShelfRow({
     >
       <div className="story-shelf-heading">
         <h2 id={`${id}-title`}>
-          {icon}
+          <span className="shelf-category-icon">{icon}</span>
           {title}
         </h2>
         {bounds.overflow ? (

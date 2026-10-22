@@ -70,7 +70,7 @@ test("las tres categorías conservan diez cuentos y se deslizan con dedo, botone
   ).toHaveCount(3);
   await expect(
     page
-      .getByRole("region", { name: "Descubrimientos", exact: true })
+      .getByRole("region", { name: "Aventuras", exact: true })
       .getByRole("link"),
   ).toHaveCount(4);
   const hrefs = await page
@@ -105,6 +105,14 @@ test("las tres categorías conservan diez cuentos y se deslizan con dedo, botone
     "href",
     /nivel=reto/,
   );
+  for (const width of [320, 390]) {
+    await page.setViewportSize({ width, height: 844 });
+    await expect
+      .poll(() =>
+        page.evaluate(() => document.documentElement.scrollWidth <= innerWidth),
+      )
+      .toBe(true);
+  }
   const axe = await new AxeBuilder({ page })
     .withTags(["wcag2a", "wcag2aa", "wcag21aa", "wcag22aa"])
     .analyze();

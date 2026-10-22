@@ -25,7 +25,9 @@ import {
   type FormEvent,
 } from "react";
 import { fontSteps, paginateStory } from "@/lib/reading";
-import { levels, type Level } from "@/lib/stories";
+import { levels, type Level, type StoryArtVariant } from "@/lib/stories";
+import { StoryArt } from "./art";
+import { ReadingFriend } from "./reading-friend";
 import { BookSpread } from "./book-spread";
 import { ReadingPause } from "./reading-pause";
 import { useNarration } from "./use-narration";
@@ -57,6 +59,23 @@ import {
 
 type Screen = "form" | "book" | "questions" | "complete";
 type CoverState = "idle" | "loading" | "ready" | "unavailable";
+const ideaStarters = [
+  {
+    label: "Una tortuga",
+    idea: "Una tortuga busca un faro",
+    art: "lighthouse",
+  },
+  {
+    label: "Una nube",
+    idea: "Una nube quiere encontrar su camino a casa",
+    art: "cloud",
+  },
+  {
+    label: "Una semilla",
+    idea: "Una semilla quiere conocer el bosque",
+    art: "seed",
+  },
+] satisfies { label: string; idea: string; art: StoryArtVariant }[];
 
 export function StoryCreator() {
   const [screen, setScreen] = useState<Screen>("form");
@@ -515,6 +534,7 @@ export function StoryCreator() {
       {screen === "form" ? (
         <>
           <header className="creator-heading">
+            <ReadingFriend />
             <h1 ref={activeHeading} tabIndex={-1}>
               Crea tu cuento
             </h1>
@@ -586,22 +606,39 @@ export function StoryCreator() {
                   role="group"
                   aria-label="Ideas para empezar"
                 >
-                  {[
-                    "Una tortuga busca un faro",
-                    "Un zorro encuentra una nube perdida",
-                    "Una semilla quiere conocer el bosque",
-                  ].map((starter) => (
+                  {ideaStarters.map((starter, index) => (
                     <button
                       className="idea-starter"
                       type="button"
-                      key={starter}
+                      key={starter.art}
                       disabled={creating}
+                      aria-pressed={idea === starter.idea}
+                      aria-labelledby={`idea-starter-${index}-title`}
+                      aria-describedby={`idea-starter-${index}-description`}
                       onClick={() => {
-                        setIdea(starter);
+                        setIdea(starter.idea);
                         ideaField.current?.focus();
                       }}
                     >
-                      {starter}
+                      <span className="idea-starter-art" aria-hidden="true">
+                        <StoryArt variant={starter.art} />
+                      </span>
+                      <strong id={`idea-starter-${index}-title`}>
+                        {starter.label}
+                      </strong>
+                      <span
+                        className="sr-only"
+                        id={`idea-starter-${index}-description`}
+                      >
+                        {starter.idea}
+                      </span>
+                      {idea === starter.idea ? (
+                        <Check
+                          size={18}
+                          className="idea-starter-check"
+                          aria-hidden="true"
+                        />
+                      ) : null}
                     </button>
                   ))}
                 </div>

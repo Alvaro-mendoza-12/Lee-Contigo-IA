@@ -90,7 +90,7 @@ export function Library({ initialLevel = "paso" }: { initialLevel?: Level }) {
         />
         <StoryShelfRow
           id="cuentos-descubrimientos"
-          title="Descubrimientos"
+          title="Aventuras"
           icon={<Compass size={21} aria-hidden="true" />}
           level={level}
           books={stories.filter((story) =>
