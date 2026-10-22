@@ -97,13 +97,6 @@ export function StoryCreator() {
 
   useEffect(() => {
     setCanSpeak("speechSynthesis" in window);
-    const motion = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const updateMotion = () => {
-      if (motion.matches) setAnimate(false);
-    };
-    updateMotion();
-    motion.addEventListener("change", updateMotion);
-
     const mobile = window.matchMedia("(max-width: 900px)");
     const updateCompact = () => setCompact(mobile.matches);
     updateCompact();
@@ -117,7 +110,6 @@ export function StoryCreator() {
       coverRequest.current++;
       coverAbort.current?.abort();
       creationAbort.current?.abort();
-      motion.removeEventListener("change", updateMotion);
       mobile.removeEventListener("change", updateCompact);
       window.removeEventListener("pageshow", clearOnRestore);
       if ("speechSynthesis" in window) window.speechSynthesis.cancel();
@@ -246,6 +238,7 @@ export function StoryCreator() {
   }
 
   function resetCreator() {
+    setAnimate(true);
     coverRequest.current += 1;
     coverAbort.current?.abort();
     creationAbort.current?.abort();

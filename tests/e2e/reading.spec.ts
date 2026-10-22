@@ -110,7 +110,7 @@ test("el libro cambia nivel, conserva tamaño y responde al pasar páginas", asy
   await page.emulateMedia({ reducedMotion: "reduce" });
   const animation = page.getByLabel("Animar páginas");
   await expect(animation).toBeEnabled();
-  await expect(animation).not.toBeChecked();
+  await expect(animation).toBeChecked();
   if (await animation.isEnabled()) {
     await animation.uncheck();
     await next.scrollIntoViewIfNeeded();
@@ -124,6 +124,9 @@ test("el libro cambia nivel, conserva tamaño y responde al pasar páginas", asy
       "paper-turn-next",
     );
   }
+  await animation.uncheck();
+  await page.reload();
+  await expect(page.getByLabel("Animar páginas")).toBeChecked();
 });
 test("la guía permite preparar y comenzar una lectura acompañada", async ({
   page,

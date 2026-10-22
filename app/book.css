@@ -661,7 +661,7 @@ body:has(.book-reader) #contenido {
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  /* Only an explicit reader opt-in enables a page turn; no idle animation. */
+  /* Page turns follow the reader's control; there is no idle animation. */
   .user-motion-on .sheet-next {
     animation: paper-turn-next 800ms cubic-bezier(0.45, 0.08, 0.24, 1) both !important;
   }

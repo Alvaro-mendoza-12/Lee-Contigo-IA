@@ -8,6 +8,8 @@ Tutor web de comprensión lectora para niños de aproximadamente 8 a 10 años. M
 
 ## Qué incluye
 
+**Animación inicial:** por solicitud del 22 de octubre, «Animar páginas» abre activado en biblioteca y cuentos creados, también al recargar. Puede desactivarse durante la lectura. Ver `documentacion_tutor_lectura_ia/22_animacion_por_defecto.md`.
+
 **Lector rediseñado:** libro abierto a todo el ancho, pliegue y hojas con volumen, giro de 180 grados, texto e ilustración que alternan de lado y ocho escenas interiores por cuento de biblioteca. En teléfonos se usa una hoja vertical legible. Los controles se simplificaron y la caja permanece estable al avanzar. Ver `documentacion_tutor_lectura_ia/18_lector_editorial_y_validacion.md`.
 
 Cuatro relatos originales, cada uno adaptado editorialmente a dos niveles: **Paso a paso** y **Un nuevo reto**. La lectura se presenta como un libro por páginas, con once tamaños de letra, voz opcional, animación de cambio de página que se puede desactivar y acceso al texto continuo. En móvil, el relato se reparte en páginas más cortas. La biblioteca muestra cómo empieza el cuento según el nivel elegido.

@@ -70,6 +70,7 @@ const story = {
 test("el cuento creado conecta la respuesta con una cita del texto sin reenviar respuestas", async ({
   page,
 }) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
   await page.route("**/api/crear", async (route) => {
     await route.fulfill({
       contentType: "application/json",
@@ -107,6 +108,7 @@ test("el cuento creado conecta la respuesta con una cita del texto sin reenviar 
     page.getByText("Tu libro está ilustrado. Las escenas cambian al avanzar."),
   ).toBeVisible();
   expect(illustrationRequests).toHaveLength(1);
+  await expect(page.getByLabel("Animar páginas")).toBeChecked();
   await expect(page.getByText("¿Quieres ilustrar la portada?")).toHaveCount(0);
 
   const nextPage = page.getByRole("button", { name: "Página siguiente" });

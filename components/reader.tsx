@@ -75,7 +75,6 @@ export function Reader({
     const preference = window.matchMedia("(prefers-reduced-motion: reduce)");
     const update = () => {
       setReducedMotion(preference.matches);
-      setAnimate(!preference.matches);
     };
     update();
     preference.addEventListener("change", update);
@@ -314,8 +313,8 @@ export function Reader({
                   <div>
                     {reducedMotion ? (
                       <p>
-                        Empiezas sin movimiento por la preferencia de tu
-                        dispositivo. Puedes activarlo aquí.
+                        Tu dispositivo prefiere menos movimiento. Puedes
+                        desactivar «Animar páginas» cuando quieras.
                       </p>
                     ) : null}
                     <button
