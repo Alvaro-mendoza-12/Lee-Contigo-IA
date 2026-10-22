@@ -28,6 +28,18 @@ import { fontSteps, paginateStory } from "@/lib/reading";
 import { levels, type Level } from "@/lib/stories";
 import { BookSpread } from "./book-spread";
 import { ReadingPause } from "./reading-pause";
+import { useNarration } from "./use-narration";
+import { useAnswerSound, SoundControl, ReadFeedback } from "./answer-audio";
+import { BookShelf } from "./book-shelf";
+import {
+  listSavedBooks,
+  makeSavedBook,
+  readSavedBook,
+  saveBook,
+  removeBook,
+  clearBooks,
+  type SavedBook,
+} from "@/lib/book-shelf";
 import {
   comprehensionSkillLabels,
   getIllustrationScene,
@@ -39,6 +51,11 @@ type CoverState = "idle" | "loading" | "ready" | "unavailable";
 
 export function StoryCreator() {
   const [screen, setScreen] = useState<Screen>("form");
+  const [workspace, setWorkspace] = useState<"create" | "shelf">("create");
+  const [books, setBooks] = useState<SavedBook[]>([]);
+  const [saveState, setSaveState] = useState<
+    "idle" | "saving" | "saved" | "unavailable"
+  >("idle");
   const [idea, setIdea] = useState("");
   const [level, setLevel] = useState<Level>("paso");
   const [adultReviewed, setAdultReviewed] = useState(false);
@@ -54,8 +71,17 @@ export function StoryCreator() {
   const [position, setPosition] = useState({ paragraph: 0, word: 0 });
   const [animate, setAnimate] = useState(true);
   const [compact, setCompact] = useState(false);
-  const [speaking, setSpeaking] = useState(false);
-  const [canSpeak, setCanSpeak] = useState(false);
+  const {
+    speaking,
+    loading: voiceLoading,
+    message: voiceMessage,
+    provider: voiceProvider,
+    speak,
+    stop: stopNarration,
+  } = useNarration();
+  const canSpeak = true;
+  const answerSound = useAnswerSound();
+  const [audioTokens, setAudioTokens] = useState<string[]>([]);
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
   const [questionIndex, setQuestionIndex] = useState(0);
   const [wrongAttempts, setWrongAttempts] = useState(0);
@@ -67,6 +93,8 @@ export function StoryCreator() {
   const answerGroupRef = useRef<HTMLDivElement>(null);
   const answerFeedbackRef = useRef<HTMLDivElement>(null);
   const previousScreen = useRef<Screen>("form");
+  const currentBook = useRef<SavedBook | null>(null);
+  const storageQueue = useRef<Promise<unknown>>(Promise.resolve());
 
   const pages = useMemo(
     () => (story ? paginateStory(story.paragraphs, fontSize, compact) : []),
@@ -87,23 +115,28 @@ export function StoryCreator() {
     selectedAnswer !== null &&
     currentQuestion !== undefined &&
     selectedAnswer !== currentQuestion.correctIndex;
-  const revealAnswer = answerIsWrong && wrongAttempts >= 3;
+  const revealAnswer = false;
   const showTutorHint =
-    currentQuestion !== undefined &&
-    wrongAttempts > 0 &&
-    wrongAttempts < 3 &&
-    !answerIsCorrect;
+    currentQuestion !== undefined && wrongAttempts > 0 && !answerIsCorrect;
   const tutorHintIndex = Math.min(Math.max(wrongAttempts - 1, 0), 1);
 
   useEffect(() => {
-    setCanSpeak("speechSynthesis" in window);
-    const motion = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const updateMotion = () => {
-      if (motion.matches) setAnimate(false);
+    let cancelled = false;
+    listSavedBooks()
+      .then((saved) => {
+        if (cancelled) return;
+        setBooks(saved);
+        if (saved.length) setWorkspace("shelf");
+      })
+      .catch(() => {
+        if (!cancelled) setSaveState("unavailable");
+      });
+    return () => {
+      cancelled = true;
     };
-    updateMotion();
-    motion.addEventListener("change", updateMotion);
+  }, []);
 
+  useEffect(() => {
     const mobile = window.matchMedia("(max-width: 900px)");
     const updateCompact = () => setCompact(mobile.matches);
     updateCompact();
@@ -117,7 +150,6 @@ export function StoryCreator() {
       coverRequest.current++;
       coverAbort.current?.abort();
       creationAbort.current?.abort();
-      motion.removeEventListener("change", updateMotion);
       mobile.removeEventListener("change", updateCompact);
       window.removeEventListener("pageshow", clearOnRestore);
       if ("speechSynthesis" in window) window.speechSynthesis.cancel();
@@ -139,8 +171,73 @@ export function StoryCreator() {
   }, [selectedAnswer, wrongAttempts]);
 
   function stopSpeaking() {
-    if ("speechSynthesis" in window) window.speechSynthesis.cancel();
-    setSpeaking(false);
+    stopNarration();
+  }
+
+  function persistBook(book: SavedBook) {
+    setSaveState("saving");
+    // Serialize the text and illustration writes so a slower initial save cannot erase the cover.
+    storageQueue.current = storageQueue.current
+      .catch(() => undefined)
+      .then(async () => {
+        try {
+          const saved = await saveBook(book);
+          setBooks(saved);
+          if (currentBook.current?.id === book.id) setSaveState("saved");
+        } catch {
+          setSaveState("unavailable");
+        }
+      });
+  }
+
+  function openSavedBook(book: SavedBook) {
+    if (!readSavedBook(book)) {
+      void listSavedBooks()
+        .then(setBooks)
+        .catch(() => setSaveState("unavailable"));
+      return;
+    }
+    coverRequest.current++;
+    coverAbort.current?.abort();
+    creationAbort.current?.abort();
+    stopSpeaking();
+    currentBook.current = book;
+    setCreating(false);
+    setStory(book.story);
+    setAudioTokens(book.audioTokens ?? []);
+    setLevel(book.level);
+    setCover(book.cover);
+    setCoverIsAtlas(book.atlas);
+    setCoverFromCollection(book.collection);
+    setCoverState(book.cover ? "ready" : "unavailable");
+    setPosition({ paragraph: 0, word: 0 });
+    setFontSize(5);
+    setQuestionIndex(0);
+    setWrongAttempts(0);
+    setSelectedAnswer(null);
+    setSaveState("saved");
+    setScreen("book");
+  }
+
+  async function deleteSavedBooks(id?: string) {
+    await storageQueue.current.catch(() => undefined);
+    try {
+      if (id) setBooks(await removeBook(id));
+      else {
+        await clearBooks();
+        setBooks([]);
+      }
+    } catch {
+      setSaveState("unavailable");
+    }
+  }
+
+  function showShelf() {
+    if (screen !== "form") resetCreator();
+    setWorkspace("shelf");
+    void listSavedBooks()
+      .then(setBooks)
+      .catch(() => setSaveState("unavailable"));
   }
 
   async function createCover(createdStory: GeneratedStory) {
@@ -181,6 +278,16 @@ export function StoryCreator() {
       setCoverIsAtlas(data.layout === "atlas");
       setCoverFromCollection(data.source === "collection");
       setCoverState("ready");
+      if (currentBook.current?.story === createdStory) {
+        const updated = {
+          ...currentBook.current,
+          cover: data.cover,
+          atlas: data.layout === "atlas",
+          collection: data.source === "collection",
+        };
+        currentBook.current = updated;
+        persistBook(updated);
+      }
     } catch {
       if (requestId === coverRequest.current) setCoverState("unavailable");
     }
@@ -212,6 +319,7 @@ export function StoryCreator() {
         story?: GeneratedStory;
         error?: string;
         code?: string;
+        audioTokens?: string[];
       };
       if (controller.signal.aborted) return;
       if (!response.ok || !data.story) {
@@ -220,6 +328,7 @@ export function StoryCreator() {
       }
 
       setStory(data.story);
+      setAudioTokens(data.audioTokens ?? []);
       setIdea("");
       setPosition({ paragraph: 0, word: 0 });
       setFontSize(5);
@@ -229,6 +338,12 @@ export function StoryCreator() {
       setCoverState("idle");
       setCover(null);
       setScreen("book");
+      const saved = {
+        ...makeSavedBook(data.story, level),
+        audioTokens: data.audioTokens,
+      };
+      currentBook.current = saved;
+      persistBook(saved);
       void createCover(data.story);
     } catch (cause) {
       if (controller.signal.aborted) return;
@@ -246,6 +361,8 @@ export function StoryCreator() {
   }
 
   function resetCreator() {
+    currentBook.current = null;
+    setWorkspace("create");
     coverRequest.current += 1;
     coverAbort.current?.abort();
     creationAbort.current?.abort();
@@ -253,6 +370,8 @@ export function StoryCreator() {
     stopSpeaking();
     setScreen("form");
     setStory(null);
+    setAudioTokens([]);
+    setAnimate(true);
     setCover(null);
     setCoverState("idle");
     setIdea("");
@@ -285,24 +404,30 @@ export function StoryCreator() {
   }
 
   function readCurrentPage() {
-    if (!currentPage || !("speechSynthesis" in window)) return;
-    if (speaking) {
+    if (!currentPage || !story) return;
+    if (speaking || voiceLoading) {
       stopSpeaking();
       return;
     }
-    const utterance = new SpeechSynthesisUtterance(currentPage.text);
-    utterance.lang = "es";
-    utterance.rate = 0.84;
-    utterance.onend = () => setSpeaking(false);
-    utterance.onerror = () => setSpeaking(false);
-    window.speechSynthesis.cancel();
-    window.speechSynthesis.speak(utterance);
-    setSpeaking(true);
+    const authorization = audioTokens[currentPage.paragraph];
+    void speak(
+      currentPage.text,
+      authorization
+        ? {
+            source: "generated",
+            paragraphText: story.paragraphs[currentPage.paragraph],
+            authorization,
+            start: currentPage.start,
+            end: currentPage.end,
+          }
+        : undefined,
+    );
   }
 
   function answerQuestion(answer: number) {
     if (selectedAnswer !== null || !currentQuestion) return;
     setSelectedAnswer(answer);
+    answerSound.play(answer === currentQuestion.correctIndex);
     if (answer !== currentQuestion.correctIndex)
       setWrongAttempts((attempts) => attempts + 1);
   }
@@ -345,173 +470,224 @@ export function StoryCreator() {
               para pasar y pequeñas preguntas para pensar.
             </p>
           </header>
-
-          <form className="creator-form" onSubmit={submitIdea}>
-            <label className="creator-label" htmlFor="story-idea">
-              Mi idea para el cuento
-            </label>
-            <p className="creator-help" id="idea-help">
-              Por ejemplo: «Una tortuga quiere llegar al faro antes del
-              anochecer».
-            </p>
-            <textarea
-              id="story-idea"
-              ref={ideaField}
-              name="idea"
-              value={idea}
-              onChange={(event) => setIdea(event.target.value.slice(0, 220))}
-              maxLength={220}
-              minLength={12}
-              rows={4}
-              aria-describedby="idea-help idea-count"
-              placeholder="Escribe una idea de cuento, no información sobre ti…"
-              required
+          <div
+            className="creator-workspace-tabs"
+            role="group"
+            aria-label="Tu espacio de cuentos"
+          >
+            <button
+              type="button"
+              disabled={creating}
+              aria-pressed={workspace === "create"}
+              onClick={() => setWorkspace("create")}
+            >
+              <Sparkles size={18} aria-hidden="true" />
+              Crear un cuento
+            </button>
+            <button
+              type="button"
+              disabled={creating}
+              aria-pressed={workspace === "shelf"}
+              onClick={showShelf}
+            >
+              <BookOpen size={18} aria-hidden="true" />
+              Mis libros
+              {books.length ? (
+                <span className="shelf-count">{books.length}</span>
+              ) : null}
+            </button>
+          </div>
+          {workspace === "shelf" ? (
+            <BookShelf
+              books={books}
+              onOpen={openSavedBook}
+              onRemove={deleteSavedBooks}
+              onClear={() => deleteSavedBooks()}
+              onCreate={() => setWorkspace("create")}
             />
-            <div className="creator-count" id="idea-count" aria-live="polite">
-              {idea.length} de 220 caracteres
-            </div>
-            <div
-              className="idea-starters"
-              role="group"
-              aria-label="Ideas para empezar"
-            >
-              {[
-                "Una tortuga busca un faro",
-                "Un zorro encuentra una nube perdida",
-                "Una semilla quiere conocer el bosque",
-              ].map((starter) => (
-                <button
-                  className="idea-starter"
-                  type="button"
-                  key={starter}
-                  disabled={creating}
-                  onClick={() => {
-                    setIdea(starter);
-                    ideaField.current?.focus();
-                  }}
-                >
-                  {starter}
-                </button>
-              ))}
-            </div>
+          ) : (
+            <form className="creator-form" onSubmit={submitIdea}>
+              <label className="creator-label" htmlFor="story-idea">
+                Mi idea para el cuento
+              </label>
 
-            <fieldset className="creator-levels">
-              <legend>¿Cómo te gustaría leer?</legend>
-              {(Object.entries(levels) as [Level, typeof levels.paso][]).map(
-                ([id, item]) => (
-                  <label
-                    className={
-                      level === id
-                        ? "creator-level-option is-selected"
-                        : "creator-level-option"
-                    }
-                    key={id}
-                  >
-                    <input
-                      type="radio"
-                      name="create-level"
-                      value={id}
-                      checked={level === id}
-                      onChange={() => setLevel(id)}
-                    />
-                    <span className="creator-level-icon">
-                      {id === "paso" ? (
-                        <Leaf size={20} aria-hidden="true" />
-                      ) : (
-                        <Sparkles size={20} aria-hidden="true" />
-                      )}
-                    </span>
-                    <span>
-                      <strong>{item.label}</strong>
-                      <small>{item.description}</small>
-                    </span>
-                    {level === id ? (
-                      <Check size={18} aria-hidden="true" />
-                    ) : null}
-                  </label>
-                ),
-              )}
-            </fieldset>
-
-            <aside
-              className="creator-privacy-note"
-              aria-label="Privacidad y seguridad"
-            >
-              <ShieldCheck size={22} aria-hidden="true" />
-              <div>
-                <strong>Imagina con libertad</strong>
-                <p>
-                  Usa personajes imaginarios. Guarda para ti tu nombre, colegio,
-                  dirección y otros datos personales.
-                </p>
-                <Link href="/privacidad">Información para familias</Link>
-              </div>
-            </aside>
-
-            <label className="creator-adult-check">
-              <input
-                type="checkbox"
-                checked={adultReviewed}
-                onChange={(event) => setAdultReviewed(event.target.checked)}
+              <p className="creator-help" id="idea-help">
+                Por ejemplo: «Una tortuga quiere llegar al faro antes del
+                anochecer».
+              </p>
+              <textarea
+                id="story-idea"
+                ref={ideaField}
+                name="idea"
+                value={idea}
+                onChange={(event) => setIdea(event.target.value.slice(0, 220))}
+                maxLength={220}
+                minLength={12}
+                rows={4}
+                aria-describedby="idea-help idea-count"
+                placeholder="Escribe una idea de cuento, no información sobre ti…"
                 required
               />
-              <span>
-                Una persona adulta está conmigo y revisó mi idea para crear el
-                cuento y sus ilustraciones.
-              </span>
-            </label>
-
-            {error ? (
-              <div className="creator-error-group">
-                <p className="creator-error" role="alert">
-                  {error}
-                </p>
-                {gatewayUnavailable ? (
-                  <Link className="creator-error-link" href="/biblioteca">
-                    Leer un cuento de la biblioteca <ArrowRight size={16} />
-                  </Link>
-                ) : null}
+              <div className="creator-count" id="idea-count" aria-live="polite">
+                {idea.length} de 220 caracteres
               </div>
-            ) : null}
+              <details className="creator-ideas">
+                <summary>Necesito una idea</summary>
+                <div
+                  className="idea-starters"
+                  role="group"
+                  aria-label="Ideas para empezar"
+                >
+                  {[
+                    "Una tortuga busca un faro",
+                    "Un zorro encuentra una nube perdida",
+                    "Una semilla quiere conocer el bosque",
+                  ].map((starter) => (
+                    <button
+                      className="idea-starter"
+                      type="button"
+                      key={starter}
+                      disabled={creating}
+                      onClick={() => {
+                        setIdea(starter);
+                        ideaField.current?.focus();
+                      }}
+                    >
+                      {starter}
+                    </button>
+                  ))}
+                </div>
+              </details>
 
-            <button
-              className="button creator-submit"
-              type="submit"
-              disabled={creating || idea.trim().length < 12 || !adultReviewed}
-            >
+              <fieldset className="creator-levels">
+                <legend>¿Cómo te gustaría leer?</legend>
+                {(Object.entries(levels) as [Level, typeof levels.paso][]).map(
+                  ([id, item]) => (
+                    <label
+                      className={
+                        level === id
+                          ? "creator-level-option is-selected"
+                          : "creator-level-option"
+                      }
+                      key={id}
+                    >
+                      <input
+                        type="radio"
+                        name="create-level"
+                        value={id}
+                        checked={level === id}
+                        onChange={() => setLevel(id)}
+                      />
+                      <span className="creator-level-icon">
+                        {id === "paso" ? (
+                          <Leaf size={20} aria-hidden="true" />
+                        ) : (
+                          <Sparkles size={20} aria-hidden="true" />
+                        )}
+                      </span>
+                      <span>
+                        <strong>{item.label}</strong>
+                        <small>{item.description}</small>
+                      </span>
+                      {level === id ? (
+                        <Check size={18} aria-hidden="true" />
+                      ) : null}
+                    </label>
+                  ),
+                )}
+              </fieldset>
+
+              <aside
+                className="creator-privacy-note"
+                aria-label="Privacidad y seguridad"
+              >
+                <ShieldCheck size={22} aria-hidden="true" />
+                <div>
+                  <strong>Imagina con libertad</strong>
+                  <p>
+                    Usa personajes imaginarios. Guarda para ti tu nombre,
+                    colegio, dirección y otros datos personales.
+                  </p>
+                  <Link href="/privacidad">Información para familias</Link>
+                </div>
+              </aside>
+
+              <label className="creator-adult-check">
+                <input
+                  type="checkbox"
+                  checked={adultReviewed}
+                  onChange={(event) => setAdultReviewed(event.target.checked)}
+                  required
+                />
+                <span>
+                  Una persona adulta está conmigo y revisó mi idea para crear el
+                  cuento y sus ilustraciones.
+                </span>
+              </label>
+
+              {error ? (
+                <div className="creator-error-group">
+                  <p className="creator-error" role="alert">
+                    {error}
+                  </p>
+                  {gatewayUnavailable ? (
+                    <Link className="creator-error-link" href="/biblioteca">
+                      Leer un cuento de la biblioteca <ArrowRight size={16} />
+                    </Link>
+                  ) : null}
+                </div>
+              ) : null}
+
+              <p className="creator-save-note">
+                <BookOpen size={16} aria-hidden="true" />
+                Tus libros se guardan aquí durante siete días. Puedes borrarlos.
+              </p>
+
+              <button
+                className="button creator-submit"
+                type="submit"
+                disabled={creating}
+              >
+                {creating ? (
+                  <>
+                    <LoaderCircle className="creator-spinner" size={19} />
+                    Preparando tu aventura…
+                  </>
+                ) : (
+                  <>
+                    <Sparkles size={18} /> Crear mi cuento
+                    <ArrowRight size={18} />
+                  </>
+                )}
+              </button>
               {creating ? (
-                <>
-                  <LoaderCircle className="creator-spinner" size={19} />
-                  Preparando tu aventura…
-                </>
-              ) : (
-                <>
-                  <Sparkles size={18} /> Crear mi cuento
-                  <ArrowRight size={18} />
-                </>
-              )}
-            </button>
-            {creating ? (
-              <ol className="creation-steps" aria-live="polite">
-                <li>
-                  <Check size={16} aria-hidden="true" />
-                  Tu idea está lista
-                </li>
-                <li>
-                  <LoaderCircle
-                    className="creator-spinner"
-                    size={16}
-                    aria-hidden="true"
-                  />
-                  Escribiendo la aventura y sus preguntas…
-                </li>
-                <li>
-                  <BookOpen size={16} aria-hidden="true" />
-                  Después, prepararemos sus ilustraciones
-                </li>
-              </ol>
-            ) : null}
-          </form>
+                <ol className="creation-steps" aria-live="polite">
+                  <li>
+                    <Check size={16} aria-hidden="true" />
+                    Tu idea está lista
+                  </li>
+                  <li>
+                    <LoaderCircle
+                      className="creator-spinner"
+                      size={16}
+                      aria-hidden="true"
+                    />
+                    Escribiendo la aventura y sus preguntas…
+                  </li>
+                  <li>
+                    <BookOpen size={16} aria-hidden="true" />
+                    Después, prepararemos sus ilustraciones
+                  </li>
+                </ol>
+              ) : null}
+            </form>
+          )}
+          {workspace === "shelf" && saveState === "unavailable" ? (
+            <p className="shelf-storage-message" role="status">
+              No pudimos acceder a los libros de este navegador. Puedes crear y
+              leer un cuento mientras esta página esté abierta.
+            </p>
+          ) : null}
         </>
       ) : null}
 
@@ -522,19 +698,32 @@ export function StoryCreator() {
         >
           <div className="creator-book-topline">
             <div>
-              <span className="small-label">TU CUENTO ESTÁ LISTO</span>
               <h1 id="created-title" ref={activeHeading} tabIndex={-1}>
                 {story.title}
               </h1>
-              <p>{story.subtitle}</p>
             </div>
-            <button
-              className="text-button creator-new-button"
-              onClick={resetCreator}
-            >
-              <RotateCcw size={16} aria-hidden="true" /> Crear otro cuento
-            </button>
+            <div className="creator-book-links">
+              <button className="text-button" type="button" onClick={showShelf}>
+                <BookOpen size={17} aria-hidden="true" />
+                Mis libros
+              </button>
+              <button
+                className="text-button creator-new-button"
+                onClick={resetCreator}
+              >
+                <RotateCcw size={16} aria-hidden="true" /> Crear otro cuento
+              </button>
+            </div>
           </div>
+          <p className="book-save-status" role="status">
+            {saveState === "saving"
+              ? "Guardando tu libro…"
+              : saveState === "saved"
+                ? "Guardado en este dispositivo durante siete días."
+                : saveState === "unavailable"
+                  ? "No pudimos guardarlo aquí. Puedes seguir leyendo mientras esta página esté abierta."
+                  : ""}
+          </p>
 
           <div className="creator-reader-toolbar">
             <div
@@ -569,9 +758,14 @@ export function StoryCreator() {
                   className="text-button"
                   type="button"
                   onClick={readCurrentPage}
+                  aria-busy={voiceLoading}
                 >
                   {speaking ? <Square size={16} /> : <Volume2 size={17} />}
-                  {speaking ? "Detener" : "Escuchar página"}
+                  {voiceLoading
+                    ? "Cancelar voz…"
+                    : speaking
+                      ? "Detener"
+                      : "Escuchar página"}
                 </button>
               ) : null}
               <label className="book-animation-control">
@@ -586,6 +780,10 @@ export function StoryCreator() {
             </div>
           </div>
 
+          <p className="voice-status" role="status">
+            {voiceMessage}
+            {voiceProvider === "elevenlabs" ? " Voz: elevenlabs.io" : ""}
+          </p>
           <BookSpread
             animated={animate}
             fontSize={fontSteps[fontSize].pixels}
@@ -733,6 +931,10 @@ export function StoryCreator() {
           <div className="creator-quiz-progress" role="status">
             Pregunta {questionIndex + 1} de {story.questions.length}
           </div>
+          <SoundControl
+            enabled={answerSound.sound}
+            onChange={answerSound.setSound}
+          />
           <article className="creator-question-card">
             <span className="skill-pill">
               {comprehensionSkillLabels[currentQuestion.skill]}
@@ -820,7 +1022,7 @@ export function StoryCreator() {
               </div>
             ) : showTutorHint ? (
               <div
-                className="creator-answer-feedback creator-tutor-hint"
+                className="creator-answer-feedback creator-tutor-hint feedback-incorrect"
                 role="status"
                 aria-live="polite"
                 ref={answerFeedbackRef}
@@ -830,12 +1032,11 @@ export function StoryCreator() {
                   <Sparkles size={14} aria-hidden="true" />
                   Pista de IA · {tutorHintIndex + 1} de 2
                 </span>
-                <strong>
-                  {wrongAttempts === 1
-                    ? "Miremos una pista del cuento."
-                    : "Probemos con otra forma de pensar."}
-                </strong>
+                <strong>Aún no es la respuesta. Busquemos una pista.</strong>
                 <p>{currentQuestion.hints[tutorHintIndex]}</p>
+                <ReadFeedback
+                  text={`Aún no es la respuesta. ${currentQuestion.hints[tutorHintIndex]}`}
+                />
                 <details className="creator-hint-evidence">
                   <summary>
                     Volver al párrafo {currentQuestion.evidenceParagraph + 1}

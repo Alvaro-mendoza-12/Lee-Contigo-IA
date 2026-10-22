@@ -30,6 +30,7 @@ import { Journey } from "./journey";
 import { ReadingPause } from "./reading-pause";
 import { useReadingLevel } from "./use-reading-level";
 import { getIllustrationScene } from "@/lib/story-creator";
+import { useNarration } from "./use-narration";
 
 export function Reader({
   story,
@@ -52,8 +53,15 @@ export function Reader({
   const [animate, setAnimate] = useState(true);
   const [reducedMotion, setReducedMotion] = useState(true);
   const [compact, setCompact] = useState(false);
-  const [speaking, setSpeaking] = useState(false);
-  const [canSpeak, setCanSpeak] = useState(false);
+  const {
+    speaking,
+    loading: voiceLoading,
+    message: voiceMessage,
+    provider: voiceProvider,
+    speak,
+    stop: stopNarration,
+  } = useNarration();
+  const canSpeak = true;
   const version = story.versions[level];
   const pages = paginateStory(version.paragraphs, size, compact);
   const matchedIndex = pages.findIndex(
@@ -71,11 +79,9 @@ export function Reader({
     ];
 
   useEffect(() => {
-    setCanSpeak("speechSynthesis" in window);
     const preference = window.matchMedia("(prefers-reduced-motion: reduce)");
     const update = () => {
       setReducedMotion(preference.matches);
-      setAnimate(!preference.matches);
     };
     update();
     preference.addEventListener("change", update);
@@ -146,13 +152,11 @@ export function Reader({
 
   useEffect(() => {
     setPosition({ paragraph: 0, word: 0 });
-    if ("speechSynthesis" in window) window.speechSynthesis.cancel();
-    setSpeaking(false);
-  }, [level]);
+    stopNarration();
+  }, [level, stopNarration]);
 
   function stopVoice() {
-    if ("speechSynthesis" in window) window.speechSynthesis.cancel();
-    setSpeaking(false);
+    stopNarration();
   }
   function turnPage(next: number) {
     stopVoice();
@@ -170,22 +174,25 @@ export function Reader({
     changeLevel(next);
   }
   function readAloud() {
-    if (speaking) {
+    if (speaking || voiceLoading) {
       stopVoice();
       return;
     }
-    const utterance = new SpeechSynthesisUtterance(
+    void speak(
       fullText
         ? story.title + ". " + version.paragraphs.join(" ")
         : current.text,
+      fullText
+        ? undefined
+        : {
+            source: "catalogue",
+            storyId: story.id as import("@/lib/stories").StoryId,
+            level,
+            paragraph: current.paragraph,
+            start: current.start,
+            end: current.end,
+          },
     );
-    utterance.lang = "es";
-    utterance.rate = 0.85;
-    utterance.onend = () => setSpeaking(false);
-    utterance.onerror = () => setSpeaking(false);
-    window.speechSynthesis.cancel();
-    window.speechSynthesis.speak(utterance);
-    setSpeaking(true);
   }
 
   return (
@@ -212,9 +219,7 @@ export function Reader({
           <div className="reading-content">
             <div className="reader-book-heading">
               <div>
-                <span className="small-label">TU MOMENTO DE LECTURA</span>
                 <h1 id="reader-title">{story.title}</h1>
-                <p className="story-subtitle">{story.subtitle}</p>
               </div>
               <div
                 className="reader-level-picker"
@@ -275,13 +280,18 @@ export function Reader({
                     type="button"
                     className="text-button audio-button"
                     onClick={readAloud}
+                    aria-busy={voiceLoading}
                   >
                     {speaking ? (
                       <Square size={17} aria-hidden="true" />
                     ) : (
                       <Volume2 size={18} aria-hidden="true" />
                     )}
-                    {speaking ? "Detener lectura" : "Escuchar"}
+                    {voiceLoading
+                      ? "Cancelar voz…"
+                      : speaking
+                        ? "Detener lectura"
+                        : "Escuchar"}
                   </button>
                 ) : null}
                 <button
@@ -313,10 +323,7 @@ export function Reader({
                   <summary>Opciones</summary>
                   <div>
                     {reducedMotion ? (
-                      <p>
-                        Empiezas sin movimiento por la preferencia de tu
-                        dispositivo. Puedes activarlo aquí.
-                      </p>
+                      <p>Puedes desactivar «Animar páginas» cuando quieras.</p>
                     ) : null}
                     <button
                       type="button"
@@ -338,6 +345,10 @@ export function Reader({
                 </details>
               </div>
             </div>
+            <p className="voice-status" role="status">
+              {voiceMessage}
+              {voiceProvider === "elevenlabs" ? " Voz: elevenlabs.io" : ""}
+            </p>
             {fullText ? (
               <div
                 className="story-text book-full-text"

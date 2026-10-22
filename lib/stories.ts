@@ -1,12 +1,29 @@
 import { extraStories } from "./extra-stories.ts";
+import { collectionStories } from "./collection-stories.ts";
 
 export type Level = "paso" | "reto";
-export type StoryArtVariant = "night" | "seed" | "lighthouse" | "kite";
+export type StoryArtVariant =
+  | "night"
+  | "seed"
+  | "lighthouse"
+  | "kite"
+  | "bridge"
+  | "cloud"
+  | "drum"
+  | "soundmap"
+  | "bread"
+  | "sea";
 export const storyIds = [
   "luz-del-bosque",
   "semilla-viajera",
   "camino-al-faro",
   "cometa-en-equipo",
+  "puente-de-ardillas",
+  "nube-perdida",
+  "tambor-lluvia",
+  "mapa-sonidos",
+  "pan-abuela",
+  "botella-mar",
 ] as const;
 export type StoryId = (typeof storyIds)[number];
 export type Question = {
@@ -323,6 +340,7 @@ export const stories: Story[] = [
     },
   },
   ...extraStories,
+  ...collectionStories,
 ];
 export function getStory(id: string) {
   return stories.find((story) => story.id === id);

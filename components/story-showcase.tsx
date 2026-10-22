@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type CSSProperties } from "react";
 import Link from "next/link";
 import {
   ArrowLeft,
@@ -18,6 +18,7 @@ type Cover = { id: string; title: string; art: StoryArtVariant };
 export function StoryShowcase({ covers }: { covers: Cover[] }) {
   const [active, setActive] = useState(0);
   const [hasMoved, setHasMoved] = useState(false);
+  const [departing, setDeparting] = useState<number | null>(null);
   const [playing, setPlaying] = useState(true);
   const [reducedMotion, setReducedMotion] = useState(true);
   const [hovered, setHovered] = useState(false);
@@ -58,15 +59,23 @@ export function StoryShowcase({ covers }: { covers: Cover[] }) {
       return;
     const timer = window.setTimeout(() => {
       setHasMoved(true);
+      setDeparting(active);
       setActive((current) => (current + 1) % covers.length);
-    }, 7000);
+    }, 3000);
     return () => window.clearTimeout(timer);
   }, [active, playing, reducedMotion, hovered, visible, inView, covers.length]);
 
-  function change(direction: number) {
-    const next = (active + direction + covers.length) % covers.length;
+  useEffect(() => {
+    if (departing === null) return;
+    const timer = window.setTimeout(() => setDeparting(null), 850);
+    return () => window.clearTimeout(timer);
+  }, [departing]);
+
+  function goTo(next: number) {
     setPlaying(false);
+    if (next === active) return;
     setHasMoved(true);
+    setDeparting(reducedMotion ? null : active);
     setActive(next);
     setAnnouncement(
       `${covers[next].title}. Historia ${next + 1} de ${covers.length}.`,
@@ -103,10 +112,21 @@ export function StoryShowcase({ covers }: { covers: Cover[] }) {
         <div className={"hero-book-stack" + (hasMoved ? " has-moved" : "")}>
           {covers.map((cover, index) => {
             const front = index === active;
+            const depth = (index - active + covers.length) % covers.length;
             return (
               <article
                 key={cover.id}
-                className={"hero-story " + (front ? "is-front" : "is-behind")}
+                className={
+                  "hero-story " +
+                  (front ? "is-front" : "is-behind") +
+                  (departing === index ? " is-departing" : "")
+                }
+                style={
+                  {
+                    "--depth": depth,
+                    "--stack-z": covers.length - depth,
+                  } as CSSProperties
+                }
                 aria-roledescription="diapositiva"
                 aria-label={`${index + 1} de ${covers.length}`}
                 aria-hidden={!front}
@@ -151,18 +171,32 @@ export function StoryShowcase({ covers }: { covers: Cover[] }) {
             <button
               type="button"
               className="book-deck-control"
-              onClick={() => change(-1)}
+              onClick={() => goTo((active - 1 + covers.length) % covers.length)}
               aria-label="Ver cuento anterior"
             >
               <ArrowLeft size={18} aria-hidden="true" />
             </button>
-            <span className="book-deck-position" aria-live="off">
-              Historia <strong>{active + 1}</strong> de {covers.length}
-            </span>
+            <div
+              className="book-deck-dots"
+              role="group"
+              aria-label="Elegir cuento"
+            >
+              {covers.map((cover, index) => (
+                <button
+                  key={cover.id}
+                  type="button"
+                  aria-label={`Ir al cuento ${index + 1}: ${cover.title}`}
+                  aria-pressed={index === active}
+                  onClick={() => goTo(index)}
+                >
+                  <span />
+                </button>
+              ))}
+            </div>
             <button
               type="button"
               className="book-deck-control"
-              onClick={() => change(1)}
+              onClick={() => goTo((active + 1) % covers.length)}
               aria-label="Ver siguiente cuento"
             >
               <ArrowRight size={18} aria-hidden="true" />

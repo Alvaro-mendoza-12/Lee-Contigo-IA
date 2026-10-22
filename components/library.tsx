@@ -1,127 +1,79 @@
 "use client";
 import Link from "next/link";
-import {
-  ArrowRight,
-  Check,
-  Clock3,
-  Leaf,
-  Sparkles,
-  BookOpen,
-} from "lucide-react";
+import { ArrowRight, BookOpen, Sparkles, Clock3 } from "lucide-react";
 import { stories, levels, type Level } from "@/lib/stories";
 import { StoryArt } from "./art";
-import { Journey } from "./journey";
 import { useReadingLevel } from "./use-reading-level";
 export function Library({ initialLevel = "paso" }: { initialLevel?: Level }) {
   const [level, setLevel] = useReadingLevel(initialLevel);
   return (
-    <div className="container library-page">
-      <Journey current={1} />
+    <div className="container library-page child-library">
       <header className="page-heading">
-        <span className="small-label">TU MOMENTO PARA LEER</span>
-        <h1>¿Qué descubrirás hoy?</h1>
-        <p>Elige una historia que te dé curiosidad. No hay prisa.</p>
+        <span className="library-count">
+          <BookOpen size={17} aria-hidden="true" /> 10 cuentos ilustrados
+        </span>
+        <h1>Elige tu cuento</h1>
+        <p>Toca una portada y empieza a leer.</p>
       </header>
-      <fieldset className="level-picker">
-        <legend>¿Cómo te gustaría leer?</legend>
-        <div className="level-options">
-          {(Object.entries(levels) as [Level, typeof levels.paso][]).map(
-            ([id, item]) => (
-              <label
-                key={id}
-                className={
-                  level === id ? "level-option selected" : "level-option"
-                }
-              >
-                <input
-                  type="radio"
-                  name="nivel"
-                  value={id}
-                  checked={level === id}
-                  onChange={() => setLevel(id)}
-                />
-                <span className="level-graphic">
-                  {id === "paso" ? <Leaf size={21} /> : <Sparkles size={21} />}
-                </span>
-                <span>
-                  <strong>{item.label}</strong>
-                  <small>{item.description}</small>
-                </span>
-                <span className="radio-visual">
-                  {level === id ? <Check size={13} /> : null}
-                </span>
-              </label>
-            ),
-          )}
+      <fieldset className="library-levels">
+        <legend>¿Cómo quieres leer?</legend>
+        <div>
+          {(["paso", "reto"] as const).map((id) => (
+            <label key={id} className={level === id ? "selected" : ""}>
+              <input
+                type="radio"
+                name="nivel"
+                value={id}
+                checked={level === id}
+                onChange={() => setLevel(id)}
+              />
+              {levels[id].label}
+            </label>
+          ))}
         </div>
-        <p className="muted small">
-          Puedes probar otro nivel en cualquier momento. Aquí no hay notas.
+        <p role="status">
+          {level === "paso"
+            ? "Frases cortas para leer con calma."
+            : "Más vocabulario y nuevas ideas."}
         </p>
       </fieldset>
-      <div className="level-change-notice" role="status">
-        <Sparkles size={19} aria-hidden="true" />
-        <div>
-          <strong>{levels[level].label} seleccionado</strong>
-          <p>
-            {level === "paso"
-              ? "Leerás una versión con frases más cortas. Las preguntas te ayudarán a buscar detalles."
-              : "Leerás una versión con más vocabulario. Las preguntas te invitarán a relacionar ideas."}
-          </p>
-        </div>
-      </div>
-      <Link className="library-create-card" href="/crear">
-        <span className="library-create-icon">
-          <Sparkles size={24} aria-hidden="true" />
-        </span>
-        <span>
-          <strong>¿Tienes una idea para un cuento?</strong>
-          <small>Conviértela en un libro ilustrado para leer y explorar.</small>
-        </span>
-        <ArrowRight size={20} aria-hidden="true" />
-      </Link>
       <div className="story-grid">
         {stories.map((story, index) => (
-          <article className="story-card" key={story.id}>
-            <Link
-              className="story-cover-link"
-              href={"/leer/" + story.id + "?nivel=" + level}
-              aria-label={"Leer " + story.title}
-            >
-              <StoryArt variant={story.art} />
-              <span className="story-index">HISTORIA 0{index + 1}</span>
-            </Link>
+          <Link
+            key={story.id}
+            className="story-card story-card-direct"
+            href={`/leer/${story.id}?nivel=${level}`}
+            aria-label={`Leer ${story.title}`}
+          >
+            <div className="story-cover-link">
+              <StoryArt variant={story.art} priority={index < 2} />
+              <span className="story-cover-open" aria-hidden="true">
+                <ArrowRight size={22} />
+              </span>
+            </div>
             <div className="story-card-body">
               <div className="story-meta">
                 <span>{story.theme}</span>
                 <span>
-                  <Clock3 size={14} />
-                  {story.minutes} min
+                  <Clock3 size={13} aria-hidden="true" /> {story.minutes} min
                 </span>
               </div>
-              <h2>
-                <Link href={"/leer/" + story.id + "?nivel=" + level}>
-                  {story.title}
-                </Link>
-              </h2>
-              <p>{story.description}</p>
-              <div className="story-level-preview">
-                <span>{levels[level].label} · Así empieza</span>
-                <p>“{story.versions[level].paragraphs[0]}”</p>
-              </div>
-              <Link
-                className="button button-outline story-button"
-                href={"/leer/" + story.id + "?nivel=" + level}
-              >
-                Quiero leerla <ArrowRight size={18} />
-              </Link>
+              <h2>{story.title}</h2>
+              <span className="story-card-invite">
+                Leer cuento <ArrowRight size={15} aria-hidden="true" />
+              </span>
             </div>
-          </article>
+          </Link>
         ))}
       </div>
-      <div className="library-bottom">
-        <BookOpen size={22} />
-        <p>Cuatro aventuras para descubrir. ¿Cuál será la tuya?</p>
-      </div>
+      <Link className="library-create-card" href="/crear">
+        <Sparkles size={24} aria-hidden="true" />
+        <span>
+          <strong>Crea una aventura tuya</strong>
+          <small>Empieza con una idea.</small>
+        </span>
+        <ArrowRight size={20} aria-hidden="true" />
+      </Link>
     </div>
   );
 }

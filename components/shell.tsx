@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { BookOpen, Leaf, ArrowUpRight, Sparkles } from "lucide-react";
+import { BookOpen, Leaf } from "lucide-react";
+import { PrimaryNavigation } from "./primary-navigation";
 export function Logo() {
   return (
     <span className="brand">
@@ -20,16 +21,7 @@ export function Header() {
         <Link href="/" aria-label="LeeContigo IA, inicio">
           <Logo />
         </Link>
-        <nav aria-label="Navegación principal">
-          <Link href="/biblioteca">Las historias</Link>
-          <Link href="/crear">
-            <Sparkles size={14} aria-hidden="true" /> Crea tu cuento
-          </Link>
-          <Link href="/acompanar">Para acompañar</Link>
-        </nav>
-        <Link href="/biblioteca" className="button button-small header-cta">
-          Vamos a leer <ArrowUpRight size={17} />
-        </Link>
+        <PrimaryNavigation />
       </div>
     </header>
   );

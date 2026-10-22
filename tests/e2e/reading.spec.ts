@@ -1,14 +1,20 @@
 import { test, expect } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 test("recorrido completo, reintento y pista de respaldo", async ({ page }) => {
+  await page.route("**/api/tutor", (route) =>
+    route.fulfill({ status: 503, contentType: "application/json", body: "{}" }),
+  );
   const errors: string[] = [];
   page.on("pageerror", (error) => errors.push(error.message));
   await page.goto("/");
-  await page.getByRole("link", { name: "Elige tu primera historia" }).click();
+  await page.getByRole("link", { name: "Ver los 10 cuentos" }).click();
   await expect(
-    page.getByRole("heading", { name: "¿Qué descubrirás hoy?" }),
+    page.getByRole("heading", { name: "Elige tu cuento" }),
   ).toBeVisible();
-  await page.getByRole("link", { name: "Quiero leerla" }).first().click();
+  await page
+    .getByRole("link", { name: /^Leer / })
+    .first()
+    .click();
   await page.getByRole("button", { name: "Aumentar tamaño de letra" }).click();
   await expect(page.getByText("Muy grande", { exact: true })).toBeVisible();
   const explore = page.getByRole("link", { name: "Ya leí, vamos a explorar" });
@@ -22,8 +28,10 @@ test("recorrido completo, reintento y pista de respaldo", async ({ page }) => {
   await page
     .getByRole("radio", { name: /Porque quería buscar a la luna/ })
     .check();
-  await page.getByRole("button", { name: "Explorar mi respuesta" }).click();
-  await expect(page.getByText("Probemos una vez más.")).toBeVisible();
+  await page.getByRole("button", { name: "Comprobar respuesta" }).click();
+  await expect(
+    page.getByText("Aún no es la respuesta. Busquemos una pista."),
+  ).toBeVisible();
   await page
     .getByRole("button", { name: "Dame una pista", exact: true })
     .click();
@@ -35,13 +43,13 @@ test("recorrido completo, reintento y pista de respaldo", async ({ page }) => {
     .click();
   await expect(page.locator("#relato-de-apoyo")).toBeVisible();
   await page.getByRole("radio", { name: /Porque no veía las piedras/ }).check();
-  await page.getByRole("button", { name: "Explorar mi respuesta" }).click();
+  await page.getByRole("button", { name: "Comprobar respuesta" }).click();
   await page.getByRole("button", { name: "Siguiente pregunta" }).click();
   await page.getByRole("radio", { name: /Para que Tomás siguiera/ }).check();
-  await page.getByRole("button", { name: "Explorar mi respuesta" }).click();
+  await page.getByRole("button", { name: "Comprobar respuesta" }).click();
   await page.getByRole("button", { name: "Siguiente pregunta" }).click();
   await page.getByRole("radio", { name: /Que una pequeña ayuda/ }).check();
-  await page.getByRole("button", { name: "Explorar mi respuesta" }).click();
+  await page.getByRole("button", { name: "Comprobar respuesta" }).click();
   await page.getByRole("button", { name: "Ver mis descubrimientos" }).click();
   await expect(
     page.getByRole("heading", { name: "¡Mira todo lo que exploraste!" }),
@@ -110,7 +118,7 @@ test("el libro cambia nivel, conserva tamaño y responde al pasar páginas", asy
   await page.emulateMedia({ reducedMotion: "reduce" });
   const animation = page.getByLabel("Animar páginas");
   await expect(animation).toBeEnabled();
-  await expect(animation).not.toBeChecked();
+  await expect(animation).toBeChecked();
   if (await animation.isEnabled()) {
     await animation.uncheck();
     await next.scrollIntoViewIfNeeded();

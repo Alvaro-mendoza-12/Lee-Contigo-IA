@@ -1,6 +1,11 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import {
+  BOOK_LIFETIME,
+  makeSavedBook,
+  readSavedBook,
+} from "../lib/book-shelf.ts";
+import {
   containsPersonalDetails,
   coverInput,
   createStoryInput,
@@ -75,6 +80,37 @@ const validStory = {
     },
   ],
 };
+
+test("los libros temporales vencen a los siete días y omiten la idea y las respuestas", () => {
+  const book = makeSavedBook(generatedStorySchema.parse(validStory), "reto");
+  assert.equal(book.expiresAt - book.createdAt, BOOK_LIFETIME);
+  assert.equal(readSavedBook(book, book.expiresAt - 1)?.level, "reto");
+  assert.equal(readSavedBook(book, book.expiresAt), null);
+  assert.equal("idea" in book, false);
+  assert.equal("answers" in book, false);
+  assert.equal(readSavedBook({ ...book, expiresAt: book.expiresAt + 1 }), null);
+});
+
+test("el guardado descarta datos alterados y portadas ejecutables o externas", () => {
+  const book = makeSavedBook(generatedStorySchema.parse(validStory), "paso");
+  assert.equal(
+    readSavedBook({ ...book, cover: "/images/lectura-paisajes.png" })?.id,
+    book.id,
+  );
+  for (const cover of [
+    "javascript:alert(1)",
+    "https://example.com/image.png",
+    "data:image/svg+xml;base64,PHN2Zz4=",
+    "/images/../../secret.png",
+  ]) {
+    assert.equal(readSavedBook({ ...book, cover }), null);
+  }
+  assert.equal(
+    readSavedBook({ ...book, story: { ...book.story, paragraphs: [] } }),
+    null,
+  );
+  assert.equal(readSavedBook({ ...book, answers: [1] }), null);
+});
 
 test("el creador acepta solo ideas cortas con revisión adulta", () => {
   assert.equal(

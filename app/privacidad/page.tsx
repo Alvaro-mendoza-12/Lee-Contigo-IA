@@ -14,7 +14,8 @@ export default function Privacy() {
         El nivel y las respuestas seleccionadas se usan en memoria para mostrar
         el recorrido. No guardamos perfiles ni respuestas en una base de datos o
         en el almacenamiento del navegador. Al recargar o salir de la sesión se
-        reinicia el progreso.
+        reinicia el progreso de las preguntas. Los libros creados tienen un
+        guardado temporal independiente, descrito más abajo.
       </p>
       <h2>Qué se envía al solicitar una pista</h2>
       <p>
@@ -78,14 +79,31 @@ export default function Privacy() {
           política de privacidad de Microsoft
         </a>{" "}
         y las políticas del proveedor seleccionado. El filtro de no
-        entrenamiento no se activa y no se fuerza retención cero. Después, otra
-        solicitud automática usa la descripción visual y cuatro fragmentos del
-        cuento generado para ilustrar sus escenas; no vuelve a enviar la idea
-        original. La aplicación no guarda la idea, el cuento ni la imagen en una
-        cuenta, base de datos o almacenamiento del navegador: permanecen en
-        memoria mientras la página está abierta. El proveedor de IA y el
-        alojamiento pueden procesar las solicitudes y datos técnicos según sus
-        propias condiciones.
+        entrenamiento no se activa y no se fuerza retención cero. El proveedor
+        de IA y el alojamiento pueden procesar las solicitudes y datos técnicos
+        según sus propias condiciones. En el modo gratuito activo, el servidor
+        elige ilustraciones de la colección incluida; no llama a un proveedor de
+        imágenes.
+      </p>
+      <h2>Mis libros: guardado temporal en este dispositivo</h2>
+      <p>
+        Los seis libros más recientes se guardan automáticamente en una base
+        local del navegador (IndexedDB), junto con su nivel e ilustraciones.
+        Están disponibles durante siete días desde su creación. Al volver a
+        abrir este espacio se eliminan los registros vencidos y los que superan
+        el límite de seis. Si no abres la web, el navegador puede conservar
+        físicamente esos registros hasta la siguiente visita o hasta que borres
+        sus datos.
+      </p>
+      <p>
+        El guardado no incluye la idea original, respuestas, intentos ni un
+        perfil del niño. No sincroniza libros entre dispositivos ni los sube a
+        una cuenta. Otras personas que usen el mismo navegador pueden abrirlos.
+        Puedes borrar un libro o todos desde «Mis libros», o borrar los datos
+        del sitio en tu navegador. La navegación privada, la falta de espacio o
+        la limpieza del navegador pueden impedir el guardado o eliminar los
+        libros antes. Si falla, podrás seguir leyendo mientras la página esté
+        abierta.
       </p>
       <p>
         El cuento incluye tres tipos de preguntas —buscar información, inferir y
@@ -106,6 +124,33 @@ export default function Privacy() {
         preguntas. En este modo gratuito no se envía la historia a un proveedor
         de imágenes. Si el cuento incluye algo extraño, cierra la página y crea
         otro.
+      </p>
+      <h2>Escuchar una página</h2>
+      <p>
+        Al pulsar «Escuchar», el texto de esa página puede enviarse a ElevenLabs
+        para generar una narración en español. No enviamos la voz del niño, sus
+        respuestas ni identificadores de estudiante. Los párrafos de libros
+        nuevos llevan una autorización del servidor; los libros antiguos pueden
+        usar directamente la voz del dispositivo. Las grabaciones de los niños
+        no se solicitan ni se capturan.
+      </p>
+      <p>
+        ElevenLabs puede procesar y conservar el texto y el audio según sus
+        condiciones; el plan de demostración no ofrece una garantía de retención
+        cero. El servidor reutiliza temporalmente audio de cuentos del catálogo,
+        y el navegador reutiliza hasta seis páginas durante la sesión. Si el
+        servicio falla o llega a su límite, se intenta la síntesis de voz del
+        dispositivo. El estado del lector indica cuándo usa esa alternativa.
+        Narración con ElevenLabs: elevenlabs.io. Consulta su{" "}
+        <a
+          href="https://elevenlabs.io/privacy-policy"
+          target="_blank"
+          rel="noreferrer"
+        >
+          política de privacidad
+        </a>
+        . El audio de esta demo se utiliza bajo las condiciones del plan
+        configurado; el uso comercial necesita la licencia correspondiente.
       </p>
       <h2>Pistas con IA y pistas preparadas</h2>
       <p>
@@ -141,8 +186,9 @@ export default function Privacy() {
       </p>
       <h2>Volver a empezar</h2>
       <p>
-        Recarga la página o cierra la web para borrar el estado local de la
-        historia. No hay una cuenta que debas eliminar.
+        Recargar la página reinicia las respuestas y los intentos. Tus libros
+        permanecen en «Mis libros» durante el periodo indicado; usa sus botones
+        de borrado para quitarlos antes. No hay una cuenta que debas eliminar.
       </p>
       <Link className="button button-outline" href="/biblioteca">
         Volver a las historias

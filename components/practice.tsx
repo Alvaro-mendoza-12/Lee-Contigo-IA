@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import type { Story, Level } from "@/lib/stories";
 import { Journey } from "./journey";
+import { useAnswerSound, SoundControl, ReadFeedback } from "./answer-audio";
 type Hint = {
   hint: string;
   action?: string;
@@ -48,6 +49,7 @@ export function Practice({ story, level }: { story: Story; level: Level }) {
   const abort = useRef<AbortController | null>(null);
   const hintRequest = useRef(0);
   const question = version.questions[index];
+  const answerSound = useAnswerSound();
   useEffect(
     () => () => {
       hintRequest.current++;
@@ -79,6 +81,7 @@ export function Practice({ story, level }: { story: Story; level: Level }) {
     requestAnimationFrame(() => heading.current?.focus());
   }
   async function askHint() {
+    if (loading || hintCount >= 2) return;
     const requestId = ++hintRequest.current;
     setLoading(true);
     setReported(false);
@@ -86,7 +89,7 @@ export function Practice({ story, level }: { story: Story; level: Level }) {
     abort.current?.abort();
     const controller = new AbortController();
     abort.current = controller;
-    const timer = setTimeout(() => controller.abort(), 9000);
+    const timer = setTimeout(() => controller.abort(), 14000);
     try {
       const response = await fetch("/api/tutor", {
         method: "POST",
@@ -145,7 +148,7 @@ export function Practice({ story, level }: { story: Story; level: Level }) {
           <div className="skills-earned">
             {version.questions.map((q) => (
               <span key={q.id}>
-                <Check size={16} />
+                <Sprout size={16} aria-hidden="true" />
                 {q.skill}
               </span>
             ))}
@@ -183,7 +186,10 @@ export function Practice({ story, level }: { story: Story; level: Level }) {
           <ArrowLeft size={16} />
           Volver a leer
         </Link>
-        <span>{story.title}</span>
+        <SoundControl
+          enabled={answerSound.sound}
+          onChange={answerSound.setSound}
+        />
       </div>
       <div className="practice-layout">
         <section className="question-card">
@@ -219,7 +225,8 @@ export function Practice({ story, level }: { story: Story; level: Level }) {
                 className={
                   "answer " +
                   (selected === i ? "selected " : "") +
-                  (feedback === "correct" && i === selected ? "correct" : "")
+                  (feedback === "correct" && i === selected ? "correct" : "") +
+                  (feedback === "retry" && i === selected ? " incorrect" : "")
                 }
               >
                 <input
@@ -248,21 +255,35 @@ export function Practice({ story, level }: { story: Story; level: Level }) {
             ))}
           </fieldset>
           {feedback ? (
-            <div className={"answer-feedback " + feedback} role="status">
+            <div
+              className={
+                "answer-feedback " +
+                feedback +
+                (feedback === "retry" ? " feedback-incorrect" : "")
+              }
+              role="status"
+            >
               <strong>
                 {feedback === "correct"
                   ? "¡Encontraste una buena pista en el texto!"
                   : feedback === "revealed"
                     ? "Leamos juntos la parte clave."
-                    : "Probemos una vez más."}
+                    : "Aún no es la respuesta. Busquemos una pista."}
               </strong>
               <p>
                 {feedback === "correct"
                   ? question.explanation
                   : feedback === "revealed"
                     ? question.explanation
-                    : "Vuelve al relato o pide una pista. Puedes cambiar tu respuesta; aquí estamos para aprender."}
+                    : question.hints[
+                        Math.min(Math.max(incorrectAttempts - 1, 0), 1)
+                      ]}
               </p>
+              {feedback === "retry" ? (
+                <ReadFeedback
+                  text={`Aún no es la respuesta. ${question.hints[Math.min(Math.max(incorrectAttempts - 1, 0), 1)]}`}
+                />
+              ) : null}
               {feedback === "correct" || feedback === "revealed" ? (
                 <blockquote className="answer-evidence">
                   {version.paragraphs[question.paragraph]}
@@ -276,23 +297,6 @@ export function Practice({ story, level }: { story: Story; level: Level }) {
                   ¿Te ayudaría leerlo con frases más cortas? Prueba Paso a paso
                 </Link>
               ) : null}
-              {feedback === "retry" && hintCount < 2 ? (
-                <button
-                  className="text-button"
-                  disabled={loading}
-                  aria-controls="tutor-pistas"
-                  onClick={() => {
-                    void askHint();
-                    hintPanel.current?.scrollIntoView({ block: "nearest" });
-                    hintPanel.current?.focus({ preventScroll: true });
-                  }}
-                >
-                  <Lightbulb size={16} aria-hidden="true" />
-                  {loading
-                    ? "Preparando una pista…"
-                    : "Pedir una pista para reintentar"}
-                </button>
-              ) : null}
             </div>
           ) : null}
           <div className="question-actions">
@@ -304,8 +308,9 @@ export function Practice({ story, level }: { story: Story; level: Level }) {
             ) : (
               <button
                 className="button"
-                disabled={selected === null}
+                disabled={selected === null || feedback === "retry"}
                 onClick={() => {
+                  answerSound.play(selected === question.correct);
                   if (selected === question.correct) {
                     setFeedback("correct");
                     return;
@@ -313,10 +318,10 @@ export function Practice({ story, level }: { story: Story; level: Level }) {
                   const attempts = incorrectAttempts + 1;
                   setIncorrectAttempts(attempts);
                   setNeedsSupport(true);
-                  setFeedback(attempts >= 3 ? "revealed" : "retry");
+                  setFeedback("retry");
                 }}
               >
-                Explorar mi respuesta <ArrowRight size={18} />
+                Comprobar respuesta <ArrowRight size={18} />
               </button>
             )}
           </div>
@@ -352,15 +357,12 @@ export function Practice({ story, level }: { story: Story; level: Level }) {
             </span>
             <span className="small-label">UN EMPUJONCITO</span>
           </div>
-          <h2>
-            ¿Lo pensamos <br />
-            juntos?
-          </h2>
-          <p>A veces, una pequeña pista abre una gran idea.</p>
+          <h2>¿Necesitas una pista?</h2>
           <button
             className="button button-outline full-width"
             onClick={askHint}
-            disabled={loading || hintCount >= 2 || feedback === "revealed"}
+            disabled={hintCount >= 2 || feedback === "revealed"}
+            aria-disabled={loading}
             aria-busy={loading}
           >
             {loading ? (

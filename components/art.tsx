@@ -7,10 +7,77 @@ import forestBook from "@/public/images/bosque-libro-8.png";
 import seedBook from "@/public/images/semilla-libro-8.png";
 import lighthouseBook from "@/public/images/faro-libro-8.png";
 import kiteBook from "@/public/images/cometa-libro-8.png";
+import bridge from "@/public/images/puente-libro-4.png";
+import cloud from "@/public/images/nube-libro-4.png";
+import drum from "@/public/images/tambor-libro-4.png";
+import soundmap from "@/public/images/mapa-libro-4.png";
+import bread from "@/public/images/pan-libro-4.png";
+import sea from "@/public/images/mar-libro-4.png";
 import type { StoryArtVariant } from "@/lib/stories";
 import type { CSSProperties } from "react";
 
 const illustrations = { night: forest, seed, lighthouse, kite };
+const collectionArt = {
+  bridge: {
+    image: bridge,
+    descriptions: [
+      "Dos ardillas buscan una forma de cruzar el arroyo.",
+      "Las amigas comprueban una rama que se mueve.",
+      "Colocan piedras para sujetar el puente.",
+      "Las amigas transportan sus nueces por el puente estable.",
+    ],
+  },
+  cloud: {
+    image: cloud,
+    descriptions: [
+      "Una nube observa un jardín seco.",
+      "El girasol espera agua con las hojas inclinadas.",
+      "La nube recoge agua en la niebla de una montaña.",
+      "La lluvia suave devuelve humedad al jardín.",
+    ],
+  },
+  drum: {
+    image: drum,
+    descriptions: [
+      "Ari escucha gotas sobre un cubo.",
+      "Ari compara el sonido de un recipiente.",
+      "Recipientes de distintos tamaños reciben la lluvia bajo el techo.",
+      "Dos amigos comparten el ritmo de la lluvia.",
+    ],
+  },
+  soundmap: {
+    image: soundmap,
+    descriptions: [
+      "Sol escucha los sonidos del parque con su abuelo.",
+      "Sol dibuja la fuente en su mapa.",
+      "Sol descubre una bicicleta al seguir una campanilla.",
+      "Sol y su abuelo comparan el mapa con el parque.",
+    ],
+  },
+  bread: {
+    image: bread,
+    descriptions: [
+      "Inés y su abuela preparan la masa.",
+      "La masa está junto a una ventana fría.",
+      "Cambian el cuenco a una repisa templada.",
+      "Comparten la alegría de ver crecer la masa y preparar pan.",
+    ],
+  },
+  sea: {
+    image: sea,
+    descriptions: [
+      "Nara y Tico encuentran una botella en la playa.",
+      "El mensaje contiene dibujos de un pez y unas piedras.",
+      "Los amigos encuentran una poza junto a un arco de roca.",
+      "Descubren una concha junto a la poza.",
+    ],
+  },
+};
+function isCollection(
+  variant: StoryArtVariant,
+): variant is keyof typeof collectionArt {
+  return variant in collectionArt;
+}
 const bookIllustrations = {
   night: forestBook,
   seed: seedBook,
@@ -88,6 +155,41 @@ export function StoryArt({
   scene?: number;
   frame?: number;
 }) {
+  if (isCollection(variant)) {
+    const item = collectionArt[variant];
+    const panel = Math.min(3, Math.floor((scene ?? 0) / 2));
+    return (
+      <div
+        className={`story-art scene-art-grid ${className}`}
+        data-scene={scene === undefined ? "cover" : panel}
+        data-frame={frame}
+        style={
+          {
+            "--scene-x": `${panel % 2 ? -100 : 0}%`,
+            "--scene-y": `${panel >= 2 ? -100 : 0}%`,
+            "--atlas-columns": 2,
+            "--atlas-rows": 2,
+            "--art-zoom": 1.02,
+            "--art-focus": "50% 50%",
+          } as CSSProperties
+        }
+      >
+        <div className="art-camera">
+          <Image
+            src={item.image}
+            alt={item.descriptions[panel]}
+            sizes={
+              scene === undefined
+                ? "(max-width: 600px) 100vw, 700px"
+                : "(max-width: 600px) 200vw, 1200px"
+            }
+            preload={priority}
+            placeholder="blur"
+          />
+        </div>
+      </div>
+    );
+  }
   const book = scene !== undefined;
   const atlas = book || variant === "lighthouse" || variant === "kite";
   const panel = Math.min(Math.max(scene ?? 0, 0), book ? 7 : 3);

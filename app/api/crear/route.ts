@@ -1,5 +1,6 @@
 import { generateStructuredText, hasTextAi } from "@/lib/structured-ai";
 import { createHash } from "node:crypto";
+import { signParagraph } from "@/lib/narration";
 import { NoObjectGeneratedError } from "ai";
 import { z } from "zod";
 import { getGatewayFailureDetails } from "@/lib/ai-diagnostics";
@@ -168,7 +169,12 @@ export async function POST(request: Request) {
         502,
       );
 
-    return reply({ story });
+    const audioTokens = process.env.ELEVENLABS_API_KEY
+      ? story.paragraphs.map((p) =>
+          signParagraph(p, process.env.ELEVENLABS_API_KEY!),
+        )
+      : undefined;
+    return reply({ story, audioTokens });
   } catch (error) {
     const modelCouldNotFormatStory = NoObjectGeneratedError.isInstance(error);
     const gatewayFailure = getGatewayFailureDetails(error);

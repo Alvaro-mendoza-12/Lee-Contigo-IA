@@ -52,7 +52,7 @@ test("el cambio automático se puede pausar y la animación no desborda", async 
   ).toBeVisible();
   // Give the visibility observer a frame, then advance the real carousel timer.
   await page.clock.runFor(100);
-  await page.clock.runFor(7100);
+  await page.clock.runFor(3100);
   await expect(
     deck.getByRole("heading", { name: "La semilla viajera" }),
   ).toBeVisible();
@@ -77,16 +77,27 @@ test("el cambio automático se puede pausar y la animación no desborda", async 
 test("un error permite pedir apoyo de reintento sin enviar la respuesta", async ({
   page,
 }) => {
+  await page.route("**/api/tutor", (route) =>
+    route.fulfill({
+      contentType: "application/json",
+      body: JSON.stringify({
+        hint: "Busca en el segundo párrafo qué cambió esa noche.",
+        quote: "La luna estaba escondida detrás de las nubes.",
+        source: "prepared",
+        support: "retry",
+      }),
+    }),
+  );
   await page.goto("/practicar/luz-del-bosque?nivel=paso");
   await page
     .getByRole("radio", { name: /Porque quería buscar a la luna/ })
     .check();
-  await page.getByRole("button", { name: "Explorar mi respuesta" }).click();
+  await page.getByRole("button", { name: "Comprobar respuesta" }).click();
   const request = page.waitForRequest(
     (r) => r.url().endsWith("/api/tutor") && r.method() === "POST",
   );
   await page
-    .getByRole("button", { name: "Pedir una pista para reintentar" })
+    .getByRole("button", { name: "Dame una pista", exact: true })
     .click();
   expect((await request).postDataJSON()).toEqual({
     storyId: "luz-del-bosque",
@@ -99,8 +110,6 @@ test("un error permite pedir apoyo de reintento sin enviar la respuesta", async 
     page.getByText("Una ayuda para volver a intentarlo"),
   ).toBeVisible({ timeout: 12000 });
   await expect(
-    page.getByRole("complementary", {
-      name: "Ayuda para comprender el relato",
-    }),
+    page.getByRole("button", { name: "Dame otra pista", exact: true }),
   ).toBeFocused();
 });
