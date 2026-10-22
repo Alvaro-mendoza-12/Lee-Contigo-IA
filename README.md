@@ -8,6 +8,8 @@ Tutor web de comprensión lectora para niños de aproximadamente 8 a 10 años. M
 
 ## Qué incluye
 
+**Inicio infantil:** portada de libro con lomo verde, papel soleado y portadas que cambian. Una acción principal para leer y dos destinos con iconos: biblioteca e inventar un cuento. En móvil hay menos texto periférico y un creador más compacto. Ver `documentacion_tutor_lectura_ia/26_portada_infantil_y_movil.md`.
+
 **Lector rediseñado:** libro abierto a todo el ancho, pliegue y hojas con volumen, giro de 180 grados, texto e ilustración que alternan de lado y ocho escenas interiores en los cuatro cuentos iniciales y cuatro escenas en cada cuento nuevo. En teléfonos se usa una hoja vertical legible. Los controles se simplificaron y la caja permanece estable al avanzar. Ver `documentacion_tutor_lectura_ia/18_lector_editorial_y_validacion.md`.
 
 Diez relatos originales, cada uno adaptado editorialmente a dos niveles: **Paso a paso** y **Un nuevo reto**. La lectura se presenta como un libro por páginas, con once tamaños de letra, voz opcional, animación de cambio de página que se puede desactivar y acceso al texto continuo. En móvil, el relato se reparte en páginas más cortas. La biblioteca usa una sola tarjeta por destino y el inicio abre directamente un cuento.
@@ -39,7 +41,7 @@ npm.cmd test
 npx.cmd playwright test
 ```
 
-Comprobación del corte actual: 28 pruebas unitarias y 42 recorridos de navegador en escritorio y móvil aprobados contra una compilación de producción. Incluyen accesibilidad automática con axe, selección y ayuda contextual, cambio de nivel, animación, elección de voz, respaldo audible y guardado local de ilustraciones simuladas. Se comprobaron las tres voces mediante ElevenLabs real; la generación real de Cloudflare respondió correctamente y OpenRouter devolvió un límite de disponibilidad en la última comprobación. Las pruebas simuladas no garantizan disponibilidad de proveedores ni eficacia educativa. Los documentos 18, 24 y 25 distinguen comprobaciones anteriores y actuales.
+Comprobación del corte actual: 29 pruebas unitarias y 44 recorridos de navegador en escritorio y móvil aprobados contra una compilación de producción. Incluyen accesibilidad automática con axe, selección y ayuda contextual, cambio de nivel, animación, elección de voz, respaldo audible y guardado local de ilustraciones simuladas. Se comprobaron las tres voces mediante ElevenLabs real; la generación real de Cloudflare respondió correctamente y OpenRouter devolvió un límite de disponibilidad en la última comprobación. Las pruebas simuladas no garantizan disponibilidad de proveedores ni eficacia educativa. Los documentos 18, 24 y 25 distinguen comprobaciones anteriores y actuales.
 
 Para las comprobaciones de navegador hay que instalar Chromium con `npx.cmd playwright install chromium`. Se pueden dirigir al despliegue público mediante `TEST_BASE_URL`.
 
@@ -85,3 +87,5 @@ El selector «¿Quién te lee?» permite elegir George, Sarah o Daniel, y recuer
 Cloudflare necesita `CLOUDFLARE_API_TOKEN` con acceso de Workers AI y `CLOUDFLARE_ACCOUNT_ID` en servidor. Se usa exclusivamente `@cf/black-forest-labs/flux-1-schnell`, cuatro pasos y dos solicitudes simultáneas; no activa planes ni compra créditos. Las imágenes se comprimen a WebP y se guardan con el libro local. La disponibilidad depende del permiso y la cuota de la cuenta. Sin configuración, o ante un fallo, siguen las ilustraciones vectoriales.
 
 Los detalles de ayuda contextual, imágenes, voces, límites y comprobaciones de este corte están en `documentacion_tutor_lectura_ia/25_ayuda_contextual_imagenes_y_voces.md`.
+
+Cloudflare también respalda el texto si los otros proveedores fallan: Llama 3.3 70B en JSON Mode, con el mismo esquema y las mismas validaciones pedagógicas. Se reserva tiempo dentro del plazo total de cada función; no abre un chat ni cambia de clave ante límites de cuenta. El texto y las imágenes comparten la asignación de Workers AI. La ruta publicada de imágenes se comprobó con seis resultados distintos para un cuento en 17 segundos.

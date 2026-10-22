@@ -7,7 +7,7 @@ test("recorrido completo, reintento y pista de respaldo", async ({ page }) => {
   const errors: string[] = [];
   page.on("pageerror", (error) => errors.push(error.message));
   await page.goto("/");
-  await page.getByRole("link", { name: "Ver los 10 cuentos" }).click();
+  await page.getByRole("link", { name: /Explora la biblioteca/ }).click();
   await expect(
     page.getByRole("heading", { name: "Elige tu cuento" }),
   ).toBeVisible();

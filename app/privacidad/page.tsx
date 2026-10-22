@@ -28,9 +28,11 @@ export default function Privacy() {
         puede servirse mediante Google o Google Vertex AI; GPT-5.4 Nano,
         mediante OpenAI o Azure. La selección depende de las rutas disponibles
         en AI Gateway. Como respaldo, el servidor puede usar OpenRouter con
-        modelos gratuitos. En OpenRouter se solicita excluir proveedores que
-        declaran usar el contenido para entrenamiento; esto no garantiza que no
-        exista retención técnica. Consulta su{" "}
+        modelos gratuitos. Si ambos servicios fallan y hay cuota disponible, el
+        servidor puede usar Llama 3.3 70B mediante Cloudflare Workers AI con las
+        mismas validaciones de formato y contenido. En OpenRouter se solicita
+        excluir proveedores que declaran usar el contenido para entrenamiento;
+        esto no garantiza que no exista retención técnica. Consulta su{" "}
         <a
           href="https://openrouter.ai/docs/guides/privacy/provider-logging"
           target="_blank"
@@ -54,7 +56,11 @@ export default function Privacy() {
         OpenAI o Azure pueden servir el respaldo. Las políticas y condiciones de
         cada proveedor pueden variar. Si AI Gateway falla, puede intentarse
         mediante OpenRouter con modelos gratuitos y las mismas validaciones.
-        Consulta la{" "}
+        Cloudflare Workers AI puede actuar como último respaldo para escribir el
+        cuento, preparar sus escenas o explicar un pasaje. En ese caso recibe la
+        idea ficticia o el texto necesario para esa función, el nivel y las
+        instrucciones pedagógicas. No se envían respuestas elegidas ni un perfil
+        del estudiante. Consulta la{" "}
         <a
           href="https://cloud.google.com/privacy"
           target="_blank"

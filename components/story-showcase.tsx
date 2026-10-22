@@ -103,9 +103,7 @@ export function StoryShowcase({ covers }: { covers: Cover[] }) {
           <Sparkles size={18} />
         </span>
         <span>
-          La curiosidad empieza
-          <br />
-          <strong>con una historia.</strong>
+          <strong>¿Abrimos este?</strong>
         </span>
       </div>
       <div className="hero-deck-stage">
@@ -142,7 +140,7 @@ export function StoryShowcase({ covers }: { covers: Cover[] }) {
                   </div>
                   <div className="hero-book-caption">
                     <div>
-                      <span className="small-label">TU PRÓXIMA AVENTURA</span>
+                      <span className="small-label">Un cuento para ti</span>
                       <h2>{cover.title}</h2>
                     </div>
                     <span className="circle-link" aria-hidden="true">
@@ -160,9 +158,7 @@ export function StoryShowcase({ covers }: { covers: Cover[] }) {
           <BookOpen size={18} />
         </span>
         <span>
-          Un paso a la vez.
-          <br />
-          <strong>Vas muy bien.</strong>
+          <strong>A tu ritmo</strong>
         </span>
       </div>
       {covers.length > 1 ? (

@@ -18,6 +18,40 @@ function sampleAudio() {
   return data;
 }
 
+test("la portada infantil organiza sus destinos y no desborda a 320 px", async ({
+  page,
+}) => {
+  await page.goto("/");
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText(
+    "Abre un cuento.Empieza la aventura.",
+  );
+  const chapters = page.getByRole("region", { name: "¿Qué aventura eliges?" });
+  await expect(chapters.getByRole("link")).toHaveCount(2);
+  await expect(
+    chapters.getByRole("link", { name: /Explora la biblioteca/ }),
+  ).toHaveAttribute("href", "/biblioteca");
+  await expect(
+    chapters.getByRole("link", { name: /Inventa tu cuento/ }),
+  ).toHaveAttribute("href", "/crear");
+  const axe = await new AxeBuilder({ page })
+    .withTags(["wcag2a", "wcag2aa", "wcag21aa", "wcag22aa"])
+    .analyze();
+  expect(axe.violations).toEqual([]);
+  await page.setViewportSize({ width: 320, height: 740 });
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= innerWidth,
+    ),
+  ).toBe(true);
+  await page.goto("/crear");
+  await expect(page.getByLabel("Mi idea para el cuento")).toBeVisible();
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= innerWidth,
+    ),
+  ).toBe(true);
+});
+
 test("inicio directo, diez cuentos completos y navegación visible en móvil", async ({
   page,
 }) => {

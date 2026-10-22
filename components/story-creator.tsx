@@ -515,14 +515,10 @@ export function StoryCreator() {
       {screen === "form" ? (
         <>
           <header className="creator-heading">
-            <span className="small-label">UN CUENTO NACIDO DE TU IDEA</span>
             <h1 ref={activeHeading} tabIndex={-1}>
-              ¿Qué historia imaginamos hoy?
+              Tu idea, tu cuento
             </h1>
-            <p>
-              Una idea tuya, un libro para descubrir. Con ilustraciones, páginas
-              para pasar y pequeñas preguntas para pensar.
-            </p>
+            <p>Imagina un personaje. Nosotros abrimos su aventura.</p>
           </header>
           <div
             className="creator-workspace-tabs"
@@ -566,8 +562,7 @@ export function StoryCreator() {
               </label>
 
               <p className="creator-help" id="idea-help">
-                Por ejemplo: «Una tortuga quiere llegar al faro antes del
-                anochecer».
+                Por ejemplo: «Una tortuga busca un faro».
               </p>
               <textarea
                 id="story-idea"
@@ -577,9 +572,9 @@ export function StoryCreator() {
                 onChange={(event) => setIdea(event.target.value.slice(0, 220))}
                 maxLength={220}
                 minLength={12}
-                rows={4}
+                rows={3}
                 aria-describedby="idea-help idea-count"
-                placeholder="Escribe una idea de cuento, no información sobre ti…"
+                placeholder="Un personaje, un lugar, una aventura…"
                 required
               />
               <div className="creator-count" id="idea-count" aria-live="polite">
@@ -641,7 +636,9 @@ export function StoryCreator() {
                       </span>
                       <span>
                         <strong>{item.label}</strong>
-                        <small>{item.description}</small>
+                        <small>
+                          {id === "paso" ? "Frases cortas" : "Nuevas palabras"}
+                        </small>
                       </span>
                       {level === id ? (
                         <Check size={18} aria-hidden="true" />
@@ -657,11 +654,7 @@ export function StoryCreator() {
               >
                 <ShieldCheck size={22} aria-hidden="true" />
                 <div>
-                  <strong>Imagina con libertad</strong>
-                  <p>
-                    Usa personajes imaginarios. Guarda para ti tu nombre,
-                    colegio, dirección y otros datos personales.
-                  </p>
+                  <strong>Personajes inventados, sin datos personales.</strong>
                   <Link href="/privacidad">Información para familias</Link>
                 </div>
               </aside>
@@ -694,7 +687,7 @@ export function StoryCreator() {
 
               <p className="creator-save-note">
                 <BookOpen size={16} aria-hidden="true" />
-                Tus libros se guardan aquí durante siete días. Puedes borrarlos.
+                Libros guardados 7 días en este dispositivo.
               </p>
 
               <button
