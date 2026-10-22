@@ -26,6 +26,7 @@ const validStory = {
       options: ["Un mapa", "Una campana", "Una flor"],
       correctIndex: 0,
       evidenceParagraph: 0,
+      evidenceQuote: "Una tortuga curiosa encontró un mapa junto al jardín",
       explanation:
         "El primer párrafo cuenta que la tortuga encontró un mapa junto al jardín.",
       hints: [
@@ -43,6 +44,7 @@ const validStory = {
       ],
       correctIndex: 0,
       evidenceParagraph: 2,
+      evidenceQuote: "buscaba el camino de regreso a casa y parecía confundida",
       explanation:
         "La visitante buscaba el camino de regreso y no sabía cómo encontrarlo.",
       hints: [
@@ -60,6 +62,8 @@ const validStory = {
       ],
       correctIndex: 0,
       evidenceParagraph: 3,
+      evidenceQuote:
+        "La tortuga compartió el mapa y caminaron juntas bajo las estrellas",
       explanation:
         "El último párrafo muestra cómo compartir una ayuda permitió que ambas siguieran juntas.",
       hints: [
@@ -124,6 +128,20 @@ test("valida cuentos con estructura de lectura y bloquea datos o contenido inade
   assert.equal(parsed.success, true);
   if (!parsed.success) return;
   assert.equal(isAppropriateStory(parsed.data), true);
+
+  const quoteFromWrongParagraph = {
+    ...parsed.data,
+    questions: parsed.data.questions.map((question, index) =>
+      index === 0
+        ? {
+            ...question,
+            evidenceQuote:
+              "El camino subía hasta una colina y la tortuga avanzó despacio.",
+          }
+        : question,
+    ),
+  };
+  assert.equal(isAppropriateStory(quoteFromWrongParagraph), false);
 
   const repeatedSkill = {
     ...parsed.data,

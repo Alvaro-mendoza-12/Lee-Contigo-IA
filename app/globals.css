@@ -3664,6 +3664,29 @@ svg {
 .creator-answer-feedback .button {
   margin-top: 13px;
 }
+.creator-answer-evidence {
+  margin-top: 14px;
+  padding: 12px 14px;
+  border: 1px solid #d8e2d5;
+  border-radius: 12px;
+  background: #f5f8f2;
+  color: #304c3c;
+  overflow-wrap: anywhere;
+}
+.creator-answer-evidence > .small-label {
+  display: block;
+  margin-bottom: 6px;
+  letter-spacing: 0.06em;
+}
+.creator-answer-evidence > blockquote {
+  margin: 0;
+  font-weight: 650;
+  line-height: 1.55;
+}
+.creator-answer-evidence .creator-hint-evidence p {
+  margin: 8px 0 0;
+  line-height: 1.55;
+}
 .creator-tutor-hint > .small-label {
   display: flex;
   align-items: center;

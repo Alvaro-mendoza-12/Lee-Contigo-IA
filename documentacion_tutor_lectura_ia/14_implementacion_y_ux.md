@@ -19,7 +19,7 @@ Este documento describe el producto construido. Los documentos 00 a 13 son el an
 | Privacidad   | `/privacidad`                            | Información que procesa el recorrido y límites del prototipo.                                                                                                                                                                                 |
 | Tutor        | `POST /api/tutor`                        | Valida identificadores editoriales y solicita una pista a IA Gateway.                                                                                                                                                                         |
 | Cuento IA    | `POST /api/crear` y `/api/crear/portada` | Genera relato, preguntas, pistas y evidencia estructurados en una solicitud. Una segunda solicitud opcional genera la portada.                                                                                                                |
-| Estado       | `GET /api/estado`                        | Indica que la aplicación responde, el modo de autenticación configurado y que el acceso del tutor no se ha comprobado; no expone claves.                                                                                                         |
+| Estado       | `GET /api/estado`                        | Indica que la aplicación responde, el modo de autenticación configurado y que el acceso del tutor no se ha comprobado; no expone claves.                                                                                                      |
 
 ### Relatos y adaptación al nivel
 
@@ -36,7 +36,7 @@ La vista previa de la biblioteca cambia junto con el nivel para que se aprecie l
 
 La adaptación de los relatos de biblioteca es editorial y está incluida en el catálogo. El creador genera cuentos bajo demanda con un nivel elegido por el lector y una portada desde una segunda solicitud. El modelo no determina automáticamente el grado del niño ni diagnostica dificultades. Los niveles son opciones de práctica, no equivalencias certificadas de edad o grado escolar.
 
-Al terminar un cuento personalizado, el quiz trabaja tres habilidades: localizar información, inferir una idea y comprender la idea principal. Cada pregunta incluye dos pistas graduadas y un párrafo de evidencia. Tras el primer y segundo error, la persona vuelve al texto e intenta otra vez; tras tres respuestas incorrectas, se muestra una explicación. Las respuestas no se envían al modelo ni se califican como nota escolar. Esto mantiene una segunda interacción pedagógica sin sumar una llamada de IA por pregunta.
+Al terminar un cuento personalizado, el quiz trabaja tres habilidades: localizar información, inferir una idea y comprender la idea principal. Cada pregunta incluye dos pistas graduadas, un párrafo de evidencia y una cita literal generada desde ese mismo párrafo. El servidor normaliza acentos, signos y espacios y exige que la cita aparezca como secuencia continua en el párrafo señalado; si no, rechaza el cuento y hace el reintento limitado. Tras acertar o después de tres intentos, el niño ve la cita y puede desplegar el párrafo completo. Esta comprobación prueba que la cita no fue inventada fuera del relato, pero no que la respuesta sea pedagógicamente correcta; hace falta revisión humana. Tras el primer y segundo error, la persona vuelve al texto e intenta otra vez. Las respuestas no se envían al modelo ni se califican como nota escolar. Esto mantiene una segunda interacción pedagógica sin sumar una llamada de IA por pregunta.
 
 La práctica de los relatos de biblioteca sigue el mismo andamiaje: el primer y segundo error invitan a revisar el texto o pedir una pista; el tercer error revela la explicación y el párrafo que la respalda, y permite continuar sin tener que acertar. Si el lector eligió «Un nuevo reto», también puede abrir voluntariamente la versión «Paso a paso». El nivel no se cambia automáticamente ni se presenta como diagnóstico.
 
@@ -58,7 +58,7 @@ Controles implementados:
 - Solicitud de hasta 1 KB; comprobación de origen cuando el navegador lo envía.
 - Salida estructurada con longitud limitada a 350 caracteres y 45 palabras; filtro de URL, HTML y revelación literal de la opción correcta.
 - Para pistas del catálogo, tiempo máximo de consulta de 6,5 segundos y hasta 600 tokens de salida; ante fallo se usa la pista editorial. El creador de cuentos permite un reintento limitado al fallar la estructura o el filtro de calidad, hasta 1.900 tokens de salida por intento.
-- Salida del cuento con tres habilidades distintas, dos pistas cortas por pregunta, párrafo de evidencia y explicación; se rechaza si falta una habilidad o alguna pista contiene datos personales, contenido no permitido o la respuesta correcta textual.
+- Salida del cuento con tres habilidades distintas, dos pistas cortas por pregunta, párrafo y cita literal de evidencia y explicación; se rechaza si falta una habilidad, la cita no pertenece al párrafo señalado o alguna pista contiene datos personales, contenido no permitido o la respuesta correcta textual.
 - El quiz da hasta tres oportunidades, muestra el párrafo de evidencia y revela la explicación al acertar o después de tres intentos. No hay calificación numérica ni llamada de IA por intento.
 - Caché en memoria para combinaciones editoriales repetidas. La caché no contiene respuestas del estudiante y puede desaparecer al reiniciar una instancia.
 - Límite de 12 solicitudes por 10 minutos y huella de conexión por instancia. No es una cuota global para todos los servidores.
@@ -118,8 +118,8 @@ Los registros de fallos de IA incluyen categoría y modelo; cuando Gateway los p
 ## 5. Comprobaciones realizadas
 
 - Compilación de producción y comprobación de TypeScript.
-- Seis comprobaciones unitarias: coherencia del catálogo, entradas estrictas, manejo de niveles, plan de apoyo de reintento, filtro de pistas y conservación del texto al paginar en móvil/escritorio.
-- Dieciocho comprobaciones de navegador sobre flujo completo, selección de relato/nivel, cambio de página, tamaños de letra, animación opcional, planificador de acompañamiento, accesibilidad, API, portadas, pausa y ayuda después de un error. Incluyen móvil y escritorio, siete rutas sin desbordamiento horizontal y las reglas WCAG A/AA seleccionadas por axe.
+- Diez comprobaciones unitarias: coherencia del catálogo, validación de citas contra el párrafo señalado, entradas estrictas, manejo de niveles, plan de apoyo de reintento, filtro de pistas y conservación del texto al paginar en móvil/escritorio.
+- Veinte recorridos de navegador aprobados en escritorio y móvil sobre flujo completo, selección de relato/nivel, cambio de página, tamaños de letra, animación opcional, planificador de acompañamiento, accesibilidad, API, portadas, pausa, ayuda después de error y cita de evidencia del cuento generado. El recorrido de generación simula la respuesta de IA; no confirma la disponibilidad de AI Gateway en producción.
 - Revisión visual de inicio, lectura y práctica en pantallas de escritorio y móvil.
 - Una comprobación real anterior observó una respuesta de tutor con `source: "ai"`; eso confirma que el flujo llegó a funcionar, no que esté disponible ahora.
 - Ocho comprobaciones de navegador adicionales dirigidas a la URL pública: todas aprobadas. Se verificaron además pistas reales de ambas historias y de los dos niveles, y GitHub Actions terminó con resultado satisfactorio para la versión publicada.

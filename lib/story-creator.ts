@@ -33,6 +33,7 @@ export const generatedStorySchema = z.object({
         options: z.array(z.string().trim().min(1).max(100)).length(3),
         correctIndex: z.number().int().min(0).max(2),
         evidenceParagraph: z.number().int().min(0).max(3),
+        evidenceQuote: z.string().trim().min(20).max(150),
         explanation: z.string().trim().min(20).max(260),
         hints: z.array(z.string().trim().min(20).max(180)).length(2),
       }),
@@ -76,6 +77,7 @@ export function isAppropriateStory(
     ...story.questions.flatMap((question) => [
       question.prompt,
       ...question.options,
+      question.evidenceQuote,
       question.explanation,
       ...question.hints,
     ]),
@@ -95,8 +97,17 @@ export function isAppropriateStory(
     });
   });
 
+  const evidenceQuotesAreGrounded = story.questions.every((question) => {
+    const paragraph = normalizeForComparison(
+      story.paragraphs[question.evidenceParagraph],
+    );
+    const quote = normalizeForComparison(question.evidenceQuote);
+    return quote.length >= 20 && paragraph.includes(quote);
+  });
+
   return (
     hintsDoNotGiveAnswers &&
+    evidenceQuotesAreGrounded &&
     !containsPersonalDetails(text) &&
     !unsafeStoryPattern.test(text)
   );

@@ -39,6 +39,7 @@ En el creador de cuentos, una sola generación produce el relato, tres preguntas
 - Pregunta 2: inferir una causa, motivo o consecuencia usando el texto.
 - Pregunta 3: expresar la idea principal o el aprendizaje global del relato.
 - Guardar `evidenceParagraph` para que el tutor muestre al niño dónde buscar.
+- Adjuntar `evidenceQuote`, una frase literal del párrafo elegido. El servidor comprueba que la cita aparezca en ese mismo párrafo antes de entregar el cuento; después de acertar o de tres intentos se muestra la frase y se puede abrir el párrafo completo.
 - Pista 1: invita a volver al párrafo y observar una señal concreta.
 - Pista 2: sugiere una operación mental (comparar, relacionar causa y efecto o resumir el cambio), sin nombrar la opción correcta.
 - Si la respuesta sigue sin coincidir después de tres intentos, se revela la explicación vinculada a la evidencia. No se asigna nota ni se guarda el historial.

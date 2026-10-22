@@ -19,6 +19,7 @@
 ### Calidad educativa
 
 - ¿Las preguntas miden la habilidad declarada?
+- ¿La frase presentada como evidencia aparece literalmente en el párrafo señalado y ayuda a justificar la respuesta?
 - ¿La pista impulsa comprensión o entrega la respuesta?
 - ¿La adaptación conserva sentido y nivel apropiado?
 - ¿El docente considera útil el resumen agregado?

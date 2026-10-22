@@ -12,7 +12,7 @@ Dos relatos originales, cada uno adaptado editorialmente a dos niveles: **Paso a
 
 En **Para acompañar**, una persona adulta puede elegir cuento, nivel y objetivo de conversación; la guía propone preguntas para antes, durante y al terminar. Esas opciones continúan en la lectura. El estudiante explora tres preguntas. El tutor genera pistas breves con IA según el relato, la pregunta y el nivel. Tras un error, el modo de reintento pide otra estrategia para buscar evidencia, sin enviar la respuesta seleccionada. Cada pista permite consultar la evidencia en el texto. En la práctica, al tercer error se muestra la explicación y el párrafo que la respalda; quien eligió **Un nuevo reto** puede optar por leer la versión **Paso a paso**.
 
-En **Crea tu cuento**, el niño propone una idea breve y elige un nivel. Una persona adulta debe revisar la idea. Cuando AI Gateway está disponible, genera un relato con tres preguntas: localizar información, inferir e identificar la idea principal. Cada pregunta incluye dos pistas graduales ligadas a un párrafo del cuento. Al equivocarse, el niño ve una pista y puede intentarlo otra vez; su respuesta se queda en el navegador y no provoca otra llamada a IA. La explicación aparece al acertar o tras tres intentos. La ilustración de portada es opcional y requiere una segunda confirmación adulta: se genera con FLUX 3 Image, que actualmente figura a USD 0.05 por imagen y cuya política permite usar prompts e imágenes para mejorar modelos. Revisa el aviso en pantalla antes de solicitarla. La lectura aparece como libro con cambio de página, tamaño ajustable y voz opcional. El texto y la ilustración se conservan solo en memoria mientras la página está abierta; no se guardan en una cuenta ni una base de datos. Si falla la generación, la idea permanece en el formulario y la biblioteca sigue disponible.
+En **Crea tu cuento**, el niño propone una idea breve y elige un nivel. Una persona adulta debe revisar la idea. Cuando AI Gateway está disponible, genera un relato con tres preguntas: localizar información, inferir e identificar la idea principal. Cada pregunta incluye dos pistas graduales y una cita literal de evidencia que el servidor verifica contra el párrafo señalado. Al acertar o tras tres intentos, el niño puede revisar esa frase y abrir el párrafo completo. Si se equivoca, ve una pista y puede intentarlo otra vez; su respuesta se queda en el navegador y no provoca otra llamada a IA. La ilustración de portada es opcional y requiere una segunda confirmación adulta. La lectura aparece como libro con cambio de página, tamaño ajustable y voz opcional. El texto y la ilustración se conservan solo en memoria mientras la página está abierta; no se guardan en una cuenta ni una base de datos. Si falla la generación, la idea permanece en el formulario y la biblioteca sigue disponible.
 
 La portada presenta los cuentos apilados, con un intercambio suave cada siete segundos. Incluye navegación manual y pausa; se detiene con foco de teclado, al pasar el cursor, al salir de pantalla o al ocultar la pestaña. Con movimiento reducido no hay reproducción automática ni animación.
 
@@ -37,7 +37,7 @@ npm.cmd test
 npx.cmd playwright test
 ```
 
-Comprobación registrada en este corte: seis pruebas unitarias y 18 recorridos de navegador en escritorio y móvil, incluidos los flujos de libro y acompañamiento.
+Comprobación de este corte: diez pruebas unitarias, typecheck y build aprobados; 20 recorridos de navegador aprobados en escritorio y móvil, incluidos el creador simulado, la cita de evidencia, lectura y acompañamiento. El recorrido del creador usa una respuesta de prueba y no confirma acceso real a AI Gateway.
 
 Para las comprobaciones de navegador hay que instalar Chromium con `npx.cmd playwright install chromium`. Se pueden dirigir al despliegue público mediante `TEST_BASE_URL`.
 
@@ -49,7 +49,7 @@ En Vercel se usa autenticación OIDC del proyecto. Para desarrollo se puede usar
 
 Si la IA no está configurada, se agota el saldo, hay un límite de uso o la salida no pasa los controles, se muestra una **pista preparada** claramente identificada. Una pista de respaldo no se presenta como generación de IA.
 
-AI Gateway ofrece una asignación gratuita limitada a modelos elegibles; no es uso ilimitado. No se ha comprado saldo ni activado recarga automática desde el proyecto. Condiciones vigentes: https://vercel.com/docs/ai-gateway/pricing.
+La documentación vigente de Vercel anuncia USD 5 de crédito mensual en el nivel gratuito y acceso a los modelos disponibles del catálogo; el consumo depende del modelo y los tokens. Esto no garantiza disponibilidad en una cuenta o equipo específicos. La última falla observada en producción fue un HTTP 403 de AI Gateway con motivo interno genérico; no está confirmado que se deba al saldo o al modelo. No se ha comprado saldo ni activado recarga automática desde el proyecto. Revisar condiciones y saldo antes de una demo: https://vercel.com/docs/ai-gateway/pricing.
 
 ## Privacidad y alcance
 

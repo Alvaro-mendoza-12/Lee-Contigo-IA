@@ -27,6 +27,8 @@
 17. [Gemini 3.8 Flash en AI Gateway](https://vercel.com/ai-gateway/models/gemini-3.8-flash) y [documentación de modelos de Google](https://ai.google.dev/gemini-api/docs/models/gemini-3.8-flash) — disponibilidad, compatibilidad de salidas estructuradas y capacidades. El precio cambia; consultar el catálogo antes de calcular costos.
 18. [Plan Hobby de Vercel](https://vercel.com/docs/plans/hobby) — uso gratuito orientado a proyectos personales y no comerciales; verificar condiciones actuales antes de vender.
 19. [Repositorio de skills de Vercel](https://github.com/vercel-labs/agent-skills) — catálogo revisado para recomendar skills.
+20. [Providing Reading Interventions for Students in Grades 4–9, What Works Clearinghouse/IES](https://ies.ed.gov/ncee/WWC/Docs/PracticeGuide/WWC-practice-guide-reading-intervention-full-text.pdf) — recomienda construir ideas principales con apoyo, pedir razones y hacer que el estudiante señale partes del texto; orienta el anclaje de las pistas y evidencia. No valida por sí sola la eficacia del producto.
+21. [Access is Not Enough: Human Support Improves Engagement with AI Tutoring, Stanford SCALE/NSSA (2026)](https://nssa.stanford.edu/studies/access-not-enough-human-support-improves-engagement-ai-tutoring) — dos ensayos aleatorizados con 355 estudiantes de primaria encontraron que el apoyo adulto elevó el uso, pero la intervención no mejoró el logro lector. Refuerza el rol del adulto y la necesidad de evaluar resultados sin prometer impacto.
 
 ## Límites
 

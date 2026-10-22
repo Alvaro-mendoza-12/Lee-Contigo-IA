@@ -724,6 +724,13 @@ export function StoryCreator() {
               >
                 <strong>¡Muy bien! Usaste el relato para comprobarlo.</strong>
                 <p>{currentQuestion.explanation}</p>
+                <StoryEvidence
+                  quote={currentQuestion.evidenceQuote}
+                  paragraph={
+                    story.paragraphs[currentQuestion.evidenceParagraph]
+                  }
+                  paragraphNumber={currentQuestion.evidenceParagraph + 1}
+                />
                 <button className="button" type="button" onClick={nextQuestion}>
                   {questionIndex === story.questions.length - 1
                     ? "Terminar cuento"
@@ -741,6 +748,13 @@ export function StoryCreator() {
               >
                 <strong>Vamos a leer la respuesta con calma.</strong>
                 <p>{currentQuestion.explanation}</p>
+                <StoryEvidence
+                  quote={currentQuestion.evidenceQuote}
+                  paragraph={
+                    story.paragraphs[currentQuestion.evidenceParagraph]
+                  }
+                  paragraphNumber={currentQuestion.evidenceParagraph + 1}
+                />
                 <button className="button" type="button" onClick={nextQuestion}>
                   {questionIndex === story.questions.length - 1
                     ? "Terminar cuento"
@@ -841,5 +855,29 @@ export function StoryCreator() {
         </section>
       ) : null}
     </div>
+  );
+}
+
+function StoryEvidence({
+  quote,
+  paragraph,
+  paragraphNumber,
+}: {
+  quote: string;
+  paragraph: string;
+  paragraphNumber: number;
+}) {
+  return (
+    <section
+      className="creator-answer-evidence"
+      aria-label="Evidencia del cuento"
+    >
+      <span className="small-label">Una frase del cuento lo muestra</span>
+      <blockquote>{quote}</blockquote>
+      <details className="creator-hint-evidence">
+        <summary>Leer el párrafo {paragraphNumber} completo</summary>
+        <p>{paragraph}</p>
+      </details>
+    </section>
   );
 }
