@@ -6,12 +6,30 @@ import {
   safeReadingHelp,
   preparedReadingHelp,
   normalizeParagraph,
+  completeReadingHelp,
 } from "../lib/reading-help.ts";
 import { signParagraph } from "../lib/narration.ts";
 import {
   composeStoryPlan,
   scenePlanSchema,
 } from "../lib/story-illustrations.ts";
+
+test("una explicación recortada conserva solo frases completas o usa el respaldo", () => {
+  const prepared = preparedReadingHelp("diminuta", 0);
+  const result = completeReadingHelp({
+    ...prepared,
+    explanation: "Diminuta significa muy pequeña. Esta luz puede servir de",
+  });
+  assert.equal(result?.explanation, "Diminuta significa muy pequeña.");
+  assert.equal(
+    completeReadingHelp({
+      ...prepared,
+      explanation: "Esta luz puede servir de",
+    }),
+    null,
+  );
+  assert.deepEqual(completeReadingHelp(prepared), prepared);
+});
 
 test("la ayuda solo acepta partes canónicas, etapas acotadas y ningún prompt libre", () => {
   const input = {

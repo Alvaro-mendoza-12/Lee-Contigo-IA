@@ -1,5 +1,7 @@
 import { expect, test } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
+import { paginateStory } from "../../lib/reading";
+import { getStory } from "../../lib/stories";
 
 test("seleccionar una palabra da explicación, ejemplo y pistas progresivas sin chat", async ({
   page,
@@ -74,6 +76,7 @@ test("seleccionar una palabra da explicación, ejemplo y pistas progresivas sin 
 
 test("párrafo completo funciona sin seleccionar y un fallo conserva la lectura", async ({
   page,
+  isMobile,
 }) => {
   const requests: Record<string, unknown>[] = [];
   await page.route("**/api/lectura/ayuda", (route) => {
@@ -85,6 +88,13 @@ test("párrafo completo funciona sin seleccionar y un fallo conserva la lectura"
     });
   });
   await page.goto("/leer/pan-abuela?nivel=paso");
+  await expect(page.locator(".book-page-text")).toHaveText(
+    paginateStory(
+      getStory("pan-abuela")!.versions.paso.paragraphs,
+      5,
+      isMobile,
+    )[0].text,
+  );
   const before = await page.locator(".book-page-text").innerText();
   await page.getByRole("button", { name: "Ayuda con este párrafo" }).click();
   const help = page.getByRole("dialog", { name: "Lo pensamos juntos" });

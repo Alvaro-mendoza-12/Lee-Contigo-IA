@@ -7,6 +7,7 @@ import {
   resolveReadingHelp,
   safeReadingHelp,
   preparedReadingHelp,
+  completeReadingHelp,
 } from "@/lib/reading-help";
 
 export const runtime = "nodejs";
@@ -104,12 +105,13 @@ export async function POST(request: Request) {
         parte_dificil: context.selected,
       }),
     });
-    if (!safeReadingHelp(output)) return fallback("validation");
+    const complete = completeReadingHelp(output);
+    if (!complete || !safeReadingHelp(complete)) return fallback("validation");
     if (input.source === "catalogue") {
       if (cache.size >= 60) cache.delete(cache.keys().next().value!);
-      cache.set(key, { output, until: now + 600_000 });
+      cache.set(key, { output: complete, until: now + 600_000 });
     }
-    return reply({ ...output, quote, source: "ai", stage: input.stage });
+    return reply({ ...complete, quote, source: "ai", stage: input.stage });
   } catch (error) {
     console.warn("reading_help_fallback", {
       name: error instanceof Error ? error.name : "unknown",

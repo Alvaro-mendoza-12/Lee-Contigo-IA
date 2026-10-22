@@ -1,5 +1,7 @@
 import { test, expect } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
+import { paginateStory } from "../../lib/reading";
+import { getStory } from "../../lib/stories";
 
 function sampleAudio() {
   const data = Buffer.alloc(44 + 16000 * 5);
@@ -150,6 +152,7 @@ test("la voz reproduce audio, detiene al cambiar de página y reutiliza la pági
 
 test("si la voz externa falla se lee el texto visible con la voz española del dispositivo", async ({
   page,
+  isMobile,
 }) => {
   await page.addInitScript(() => {
     Object.defineProperty(window, "SpeechSynthesisUtterance", {
@@ -187,6 +190,13 @@ test("si la voz externa falla se lee el texto visible con la voz española del d
     }),
   );
   await page.goto("/leer/puente-de-ardillas?nivel=paso");
+  await expect(page.locator(".book-page-text")).toHaveText(
+    paginateStory(
+      getStory("puente-de-ardillas")!.versions.paso.paragraphs,
+      5,
+      isMobile,
+    )[0].text,
+  );
   const text = await page.locator(".book-page-text").innerText();
   await page.getByRole("button", { name: "Escuchar", exact: true }).click();
   await expect(page.getByText("Usamos la voz del dispositivo.")).toBeVisible();

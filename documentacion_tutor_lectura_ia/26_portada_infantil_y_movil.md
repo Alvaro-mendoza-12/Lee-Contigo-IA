@@ -40,7 +40,7 @@ La propuesta inicial se revisó para evitar una portada saturada de estrellas y 
 - Se detectó contraste insuficiente durante el desvanecimiento de entrada y se eliminó ese desvanecimiento; se conserva la apertura mediante transformación.
 - La prueba de navegación se actualiza para la nueva tarjeta «Explora la biblioteca»; la ruta y el catálogo de diez cuentos se mantienen.
 - Se incluyen pruebas con axe, pausa del carrusel y movimiento reducido, además de los recorridos anteriores del lector.
-- Resultado final de este corte: **29/29 pruebas unitarias, 44/44 recorridos de Playwright**, compilación y TypeScript aprobados. La comprobación automática de accesibilidad se integra en los recorridos; no sustituye una revisión con personas usuarias y dispositivos reales.
+- Resultado final de este corte: **30/30 pruebas unitarias, 44/44 recorridos de Playwright**, compilación y TypeScript aprobados. La comprobación automática de accesibilidad se integra en los recorridos; no sustituye una revisión con personas usuarias y dispositivos reales.
 
 ## Disponibilidad de IA e imágenes
 
@@ -51,6 +51,14 @@ Cloudflare Workers AI se añade como último respaldo de texto con `@cf/meta/lla
 Prueba real local de ayuda contextual: HTTP 200, `source: ai`, explicación de «diminuta», ejemplo y pregunta guiada, en **9.988 ms**. La calidad semántica sigue pendiente de revisión docente; se reforzó la instrucción para pedir evidencia concreta del pasaje y ejemplos realistas.
 
 Se mantiene la asignación y las condiciones de la cuenta gratuita de Workers AI. No se compraron créditos ni se cambió la facturación. El uso de imágenes y texto comparte la cuota de esa cuenta; las solicitudes pueden fallar al agotarse.
+
+## Verificación de la publicación
+
+- En producción, George, Sarah y Daniel devolvieron HTTP 200 con audio MPEG.
+- Crear un cuento real devolvió seis párrafos, tres preguntas y seis autorizaciones de lectura en 18.017 ms.
+- La ayuda contextual devolvió `source: ai` en 2.740 ms. Se detectó una última frase incompleta por el límite de longitud: ahora se conserva solo la parte formada por frases completas o se utiliza el respaldo; no se muestra un final cortado.
+- El inicio publicado se revisó en móvil y no mostró desbordamiento horizontal.
+- El primer CI detectó dos pruebas que capturaban el texto antes de aplicarse la paginación móvil tras hidratar. Se corrigieron para esperar el texto correspondiente al tamaño real de pantalla antes de comparar la narración o la conservación del pasaje, sin ampliar límites ni omitir comprobaciones.
 
 ## Archivos principales
 

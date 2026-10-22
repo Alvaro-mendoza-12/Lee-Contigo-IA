@@ -42,6 +42,22 @@ export const readingHelpOutput = z
   })
   .strict();
 export type ReadingHelpOutput = z.infer<typeof readingHelpOutput>;
+export function completeReadingHelp(
+  value: ReadingHelpOutput,
+): ReadingHelpOutput | null {
+  function complete(text: string) {
+    if (/[.!?…][»”]?$/u.test(text)) return text;
+    const endings = [...text.matchAll(/[.!?…][»”]?(?=\s|$)/gu)];
+    const end = endings.at(-1);
+    return end ? text.slice(0, end.index + end[0].length).trim() : "";
+  }
+  const result = readingHelpOutput.safeParse({
+    ...value,
+    explanation: complete(value.explanation),
+    example: complete(value.example),
+  });
+  return result.success ? result.data : null;
+}
 export function normalizeParagraph(text: string) {
   return text.trim().split(/\s+/).join(" ");
 }

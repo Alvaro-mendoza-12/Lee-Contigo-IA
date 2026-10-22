@@ -41,7 +41,7 @@ npm.cmd test
 npx.cmd playwright test
 ```
 
-Comprobación del corte actual: 29 pruebas unitarias y 44 recorridos de navegador en escritorio y móvil aprobados contra una compilación de producción. Incluyen accesibilidad automática con axe, selección y ayuda contextual, cambio de nivel, animación, elección de voz, respaldo audible y guardado local de ilustraciones simuladas. Se comprobaron las tres voces mediante ElevenLabs real; la generación real de Cloudflare respondió correctamente y OpenRouter devolvió un límite de disponibilidad en la última comprobación. Las pruebas simuladas no garantizan disponibilidad de proveedores ni eficacia educativa. Los documentos 18, 24 y 25 distinguen comprobaciones anteriores y actuales.
+Comprobación del corte actual: 30 pruebas unitarias y 44 recorridos de navegador en escritorio y móvil aprobados contra una compilación de producción. Incluyen accesibilidad automática con axe, selección y ayuda contextual, cambio de nivel, animación, elección de voz, respaldo audible y guardado local de ilustraciones simuladas. Se comprobaron las tres voces mediante ElevenLabs real; la generación real de Cloudflare respondió correctamente y OpenRouter devolvió un límite de disponibilidad en la última comprobación. Las pruebas simuladas no garantizan disponibilidad de proveedores ni eficacia educativa. Los documentos 18, 24 y 25 distinguen comprobaciones anteriores y actuales.
 
 Para las comprobaciones de navegador hay que instalar Chromium con `npx.cmd playwright install chromium`. Se pueden dirigir al despliegue público mediante `TEST_BASE_URL`.
 
