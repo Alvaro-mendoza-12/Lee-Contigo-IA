@@ -8,27 +8,23 @@ export const createStoryInput = z
   })
   .strict();
 
-export const generatedStorySchema = z
-  .object({
-    title: z.string().trim().min(3).max(70),
-    subtitle: z.string().trim().min(8).max(120),
-    paragraphs: z.array(z.string().trim().min(60).max(520)).length(4),
-    artDescription: z.string().trim().min(20).max(280),
-    questions: z
-      .array(
-        z
-          .object({
-            prompt: z.string().trim().min(12).max(180),
-            options: z.array(z.string().trim().min(1).max(100)).length(3),
-            correctIndex: z.number().int().min(0).max(2),
-            evidenceParagraph: z.number().int().min(0).max(3),
-            explanation: z.string().trim().min(20).max(260),
-          })
-          .strict(),
-      )
-      .length(3),
-  })
-  .strict();
+export const generatedStorySchema = z.object({
+  title: z.string().trim().min(3).max(70),
+  subtitle: z.string().trim().min(8).max(120),
+  paragraphs: z.array(z.string().trim().min(60).max(520)).length(4),
+  artDescription: z.string().trim().min(20).max(280),
+  questions: z
+    .array(
+      z.object({
+        prompt: z.string().trim().min(12).max(180),
+        options: z.array(z.string().trim().min(1).max(100)).length(3),
+        correctIndex: z.number().int().min(0).max(2),
+        evidenceParagraph: z.number().int().min(0).max(3),
+        explanation: z.string().trim().min(20).max(260),
+      }),
+    )
+    .length(3),
+});
 export type GeneratedStory = z.infer<typeof generatedStorySchema>;
 
 export const coverInput = z
