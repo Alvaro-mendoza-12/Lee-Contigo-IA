@@ -67,6 +67,18 @@ test("nuevo reto y otra historia preservan el nivel en las rutas", async ({
 }) => {
   await page.goto("/biblioteca");
   await page.getByRole("radio", { name: /Un nuevo reto/ }).check();
+  await expect(
+    page.getByRole("status").filter({ hasText: "Reto listo." }),
+  ).toBeVisible();
+  await expect(page.locator(".story-level-ribbon")).toHaveCount(10);
+  for (const href of await page
+    .locator(".story-card-direct")
+    .evaluateAll((links) => links.map((link) => link.getAttribute("href"))))
+    expect(href).toContain("nivel=reto");
+  await page.reload();
+  await expect(
+    page.getByRole("radio", { name: "Un nuevo reto", exact: true }),
+  ).toBeChecked();
   await page
     .getByRole("link", { name: "Leer La semilla viajera", exact: true })
     .click();

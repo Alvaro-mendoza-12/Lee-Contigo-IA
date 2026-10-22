@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import Link from "next/link";
-import { ArrowLeft, ArrowRight } from "lucide-react";
+import { ArrowLeft, ArrowRight, Sparkles } from "lucide-react";
 import type { Level, Story } from "@/lib/stories";
 import { StoryArt } from "./art";
 
@@ -60,7 +60,11 @@ export function StoryShelfRow({
   }
 
   return (
-    <section className="story-shelf-row" aria-labelledby={`${id}-title`}>
+    <section
+      className="story-shelf-row"
+      data-level={level}
+      aria-labelledby={`${id}-title`}
+    >
       <div className="story-shelf-heading">
         <h2 id={`${id}-title`}>
           {icon}
@@ -109,12 +113,18 @@ export function StoryShelfRow({
               className="story-card story-card-direct"
               href={`/leer/${story.id}?nivel=${level}`}
               aria-label={`Leer ${story.title}`}
+              aria-describedby="library-level-feedback"
             >
               <div className="story-cover-link">
                 <StoryArt
                   variant={story.art}
                   priority={priority && index < 2}
                 />
+                {level === "reto" ? (
+                  <span className="story-level-ribbon" aria-hidden="true">
+                    <Sparkles size={13} /> Reto
+                  </span>
+                ) : null}
                 <span className="story-cover-open" aria-hidden="true">
                   <ArrowRight size={22} />
                 </span>
