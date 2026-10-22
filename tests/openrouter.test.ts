@@ -4,9 +4,54 @@ import { z } from "zod";
 import {
   generateOpenRouterObject,
   getFreeOpenRouterModels,
+  getOpenRouterKeys,
   shouldTryNextKey,
   OpenRouterError,
 } from "../lib/openrouter.ts";
+
+test("OpenRouter loads numbered and bulk server credentials beyond nine without duplicates", () => {
+  const environment = {
+    OPENROUTER_API_KEY: " example-1 ",
+    OPENROUTER_API_KEY_10: "example-10",
+    OPENROUTER_API_KEY_2: "example-2",
+    OPENROUTER_API_KEY_60: "example-60",
+    OPENROUTER_API_KEY_01: "ignore-leading-zero",
+    NEXT_PUBLIC_OPENROUTER_API_KEY: "ignore-public",
+    OPENROUTER_API_KEYS: JSON.stringify([
+      "example-2",
+      " bulk-example ",
+      "",
+      42,
+    ]),
+  };
+  assert.deepEqual(getOpenRouterKeys(environment), [
+    "example-1",
+    "example-2",
+    "example-10",
+    "example-60",
+    "bulk-example",
+  ]);
+  const sixty = Object.fromEntries(
+    Array.from({ length: 60 }, (_, index) => [
+      index === 0 ? "OPENROUTER_API_KEY" : `OPENROUTER_API_KEY_${index + 1}`,
+      `example-${index + 1}`,
+    ]),
+  );
+  assert.equal(getOpenRouterKeys(sixty).length, 60);
+});
+
+test("an invalid optional pool preserves the configured server credentials", () => {
+  for (const pool of ["not-json", '{"key":"example"}', '"example"', "null"]) {
+    assert.deepEqual(
+      getOpenRouterKeys({
+        OPENROUTER_API_KEY: "example-1",
+        OPENROUTER_API_KEYS: pool,
+      }),
+      ["example-1"],
+    );
+  }
+  assert.deepEqual(getOpenRouterKeys({}), []);
+});
 
 test("OpenRouter permits only free models and does not rotate account rate limits", () => {
   assert.ok(
