@@ -57,11 +57,15 @@ export default function Guide() {
           <Sparkles size={26} />
           <h2>¿Qué hace la IA?</h2>
           <p>
-            Formula pistas según el relato, la pregunta y el nivel elegidos. Si
-            se pide ayuda tras un error, propone otra forma de buscar la
-            evidencia, sin recibir la respuesta seleccionada. No es un chat
-            abierto ni hace diagnósticos. Si la IA no está disponible, aparece
-            una pista preparada y se indica su procedencia.
+            En los cuentos creados a partir de una idea, prepara un relato al
+            nivel elegido, preguntas para localizar información, inferir y
+            encontrar la idea principal, y dos pistas por pregunta. Si una
+            respuesta no coincide, la página muestra la pista siguiente y el
+            párrafo de apoyo; no envía la respuesta del niño a otra llamada. En
+            las historias de biblioteca, formula pistas a partir del relato y la
+            pregunta. No es un chat abierto ni hace diagnósticos. Si la IA no
+            está disponible, aparece una pista preparada y se indica su
+            procedencia.
           </p>
           <p>Comprueba las pistas contra el texto: la IA puede equivocarse.</p>
         </section>
@@ -96,18 +100,29 @@ export default function Guide() {
         <h2>Leer también es conectar ideas.</h2>
         <p>
           La ENLA 2024 reportó que el 32,8 % de estudiantes de cuarto de
-          primaria alcanzó el nivel satisfactorio en Lectura. Es una razón para
-          seguir explorando apoyos educativos, no una prueba de que este
-          prototipo mejora el aprendizaje.
+          primaria alcanzó el nivel satisfactorio en Lectura. En 2025, los
+          resultados nacionales fueron similares a los de 2023 y 2024. Es una
+          razón para seguir explorando apoyos educativos, no una prueba de que
+          este prototipo mejora el aprendizaje.
         </p>
-        <a
-          href="https://umc.minedu.gob.pe/resultadosenla2024/"
-          className="inline-link"
-          target="_blank"
-          rel="noreferrer"
-        >
-          Consultar la fuente oficial de ENLA 2024 <ArrowRight size={15} />
-        </a>
+        <div className="evidence-links">
+          <a
+            href="https://umc.minedu.gob.pe/resultadosenla2024/"
+            className="inline-link"
+            target="_blank"
+            rel="noreferrer"
+          >
+            Consultar resultados de ENLA 2024 <ArrowRight size={15} />
+          </a>
+          <a
+            href="https://umc.minedu.gob.pe/enla-2025-se-mantienen-avances-en-lectura-y-matematica-con-mejoras-en-las-zonas-rurales/"
+            className="inline-link"
+            target="_blank"
+            rel="noreferrer"
+          >
+            Consultar nota de ENLA 2025 <ArrowRight size={15} />
+          </a>
+        </div>
       </section>
       <div className="guide-cta">
         <Check size={20} />

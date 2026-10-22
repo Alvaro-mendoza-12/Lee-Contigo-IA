@@ -12,17 +12,21 @@
 5. [Resultados ENLA 2025, UMC/Minedu](https://umc.minedu.gob.pe/resultadosenla2025/) — materiales y datos oficiales.
 6. [Nota oficial sobre ENLA 2025](https://umc.minedu.gob.pe/enla-2025-se-mantienen-avances-en-lectura-y-matematica-con-mejoras-en-las-zonas-rurales/) — reporta resultados nacionales de lectura similares a 2023 y 2024 y mejoras rurales respecto a 2024.
 7. [PISA 2022, nota de país de Perú, OCDE](https://www.oecd.org/en/publications/pisa-2022-results-volume-i-and-ii-country-notes_ed6fbcc5-en/peru_3e71791c-en.html) — contexto internacional para estudiantes de 15 años; no es diagnóstico directo de primaria.
+8. [Improving Reading Comprehension in Kindergarten Through 3rd Grade, What Works Clearinghouse/IES](https://ies.ed.gov/ncee/WWC/PracticeGuide/14/Published) — guía de práctica para enseñar estrategias de comprensión y usar textos apropiados; sus recomendaciones se usan como referencia de diseño, no como evidencia de que esta app funcione.
+9. [Toolkit for Teaching K–3 Reading Comprehension, IES](https://ies.ed.gov/ncee/rel/reading-comprehension-k-3/teacher-pd-module1) — incluye cuestionamiento, monitoreo y clarificación, inferencias y apoyo gradual al lector.
 
 ## Privacidad, accesibilidad y tecnología
 
-8. [Ley N.° 29733, Protección de Datos Personales](https://www.gob.pe/institucion/congreso-de-la-republica/normas-legales/243470-29733) — página del Estado peruano.
-9. [Decreto Supremo N.° 016-2024-JUS, Reglamento de la Ley 29733](https://www.gob.pe/institucion/anpd/normas-legales/6554453-16-2024-jus) — Autoridad Nacional de Protección de Datos Personales.
-10. [Nuevo reglamento, vigente desde el 31 de marzo de 2025](https://www.gob.pe/institucion/anpd/campa%C3%B1as/128319-nuevo-reglamento-de-proteccion-de-datos-personales) — ANPD.
-11. [WCAG 2.2, W3C](https://www.w3.org/TR/WCAG22/) — referencia de accesibilidad web.
-12. [Next.js App Router](https://nextjs.org/docs/app) y [Route Handlers](https://nextjs.org/docs/app/getting-started/route-handlers) — documentación oficial del marco web sugerido.
-13. [Vercel AI SDK, streamText](https://ai-sdk.dev/docs/reference/ai-sdk-core/stream-text) — referencia para integración de respuestas generadas.
-14. [Plan Hobby de Vercel](https://vercel.com/docs/plans/hobby) — uso gratuito orientado a proyectos personales y no comerciales; verificar condiciones actuales antes de vender.
-15. [Repositorio de skills de Vercel](https://github.com/vercel-labs/agent-skills) — catálogo revisado para recomendar skills.
+10. [Guidance on AI and children, UNICEF, v3 (2025)](https://www.unicef.org/innocenti/reports/policy-guidance-ai-children) — marco de derechos para seguridad, privacidad, transparencia, inclusión y bienestar infantil.
+11. [Ley N.° 29733, Protección de Datos Personales](https://www.gob.pe/institucion/congreso-de-la-republica/normas-legales/243470-29733) — página del Estado peruano.
+12. [Decreto Supremo N.° 016-2024-JUS, Reglamento de la Ley 29733](https://www.gob.pe/institucion/anpd/normas-legales/6554453-16-2024-jus) — Autoridad Nacional de Protección de Datos Personales.
+13. [Nuevo reglamento, vigente desde el 31 de marzo de 2025](https://www.gob.pe/institucion/anpd/campa%C3%B1as/128319-nuevo-reglamento-de-proteccion-de-datos-personales) — ANPD.
+14. [WCAG 2.2, W3C](https://www.w3.org/TR/WCAG22/) — referencia de accesibilidad web.
+15. [Next.js App Router](https://nextjs.org/docs/app) y [Route Handlers](https://nextjs.org/docs/app/getting-started/route-handlers) — documentación oficial del marco web sugerido.
+16. [AI SDK, generación de datos estructurados y razonamiento](https://ai-sdk.dev/docs/ai-sdk-core/generating-structured-data) — referencias actuales para `Output.object()` y salidas tipadas.
+17. [Gemini 3.8 Flash en AI Gateway](https://vercel.com/ai-gateway/models/gemini-3.8-flash) y [documentación de modelos de Google](https://ai.google.dev/gemini-api/docs/models/gemini-3.8-flash) — disponibilidad, compatibilidad de salidas estructuradas y capacidades. El precio cambia; consultar el catálogo antes de calcular costos.
+18. [Plan Hobby de Vercel](https://vercel.com/docs/plans/hobby) — uso gratuito orientado a proyectos personales y no comerciales; verificar condiciones actuales antes de vender.
+19. [Repositorio de skills de Vercel](https://github.com/vercel-labs/agent-skills) — catálogo revisado para recomendar skills.
 
 ## Límites
 
@@ -34,4 +38,3 @@
 - El MVP, metas y hoja de ruta son un plan, no implementación ni resultados.
 - La normativa orienta controles iniciales, no es dictamen jurídico.
 - Para otro país se deben actualizar fuentes, currículo y revisión de privacidad.
-

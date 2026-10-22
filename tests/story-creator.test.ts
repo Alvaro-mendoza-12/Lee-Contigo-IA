@@ -21,28 +21,51 @@ const validStory = {
     "Una tortuga amable y una luciérnaga luminosa comparten un mapa en una colina verde al atardecer",
   questions: [
     {
+      skill: "localizar",
       prompt: "¿Qué encontró la tortuga junto al jardín?",
       options: ["Un mapa", "Una campana", "Una flor"],
       correctIndex: 0,
       evidenceParagraph: 0,
       explanation:
         "El primer párrafo cuenta que la tortuga encontró un mapa junto al jardín.",
+      hints: [
+        "Busca qué objeto llamó la atención de la tortuga junto al jardín.",
+        "Vuelve a la primera oración y localiza lo que encontró allí.",
+      ],
     },
     {
-      prompt: "¿A quién encontró la tortuga en la colina?",
-      options: ["A un conejo", "A una luciérnaga", "A una abeja"],
-      correctIndex: 1,
+      skill: "inferir",
+      prompt: "¿Por qué parecía confundida la visitante de la colina?",
+      options: [
+        "Porque no encontraba el camino de regreso.",
+        "Porque quería llegar a la colina.",
+        "Porque buscaba la luz de la luna.",
+      ],
+      correctIndex: 0,
       evidenceParagraph: 2,
       explanation:
-        "En la colina, la tortuga vio a una luciérnaga que buscaba el camino de regreso.",
+        "La visitante buscaba el camino de regreso y no sabía cómo encontrarlo.",
+      hints: [
+        "Fíjate qué estaba intentando encontrar la visitante en la colina.",
+        "Relaciona su búsqueda con la emoción que muestra en ese momento.",
+      ],
     },
     {
-      prompt: "¿Qué hicieron al final?",
-      options: ["Compartieron el mapa", "Se escondieron", "Volvieron al jardín"],
+      skill: "idea_principal",
+      prompt: "¿Qué idea deja el final sobre ayudar a alguien?",
+      options: [
+        "Que una ayuda pequeña puede ser importante.",
+        "Que la luna debe guiar a todos.",
+        "Que los grillos pueden cruzar cualquier río.",
+      ],
       correctIndex: 0,
       evidenceParagraph: 3,
       explanation:
-        "El último párrafo dice que la tortuga compartió el mapa y caminaron juntas.",
+        "El último párrafo muestra cómo compartir una ayuda permitió que ambas siguieran juntas.",
+      hints: [
+        "Recuerda qué cambió para las dos después de encontrarse.",
+        "Compara el problema del comienzo con lo que pudieron hacer al final.",
+      ],
     },
   ],
 };
@@ -102,6 +125,14 @@ test("valida cuentos con estructura de lectura y bloquea datos o contenido inade
   if (!parsed.success) return;
   assert.equal(isAppropriateStory(parsed.data), true);
 
+  const repeatedSkill = {
+    ...parsed.data,
+    questions: parsed.data.questions.map((question, index) =>
+      index === 2 ? { ...question, skill: "inferir" as const } : question,
+    ),
+  };
+  assert.equal(isAppropriateStory(repeatedSkill), false);
+
   const withEmail = {
     ...parsed.data,
     paragraphs: [
@@ -118,6 +149,38 @@ test("valida cuentos con estructura de lectura y bloquea datos o contenido inade
   };
   assert.equal(generatedStorySchema.safeParse(withUnsafeText).success, true);
   assert.equal(isAppropriateStory(withUnsafeText), false);
+
+  const personalDataInHint = {
+    ...parsed.data,
+    questions: parsed.data.questions.map((question, index) =>
+      index === 0
+        ? {
+            ...question,
+            hints: [
+              "Escribe a nina@example.com para saber qué encontró allí.",
+              question.hints[1],
+            ],
+          }
+        : question,
+    ),
+  };
+  assert.equal(isAppropriateStory(personalDataInHint), false);
+
+  const hintRevealsAnswer = {
+    ...parsed.data,
+    questions: parsed.data.questions.map((question, index) =>
+      index === 1
+        ? {
+            ...question,
+            hints: [
+              "La respuesta es porque no encontraba el camino de regreso.",
+              question.hints[1],
+            ],
+          }
+        : question,
+    ),
+  };
+  assert.equal(isAppropriateStory(hintRevealsAnswer), false);
 
   assert.equal(
     generatedStorySchema.safeParse({ ...parsed.data, questions: [] }).success,

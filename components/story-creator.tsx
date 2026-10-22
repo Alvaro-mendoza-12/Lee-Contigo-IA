@@ -27,7 +27,10 @@ import {
 } from "react";
 import { fontSteps, paginateStory } from "@/lib/reading";
 import { levels, type Level } from "@/lib/stories";
-import type { GeneratedStory } from "@/lib/story-creator";
+import {
+  comprehensionSkillLabels,
+  type GeneratedStory,
+} from "@/lib/story-creator";
 
 type Screen = "form" | "book" | "questions" | "complete";
 type CoverState = "idle" | "loading" | "ready" | "unavailable";
@@ -53,10 +56,12 @@ export function StoryCreator() {
   const [canSpeak, setCanSpeak] = useState(false);
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
   const [questionIndex, setQuestionIndex] = useState(0);
-  const [answers, setAnswers] = useState<number[]>([]);
+  const [wrongAttempts, setWrongAttempts] = useState(0);
   const coverRequest = useRef(0);
   const activeHeading = useRef<HTMLHeadingElement>(null);
   const ideaField = useRef<HTMLTextAreaElement>(null);
+  const answerGroupRef = useRef<HTMLDivElement>(null);
+  const answerFeedbackRef = useRef<HTMLDivElement>(null);
   const previousScreen = useRef<Screen>("form");
 
   const pages = useMemo(
@@ -66,13 +71,19 @@ export function StoryCreator() {
   const currentPageIndex = Math.min(pageIndex, Math.max(0, pages.length - 1));
   const currentPage = pages[currentPageIndex];
   const currentQuestion = story?.questions[questionIndex];
-  const correctCount = story
-    ? answers.reduce(
-        (count, answer, index) =>
-          count + (answer === story.questions[index]?.correctIndex ? 1 : 0),
-        0,
-      )
-    : 0;
+  const answerIsCorrect =
+    selectedAnswer !== null && selectedAnswer === currentQuestion?.correctIndex;
+  const answerIsWrong =
+    selectedAnswer !== null &&
+    currentQuestion !== undefined &&
+    selectedAnswer !== currentQuestion.correctIndex;
+  const revealAnswer = answerIsWrong && wrongAttempts >= 3;
+  const showTutorHint =
+    currentQuestion !== undefined &&
+    wrongAttempts > 0 &&
+    wrongAttempts < 3 &&
+    !answerIsCorrect;
+  const tutorHintIndex = Math.min(Math.max(wrongAttempts - 1, 0), 1);
 
   useEffect(() => {
     setCanSpeak("speechSynthesis" in window);
@@ -110,6 +121,10 @@ export function StoryCreator() {
       previousScreen.current = screen;
     }
   }, [screen]);
+
+  useEffect(() => {
+    if (selectedAnswer !== null) answerFeedbackRef.current?.focus();
+  }, [selectedAnswer, wrongAttempts]);
 
   function stopSpeaking() {
     if ("speechSynthesis" in window) window.speechSynthesis.cancel();
@@ -168,7 +183,7 @@ export function StoryCreator() {
       setPageIndex(0);
       setFontSize(5);
       setQuestionIndex(0);
-      setAnswers([]);
+      setWrongAttempts(0);
       setSelectedAnswer(null);
       setCoverState("idle");
       setCover(null);
@@ -199,7 +214,7 @@ export function StoryCreator() {
     setPageIndex(0);
     setQuestionIndex(0);
     setSelectedAnswer(null);
-    setAnswers([]);
+    setWrongAttempts(0);
     setError("");
   }
 
@@ -228,7 +243,8 @@ export function StoryCreator() {
   function answerQuestion(answer: number) {
     if (selectedAnswer !== null || !currentQuestion) return;
     setSelectedAnswer(answer);
-    setAnswers((previous) => [...previous.slice(0, questionIndex), answer]);
+    if (answer !== currentQuestion.correctIndex)
+      setWrongAttempts((attempts) => attempts + 1);
   }
 
   function nextQuestion() {
@@ -239,6 +255,16 @@ export function StoryCreator() {
     }
     setQuestionIndex((index) => index + 1);
     setSelectedAnswer(null);
+    setWrongAttempts(0);
+  }
+
+  function retryAnswer() {
+    setSelectedAnswer(null);
+    requestAnimationFrame(() =>
+      answerGroupRef.current
+        ?.querySelector<HTMLButtonElement>("button:not(:disabled)")
+        ?.focus(),
+    );
   }
 
   return (
@@ -255,8 +281,8 @@ export function StoryCreator() {
               ¿Qué historia imaginamos hoy?
             </h1>
             <p>
-              Cuéntanos una idea sencilla. La IA la convertirá en un cuento y
-              podrás pedir una portada ilustrada.
+              Cuéntanos una idea sencilla. La IA preparará un cuento a tu nivel,
+              preguntas y pistas para volver al texto. La portada es opcional.
             </p>
           </header>
 
@@ -332,10 +358,11 @@ export function StoryCreator() {
                 <strong>Hagámoslo con cuidado</strong>
                 <p>
                   No escribas tu nombre, dirección, colegio, ciudad, teléfono ni
-                  correo. La idea se envía a un modelo de IA para crear el
-                  cuento. La portada es opcional: una persona adulta puede
-                  revisar las condiciones y el costo antes de pedirla. El cuento
-                  vive solo mientras esta página está abierta.
+                  correo. La idea y el nivel se envían a la IA para crear el
+                  cuento, las preguntas y las pistas. Tus respuestas no se
+                  envían al modelo. La portada es opcional: una persona adulta
+                  puede revisar las condiciones y el costo antes de pedirla. El
+                  cuento vive solo mientras esta página está abierta.
                 </p>
                 <Link href="/privacidad">
                   Lee cómo se usa la IA y tus datos
@@ -629,45 +656,59 @@ export function StoryCreator() {
           <h1 id="quiz-title" ref={activeHeading} tabIndex={-1}>
             ¿Qué descubriste en el cuento?
           </h1>
+          <p className="creator-quiz-intro">
+            El tutor IA preparó preguntas y pistas para practicar. Tus
+            respuestas no se envían a la IA.
+          </p>
           <div className="creator-quiz-progress" role="status">
             Pregunta {questionIndex + 1} de {story.questions.length}
           </div>
           <article className="creator-question-card">
+            <span className="skill-pill">
+              {comprehensionSkillLabels[currentQuestion.skill]}
+            </span>
             <h2>{currentQuestion.prompt}</h2>
-            <div className="creator-answer-options">
+            <div
+              ref={answerGroupRef}
+              className="creator-answer-options"
+              role="group"
+              aria-label="Opciones de respuesta"
+            >
               {currentQuestion.options.map((option, index) => {
                 const chosen = selectedAnswer === index;
                 const correct = currentQuestion.correctIndex === index;
                 let className = "creator-answer-option";
-                if (selectedAnswer !== null && correct)
+                if ((answerIsCorrect || revealAnswer) && correct)
                   className += " is-correct";
-                if (chosen && !correct) className += " is-incorrect";
+                if (chosen && !correct && answerIsWrong)
+                  className += " is-incorrect";
                 return (
                   <button
                     type="button"
                     className={className}
                     key={`${questionIndex}-${index}`}
                     disabled={selectedAnswer !== null}
+                    aria-pressed={chosen}
                     onClick={() => answerQuestion(index)}
                   >
                     <span>{String.fromCharCode(65 + index)}</span>
                     {option}
-                    {chosen && correct ? <Check size={18} /> : null}
+                    {((chosen && correct) || (revealAnswer && correct)) && (
+                      <Check size={18} aria-hidden="true" />
+                    )}
                   </button>
                 );
               })}
             </div>
-            {selectedAnswer !== null ? (
+            {answerIsCorrect ? (
               <div
                 className="creator-answer-feedback"
                 role="status"
                 aria-live="polite"
+                ref={answerFeedbackRef}
+                tabIndex={-1}
               >
-                <strong>
-                  {selectedAnswer === currentQuestion.correctIndex
-                    ? "¡Así es!"
-                    : "Buen intento. Vamos a mirar la pista del cuento."}
-                </strong>
+                <strong>¡Muy bien! Usaste el relato para comprobarlo.</strong>
                 <p>{currentQuestion.explanation}</p>
                 <button className="button" type="button" onClick={nextQuestion}>
                   {questionIndex === story.questions.length - 1
@@ -675,6 +716,59 @@ export function StoryCreator() {
                     : "Siguiente pregunta"}
                   <ArrowRight size={17} />
                 </button>
+              </div>
+            ) : revealAnswer ? (
+              <div
+                className="creator-answer-feedback"
+                role="status"
+                aria-live="polite"
+                ref={answerFeedbackRef}
+                tabIndex={-1}
+              >
+                <strong>Vamos a leer la respuesta con calma.</strong>
+                <p>{currentQuestion.explanation}</p>
+                <button className="button" type="button" onClick={nextQuestion}>
+                  {questionIndex === story.questions.length - 1
+                    ? "Terminar cuento"
+                    : "Continuar"}
+                  <ArrowRight size={17} />
+                </button>
+              </div>
+            ) : showTutorHint ? (
+              <div
+                className="creator-answer-feedback creator-tutor-hint"
+                role="status"
+                aria-live="polite"
+                ref={answerFeedbackRef}
+                tabIndex={-1}
+              >
+                <span className="small-label">
+                  <Sparkles size={14} aria-hidden="true" />
+                  Pista de IA · {tutorHintIndex + 1} de 2
+                </span>
+                <strong>
+                  {wrongAttempts === 1
+                    ? "Miremos una pista del cuento."
+                    : "Probemos con otra forma de pensar."}
+                </strong>
+                <p>{currentQuestion.hints[tutorHintIndex]}</p>
+                <details className="creator-hint-evidence">
+                  <summary>
+                    Volver al párrafo {currentQuestion.evidenceParagraph + 1}
+                  </summary>
+                  <blockquote>
+                    {story.paragraphs[currentQuestion.evidenceParagraph]}
+                  </blockquote>
+                </details>
+                {selectedAnswer !== null ? (
+                  <button
+                    className="button button-outline"
+                    type="button"
+                    onClick={retryAnswer}
+                  >
+                    Intentar otra vez
+                  </button>
+                ) : null}
               </div>
             ) : null}
           </article>
@@ -698,9 +792,20 @@ export function StoryCreator() {
             ¡Terminaste de leer!
           </h1>
           <p>
-            Encontraste {correctCount} de {story.questions.length} respuestas.
-            Cada lectura te ayuda a descubrir algo nuevo.
+            Practicaste distintas maneras de comprender. Volver al texto y usar
+            una pista también es parte de aprender.
           </p>
+          <div
+            className="skills-earned"
+            aria-label="Habilidades que practicaste"
+          >
+            {story.questions.map((question) => (
+              <span key={question.skill}>
+                <Check size={16} aria-hidden="true" />
+                {comprehensionSkillLabels[question.skill]}
+              </span>
+            ))}
+          </div>
           <div className="creator-complete-actions">
             <button
               className="button button-outline"

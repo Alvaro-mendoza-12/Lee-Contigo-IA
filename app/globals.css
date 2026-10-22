@@ -2228,6 +2228,12 @@ svg {
   color: var(--muted);
   max-width: 90ch;
 }
+.evidence-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 22px;
+  margin-top: 14px;
+}
 .guide-cta {
   display: flex;
   align-items: center;
@@ -3541,6 +3547,12 @@ svg {
   display: block;
   margin-bottom: 12px;
 }
+.creator-quiz-intro {
+  max-width: 500px;
+  margin: 10px auto 0;
+  color: var(--muted);
+  font-size: 14px;
+}
 .creator-quiz-progress {
   display: inline-block;
   margin: 18px auto;
@@ -3622,6 +3634,35 @@ svg {
 }
 .creator-answer-feedback .button {
   margin-top: 13px;
+}
+.creator-tutor-hint > .small-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 7px;
+  letter-spacing: 0.08em;
+}
+.creator-hint-evidence {
+  margin-top: 11px;
+  color: #304c3c;
+  font-size: 13px;
+}
+.creator-hint-evidence summary {
+  width: fit-content;
+  cursor: pointer;
+  font-weight: 750;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.creator-hint-evidence blockquote {
+  margin: 9px 0 0;
+  padding: 10px 12px;
+  border-left: 3px solid #819a7c;
+  border-radius: 0 8px 8px 0;
+  background: #f8faf5;
+}
+.creator-tutor-hint > .button {
+  margin-top: 12px;
 }
 .creator-quiz > .text-button {
   margin-top: 14px;
@@ -3810,6 +3851,9 @@ svg {
   }
   .creator-answer-option {
     font-size: 13px;
+  }
+  .creator-answer-feedback > .button {
+    width: 100%;
   }
   .creator-complete {
     margin-top: 25px;

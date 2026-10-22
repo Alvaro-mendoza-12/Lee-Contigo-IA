@@ -27,23 +27,35 @@ export default function Privacy() {
       </p>
       <h2>Crear un cuento y su portada con IA</h2>
       <p>
-        Si usas «Crea tu cuento», la idea breve y el nivel elegido se envían a un
-        modelo de IA para escribir la historia y sus preguntas. Vercel AI
+        Si usas «Crea tu cuento», la idea breve y el nivel elegido se envían a
+        un modelo de IA para escribir la historia y sus preguntas. Vercel AI
         Gateway enruta esa solicitud a los proveedores disponibles para Gemini;
         consulta la{" "}
-        <a href="https://cloud.google.com/privacy" target="_blank" rel="noreferrer">
+        <a
+          href="https://cloud.google.com/privacy"
+          target="_blank"
+          rel="noreferrer"
+        >
           política de privacidad de Google Cloud
         </a>
-        . Después, otra solicitud usa únicamente la descripción visual generada para pedir una
-        portada; no necesita volver a enviar la idea original. La aplicación no
-        guarda la idea, el cuento ni la imagen en una cuenta, base de datos o
-        almacenamiento del navegador: permanecen en memoria mientras la página
-        está abierta. El proveedor de IA y el alojamiento pueden procesar las
-        solicitudes y datos técnicos según sus propias condiciones. Esta versión no fuerza el
-        filtro de «no entrenamiento» porque los proveedores elegidos no ofrecen
-        una ruta compatible con ese control. Vercel indica que AI Gateway no usa
-        las solicitudes para entrenar, pero las condiciones de los proveedores
-        que las reciben pueden variar.
+        . Después, otra solicitud usa únicamente la descripción visual generada
+        para pedir una portada; no necesita volver a enviar la idea original. La
+        aplicación no guarda la idea, el cuento ni la imagen en una cuenta, base
+        de datos o almacenamiento del navegador: permanecen en memoria mientras
+        la página está abierta. El proveedor de IA y el alojamiento pueden
+        procesar las solicitudes y datos técnicos según sus propias condiciones.
+        Esta versión no fuerza el filtro de «no entrenamiento» porque los
+        proveedores elegidos no ofrecen una ruta compatible con ese control.
+        Vercel indica que AI Gateway no usa las solicitudes para entrenar, pero
+        las condiciones de los proveedores que las reciben pueden variar.
+      </p>
+      <p>
+        El cuento incluye tres tipos de preguntas —buscar información, inferir y
+        encontrar la idea principal— y dos pistas graduadas por pregunta. Estas
+        se generan junto con el cuento. Al elegir una respuesta, la página la
+        compara en memoria; no la envía a la IA ni hace otra llamada al modelo.
+        Si la respuesta no coincide, el tutor muestra una pista y el párrafo que
+        puede ayudar. Las respuestas y los intentos no se guardan.
       </p>
       <p>
         Esta función intenta bloquear correos, teléfonos, enlaces y algunas

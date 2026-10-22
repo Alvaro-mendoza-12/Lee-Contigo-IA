@@ -1,5 +1,17 @@
 import { z } from "zod";
 
+export const comprehensionSkillSchema = z.enum([
+  "localizar",
+  "inferir",
+  "idea_principal",
+]);
+export type ComprehensionSkill = z.infer<typeof comprehensionSkillSchema>;
+export const comprehensionSkillLabels: Record<ComprehensionSkill, string> = {
+  localizar: "Encuentra información",
+  inferir: "Lee entre líneas",
+  idea_principal: "Descubre la idea principal",
+};
+
 export const createStoryInput = z
   .object({
     idea: z.string().trim().min(12).max(220),
@@ -16,11 +28,13 @@ export const generatedStorySchema = z.object({
   questions: z
     .array(
       z.object({
+        skill: comprehensionSkillSchema,
         prompt: z.string().trim().min(12).max(180),
         options: z.array(z.string().trim().min(1).max(100)).length(3),
         correctIndex: z.number().int().min(0).max(2),
         evidenceParagraph: z.number().int().min(0).max(3),
         explanation: z.string().trim().min(20).max(260),
+        hints: z.array(z.string().trim().min(20).max(180)).length(2),
       }),
     )
     .length(3),
@@ -51,6 +65,9 @@ export function containsPersonalDetails(value: string) {
 export function isAppropriateStory(
   story: z.infer<typeof generatedStorySchema>,
 ) {
+  const skills = new Set(story.questions.map((question) => question.skill));
+  if (skills.size !== 3) return false;
+
   const text = [
     story.title,
     story.subtitle,
@@ -60,10 +77,39 @@ export function isAppropriateStory(
       question.prompt,
       ...question.options,
       question.explanation,
+      ...question.hints,
     ]),
   ].join(" ");
 
-  return !containsPersonalDetails(text) && !unsafeStoryPattern.test(text);
+  const hintsDoNotGiveAnswers = story.questions.every((question) => {
+    const answer = normalizeForComparison(
+      question.options[question.correctIndex],
+    );
+    return question.hints.every((hint) => {
+      const normalizedHint = normalizeForComparison(hint);
+      return (
+        hint.trim().split(/\s+/).length <= 32 &&
+        !/https?:\/\/|www\.|<[^>]+>/i.test(hint) &&
+        (answer.length < 12 || !normalizedHint.includes(answer))
+      );
+    });
+  });
+
+  return (
+    hintsDoNotGiveAnswers &&
+    !containsPersonalDetails(text) &&
+    !unsafeStoryPattern.test(text)
+  );
+}
+
+function normalizeForComparison(value: string) {
+  return value
+    .toLocaleLowerCase("es")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^\p{L}\p{N}\s]/gu, " ")
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
 export function isAppropriateArtDescription(value: string) {

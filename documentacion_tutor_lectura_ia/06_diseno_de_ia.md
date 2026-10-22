@@ -4,6 +4,8 @@
 
 La IA ajusta la forma de presentar un fragmento y ofrece pistas de comprensión. No diagnostica dificultades de aprendizaje ni reemplaza la valoración del docente.
 
+En el creador de cuentos, una sola generación produce el relato, tres preguntas alineadas con habilidades distintas y dos pistas progresivas por pregunta. Al responder, la interfaz decide cuál pista mostrar y conserva la opción solo en memoria; no vuelve a llamar al modelo con la respuesta del niño. En las lecturas editoriales, el tutor sí puede generar una pista desde el servidor porque el contenido ya está aprobado.
+
 ### Funciones apropiadas
 
 - Reformular vocabulario o longitud dentro de una banda de lectura preaprobada.
@@ -31,6 +33,16 @@ La IA ajusta la forma de presentar un fragmento y ofrece pistas de comprensión.
 6. Revisar muestras de salida por una persona durante el piloto.
 7. Sustituir la salida por una pista preparada ante errores, contenido fuera de tema o latencia alta.
 
+### Diseño de preguntas y pistas para cuentos generados
+
+- Pregunta 1: localizar información explícita en un párrafo.
+- Pregunta 2: inferir una causa, motivo o consecuencia usando el texto.
+- Pregunta 3: expresar la idea principal o el aprendizaje global del relato.
+- Guardar `evidenceParagraph` para que el tutor muestre al niño dónde buscar.
+- Pista 1: invita a volver al párrafo y observar una señal concreta.
+- Pista 2: sugiere una operación mental (comparar, relacionar causa y efecto o resumir el cambio), sin nombrar la opción correcta.
+- Si la respuesta sigue sin coincidir después de tres intentos, se revela la explicación vinculada a la evidencia. No se asigna nota ni se guarda el historial.
+
 En el MVP, las respuestas del estudiante deben ser seleccionables o activarse con botones. Así se evita enviar texto libre de menores al modelo. Un modo de escritura libre solo se considerará después de revisión de privacidad y pedagogía.
 
 ## Controles de calidad
@@ -39,6 +51,9 @@ En el MVP, las respuestas del estudiante deben ser seleccionables o activarse co
 - Hacer que la pista señale una frase o párrafo del relato.
 - No permitir que añada hechos externos.
 - Rechazar salidas que den la respuesta sin ayudar a encontrar evidencia.
+- Comprobar que el cuento cubra las tres habilidades y que cada pregunta tenga dos pistas cortas y un párrafo de evidencia válido.
+- Mostrar la explicación después de acertar o de tres intentos, nunca como primera respuesta al error.
+- Mantener opciones e intentos en el navegador; no incluirlos en prompts, registros ni analítica del MVP.
 - Registrar versión del modelo e instrucciones para reproducir la evaluación.
 - Probar preguntas ambiguas, errores intencionales, temas ajenos y mensajes inapropiados.
 - Ofrecer a adultos un mecanismo para reportar respuestas problemáticas.
@@ -57,3 +72,5 @@ En el MVP, las respuestas del estudiante deben ser seleccionables o activarse co
 ## Comprobar que la IA aporta valor
 
 La IA tiene sentido si la adaptación y las pistas personalizadas mejoran la experiencia frente a una página estática con el mismo relato y preguntas. El piloto debe medir tiempo de preparación, uso de pistas, vuelta al texto, errores y costo por sesión. Si la IA no mejora el resultado o agrega gasto sin valor, una versión estática preparada por docentes es una alternativa válida. No usar IA solo como etiqueta promocional.
+
+El diseño se inspira en guías de comprensión lectora para primaria que recomiendan enseñar estrategias, guiar inferencias, revisar la comprensión y ayudar a justificar ideas usando evidencia del texto. La IA prepara el andamiaje; no sustituye la instrucción docente ni prueba por sí sola que hubo aprendizaje. Para una implementación con menores también se deben revisar las recomendaciones de UNICEF sobre seguridad, privacidad, transparencia, inclusión y bienestar infantil.

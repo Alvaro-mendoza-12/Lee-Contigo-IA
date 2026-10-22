@@ -93,7 +93,7 @@ export async function POST(request: Request) {
   }
   if (++limit.count > 12) return prepared("rate_limited", 429);
   try {
-    const model = process.env.AI_MODEL || "google/gemini-2.5-flash";
+    const model = process.env.AI_MODEL || "google/gemini-3.8-flash";
     const { output } = await generateText({
       model,
       instructions:
@@ -119,14 +119,12 @@ export async function POST(request: Request) {
       output: Output.object({
         schema: z.object({ hint: z.string().min(20).max(350) }),
       }),
-      // Short hints do not need a separate reasoning-token budget.
-      ...(model.startsWith("google/gemini-2.5")
-        ? {
-            providerOptions: {
-              google: { thinkingConfig: { thinkingBudget: 0 } },
-            },
-          }
-        : {}),
+      reasoning: "low",
+      providerOptions: {
+        gateway: {
+          tags: ["product:lee-contigo", "feature:reading-tutor"],
+        },
+      },
       maxOutputTokens: 600,
       maxRetries: 0,
       abortSignal: AbortSignal.timeout(6500),

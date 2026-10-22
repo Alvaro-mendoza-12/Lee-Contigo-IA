@@ -24,47 +24,58 @@ Para el prototipo de hackathon, usar un recorrido de demostración sin cuentas d
 ## Secciones de la web
 
 ### 1. Inicio
+
 - Explica en lenguaje sencillo qué hace el tutor.
 - Presenta una acción principal: “Empezar a leer”.
 - Incluye acceso secundario a “Ver cómo funciona para docentes”.
 - No ofrece diagnósticos ni promete mejoras garantizadas.
 
 ### 2. Elección de nivel o reto
+
 - Permite elegir lectura inicial, en desarrollo o desafío.
 - Aclara que la opción adapta la sesión y no diagnostica capacidad, edad mental ni discapacidad.
 - Permite cambiar de nivel sin penalización.
 
 ### 3. Biblioteca breve
+
 - Presenta relatos revisados con título, tema, duración aproximada y habilidad.
 - El MVP se limita a tres relatos como máximo y un grupo de edad.
 - Cada texto debe ser propio o tener procedencia y licencia documentadas.
 
 ### 4. Espacio de lectura
+
 - Muestra texto legible, párrafos cortos y avance dentro de la historia.
 - Permite ampliar letra y pausar.
 - Audio de lectura puede añadirse después; no es necesario para el MVP.
 - Evita anuncios, enlaces externos y distracciones.
 
 ### 5. Comprueba lo que entendiste
+
 - Ofrece de tres a cinco preguntas breves: información explícita, idea principal, inferencia y vocabulario en contexto.
 - Usa respuestas seleccionables en la primera versión para reducir texto libre de menores.
 - Permite solicitar una pista antes de revelar la solución.
 
 ### 6. Pistas del tutor IA
+
 - Da una pista gradual conectada con una frase o párrafo del relato.
 - No entrega automáticamente la respuesta.
+- Los cuentos personalizados incluyen una pregunta para localizar información, una inferencial y una de idea principal. Cada una trae dos pistas progresivas generadas junto con el relato.
+- Tras un error, el lector puede revisar el párrafo de evidencia y volver a intentarlo; la respuesta seleccionada no se envía a otra llamada de IA.
 - Si la salida falla controles o el servicio no responde, usa una pista preparada y revisada.
 
 ### 7. Cierre de sesión
+
 - Resume la habilidad practicada con palabras motivadoras y específicas.
 - Invita a intentar otra historia sin rankings ni vergüenza.
 - En el MVP, la retroalimentación solo se muestra en pantalla y no crea un perfil individual persistente.
 
 ### 8. Espacio para docentes y familias
+
 - Explica el propósito pedagógico, los límites de la IA y cómo acompañar.
 - Las métricas agregadas pertenecen a una fase piloto posterior, con acceso adulto y revisión de privacidad.
 
 ### 9. Administración de contenidos
+
 - Módulo futuro para que el equipo pedagógico agregue relatos, versiones, preguntas, respuestas y fuentes.
 - No permite publicar contenido generado sin revisión humana.
 
@@ -80,7 +91,6 @@ Para el prototipo de hackathon, usar un recorrido de demostración sin cuentas d
 
 ## Alcance del MVP
 
-**Incluido:** inicio; un grupo de edad; dos bandas de práctica; uno o dos relatos revisados; preguntas de respuesta seleccionable; una pista adaptada por IA; una pista de respaldo; vista móvil; aviso claro de uso de IA.
+**Incluido:** inicio; un grupo de edad; dos bandas de práctica; relatos revisados; preguntas de respuesta seleccionable; tutoría con dos niveles de pista vinculada a evidencia; cuentos generados con preguntas de localizar, inferir e idea principal y dos pistas progresivas por pregunta; vista móvil; aviso claro de uso de IA.
 
 **Fuera del MVP:** cuentas de menores, perfiles de largo plazo, diagnóstico de dislexia, calificaciones escolares, chat abierto, generación ilimitada de historias, evaluación automática de ensayos, traducción a lenguas originarias, audio grabado, pagos y análisis individual de estudiantes.
-
