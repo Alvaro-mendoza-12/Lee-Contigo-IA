@@ -1,6 +1,7 @@
 import { createHash } from "node:crypto";
 import { generateText, Output } from "ai";
 import { z } from "zod";
+import { getGatewayFailureDetails } from "@/lib/ai-diagnostics";
 import {
   tutorInput,
   getTutorContext,
@@ -92,8 +93,8 @@ export async function POST(request: Request) {
     }
   }
   if (++limit.count > 12) return prepared("rate_limited", 429);
+  const model = process.env.AI_MODEL || "google/gemini-3.8-flash";
   try {
-    const model = process.env.AI_MODEL || "google/gemini-3.8-flash";
     const { output } = await generateText({
       model,
       instructions:
@@ -142,11 +143,13 @@ export async function POST(request: Request) {
       support: input.support,
     });
   } catch (error) {
-    // Only an error category is logged. Prompts, answers, credentials and raw requests are never logged.
-    console.warn(
-      "tutor_fallback",
-      error instanceof Error ? error.name : "unknown",
-    );
+    // Log only operational metadata, never prompts, answers, or model output.
+    const gatewayFailure = getGatewayFailureDetails(error);
+    console.warn("tutor_fallback", {
+      name: error instanceof Error ? error.name : "unknown",
+      model,
+      ...(gatewayFailure ? { gateway: gatewayFailure } : {}),
+    });
     return prepared("unavailable");
   }
 }

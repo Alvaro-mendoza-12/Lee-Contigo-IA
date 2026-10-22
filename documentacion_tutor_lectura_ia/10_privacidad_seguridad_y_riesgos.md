@@ -18,6 +18,7 @@ El Reglamento peruano de la Ley 29733 establece salvaguardas para servicios digi
 - No grabar audio ni imágenes.
 - Sin anuncios, contacto directo ni chat abierto.
 - No publicar resultados individuales.
+- Ante un fallo del modelo, los registros técnicos guardan el tipo de error, el modelo y metadatos operativos del Gateway si están disponibles (código HTTP e identificador de generación). Los errores de formato pueden incluir longitud de salida y uso de tokens, nunca texto; no se guardan prompts, relatos, pistas ni respuestas del estudiante en esos eventos.
 
 ### Piloto con institución
 - Aprobación institucional y consentimiento aplicable.

@@ -1,6 +1,7 @@
 import { createHash } from "node:crypto";
 import { generateText, NoObjectGeneratedError, Output } from "ai";
 import { z } from "zod";
+import { getGatewayFailureDetails } from "@/lib/ai-diagnostics";
 import {
   containsPersonalDetails,
   createStoryInput,
@@ -178,9 +179,11 @@ export async function POST(request: Request) {
     return reply({ story });
   } catch (error) {
     const modelCouldNotFormatStory = NoObjectGeneratedError.isInstance(error);
+    const gatewayFailure = getGatewayFailureDetails(error);
     console.warn("story_creation_fallback", {
       name: error instanceof Error ? error.name : "unknown",
       model,
+      ...(gatewayFailure ? { gateway: gatewayFailure } : {}),
       ...(modelCouldNotFormatStory
         ? {
             cause: error.cause instanceof Error ? error.cause.name : "unknown",

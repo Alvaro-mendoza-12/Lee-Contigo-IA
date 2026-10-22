@@ -29,7 +29,10 @@ export function Practice({ story, level }: { story: Story; level: Level }) {
   const version = story.versions[level];
   const [index, setIndex] = useState(0),
     [selected, setSelected] = useState<number | null>(null);
-  const [feedback, setFeedback] = useState<"correct" | "retry" | null>(null);
+  const [feedback, setFeedback] = useState<
+    "correct" | "retry" | "revealed" | null
+  >(null);
+  const [incorrectAttempts, setIncorrectAttempts] = useState(0);
   const [hints, setHints] = useState<Hint | null>(null),
     [hintCount, setHintCount] = useState(0);
   const [loading, setLoading] = useState(false),
@@ -53,6 +56,7 @@ export function Practice({ story, level }: { story: Story; level: Level }) {
   function resetQuestion() {
     setSelected(null);
     setFeedback(null);
+    setIncorrectAttempts(0);
     setHints(null);
     setHintCount(0);
     setLoading(false);
@@ -221,7 +225,7 @@ export function Practice({ story, level }: { story: Story; level: Level }) {
                   name={"respuesta-" + question.id}
                   value={i}
                   checked={selected === i}
-                  disabled={feedback === "correct"}
+                  disabled={feedback === "correct" || feedback === "revealed"}
                   onChange={() => {
                     setSelected(i);
                     setFeedback(null);
@@ -246,13 +250,30 @@ export function Practice({ story, level }: { story: Story; level: Level }) {
               <strong>
                 {feedback === "correct"
                   ? "¡Encontraste una buena pista en el texto!"
-                  : "Probemos una vez más."}
+                  : feedback === "revealed"
+                    ? "Leamos juntos la parte clave."
+                    : "Probemos una vez más."}
               </strong>
               <p>
                 {feedback === "correct"
                   ? question.explanation
-                  : "Vuelve al relato o pide una pista. Puedes cambiar tu respuesta; aquí estamos para aprender."}
+                  : feedback === "revealed"
+                    ? question.explanation
+                    : "Vuelve al relato o pide una pista. Puedes cambiar tu respuesta; aquí estamos para aprender."}
               </p>
+              {feedback === "correct" || feedback === "revealed" ? (
+                <blockquote className="answer-evidence">
+                  {version.paragraphs[question.paragraph]}
+                </blockquote>
+              ) : null}
+              {feedback === "revealed" && level === "reto" ? (
+                <Link
+                  className="text-button answer-level-link"
+                  href={`/leer/${story.id}?nivel=paso`}
+                >
+                  ¿Te ayudaría leerlo con frases más cortas? Prueba Paso a paso
+                </Link>
+              ) : null}
               {feedback === "retry" && hintCount < 2 ? (
                 <button
                   className="text-button"
@@ -273,7 +294,7 @@ export function Practice({ story, level }: { story: Story; level: Level }) {
             </div>
           ) : null}
           <div className="question-actions">
-            {feedback === "correct" ? (
+            {feedback === "correct" || feedback === "revealed" ? (
               <button className="button" onClick={next}>
                 {index === 2 ? "Ver mis descubrimientos" : "Siguiente pregunta"}
                 <ArrowRight size={18} />
@@ -283,10 +304,14 @@ export function Practice({ story, level }: { story: Story; level: Level }) {
                 className="button"
                 disabled={selected === null}
                 onClick={() => {
-                  setFeedback(
-                    selected === question.correct ? "correct" : "retry",
-                  );
-                  if (selected !== question.correct) setNeedsSupport(true);
+                  if (selected === question.correct) {
+                    setFeedback("correct");
+                    return;
+                  }
+                  const attempts = incorrectAttempts + 1;
+                  setIncorrectAttempts(attempts);
+                  setNeedsSupport(true);
+                  setFeedback(attempts >= 3 ? "revealed" : "retry");
                 }}
               >
                 Explorar mi respuesta <ArrowRight size={18} />
@@ -334,7 +359,7 @@ export function Practice({ story, level }: { story: Story; level: Level }) {
           <button
             className="button button-outline full-width"
             onClick={askHint}
-            disabled={loading || hintCount >= 2}
+            disabled={loading || hintCount >= 2 || feedback === "revealed"}
             aria-busy={loading}
           >
             {loading ? (

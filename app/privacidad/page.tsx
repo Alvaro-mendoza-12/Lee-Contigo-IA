@@ -93,6 +93,14 @@ export default function Privacy() {
         Los límites de creación se aplican por instancia y durante un periodo
         corto; no equivalen a una cuota global ni a un control parental.
       </p>
+      <p>
+        Para resolver fallos de IA, los registros técnicos pueden conservar el
+        modelo, el tipo de error, el código de estado, el uso de tokens y un
+        identificador de generación del proveedor. En errores de formato también
+        se conserva la longitud de la salida, no su texto. No registramos con
+        esos eventos la idea del cuento, el relato, las opciones que elegiste ni
+        el texto de la pista.
+      </p>
       <h2>Acompañamiento y pruebas</h2>
       <p>
         El contenido es de demostración y está pendiente de revisión pedagógica.

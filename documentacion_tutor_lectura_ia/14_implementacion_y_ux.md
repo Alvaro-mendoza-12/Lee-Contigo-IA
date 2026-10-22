@@ -14,7 +14,7 @@ Este documento describe el producto construido. Los documentos 00 a 13 son el an
 | Biblioteca   | `/biblioteca`                            | Dos relatos originales, elección entre dos niveles, vista previa de la versión seleccionada y acceso a lectura.                                                                                                                               |
 | Crear cuento | `/crear`                                 | Recibe una idea breve y nivel con revisión adulta; genera un relato con cuatro párrafos, tres preguntas de comprensión y dos pistas progresivas por pregunta. La portada ilustrada es opcional. La experiencia queda en memoria de la página. |
 | Lectura      | `/leer/[id]?nivel=paso` o `reto`         | Libro por páginas con relato adaptado, once tamaños de letra de 12 a 44 px, voz del navegador, animación opcional y acceso a preguntas. El texto se divide en páginas más breves en móvil; se puede cambiar al relato continuo.               |
-| Práctica     | `/practicar/[id]?nivel=...`              | Tres preguntas, retroalimentación, reintentos, dos grados de pista, consulta del texto y cierre.                                                                                                                                              |
+| Práctica     | `/practicar/[id]?nivel=...`              | Tres preguntas, retroalimentación, hasta tres intentos, evidencia del relato, dos grados de pista, consulta del texto y cierre sin nota.                                                                                                      |
 | Guía adulta  | `/acompanar`                             | Planificador interactivo: elige cuento, nivel, objetivo de conversación y momento (antes, durante o al terminar); envía la selección a la lectura acompañada. Incluye orientación sobre IA, privacidad y alcance de demostración.             |
 | Privacidad   | `/privacidad`                            | Información que procesa el recorrido y límites del prototipo.                                                                                                                                                                                 |
 | Tutor        | `POST /api/tutor`                        | Valida identificadores editoriales y solicita una pista a IA Gateway.                                                                                                                                                                         |
@@ -37,6 +37,8 @@ La vista previa de la biblioteca cambia junto con el nivel para que se aprecie l
 La adaptación de los relatos de biblioteca es editorial y está incluida en el catálogo. El creador genera cuentos bajo demanda con un nivel elegido por el lector y una portada desde una segunda solicitud. El modelo no determina automáticamente el grado del niño ni diagnostica dificultades. Los niveles son opciones de práctica, no equivalencias certificadas de edad o grado escolar.
 
 Al terminar un cuento personalizado, el quiz trabaja tres habilidades: localizar información, inferir una idea y comprender la idea principal. Cada pregunta incluye dos pistas graduadas y un párrafo de evidencia. Tras el primer y segundo error, la persona vuelve al texto e intenta otra vez; tras tres respuestas incorrectas, se muestra una explicación. Las respuestas no se envían al modelo ni se califican como nota escolar. Esto mantiene una segunda interacción pedagógica sin sumar una llamada de IA por pregunta.
+
+La práctica de los relatos de biblioteca sigue el mismo andamiaje: el primer y segundo error invitan a revisar el texto o pedir una pista; el tercer error revela la explicación y el párrafo que la respalda, y permite continuar sin tener que acertar. Si el lector eligió «Un nuevo reto», también puede abrir voluntariamente la versión «Paso a paso». El nivel no se cambia automáticamente ni se presenta como diagnóstico.
 
 ## 2. Qué aporta la IA
 
@@ -111,14 +113,18 @@ Las portadas cambian cada siete segundos con un movimiento de 850 ms. Solo la po
 
 El resultado sin infracciones detectadas por axe no equivale a una certificación completa de accesibilidad. Falta una prueba con lectores de pantalla y personas con distintas necesidades.
 
+Los registros de fallos de IA incluyen categoría y modelo; cuando Gateway los proporciona, también código HTTP, tipo de error e identificador de generación. Para salidas estructuradas inválidas se registra longitud de salida y uso de tokens, nunca el texto. No se registran la idea del cuento, el relato, las respuestas seleccionadas ni la pista generada.
+
 ## 5. Comprobaciones realizadas
 
 - Compilación de producción y comprobación de TypeScript.
 - Seis comprobaciones unitarias: coherencia del catálogo, entradas estrictas, manejo de niveles, plan de apoyo de reintento, filtro de pistas y conservación del texto al paginar en móvil/escritorio.
 - Dieciocho comprobaciones de navegador sobre flujo completo, selección de relato/nivel, cambio de página, tamaños de letra, animación opcional, planificador de acompañamiento, accesibilidad, API, portadas, pausa y ayuda después de un error. Incluyen móvil y escritorio, siete rutas sin desbordamiento horizontal y las reglas WCAG A/AA seleccionadas por axe.
 - Revisión visual de inicio, lectura y práctica en pantallas de escritorio y móvil.
-- Solicitud real a AI Gateway después de habilitar los créditos; la respuesta del tutor se identifica con `source: "ai"`. Las respuestas preparadas se identifican por separado.
+- Una comprobación real anterior observó una respuesta de tutor con `source: "ai"`; eso confirma que el flujo llegó a funcionar, no que esté disponible ahora.
 - Ocho comprobaciones de navegador adicionales dirigidas a la URL pública: todas aprobadas. Se verificaron además pistas reales de ambas historias y de los dos niveles, y GitHub Actions terminó con resultado satisfactorio para la versión publicada.
+
+En la versión publicada `ce7a5ec`, dos solicitudes controladas recientes a `POST /api/crear` terminaron con `GatewayInternalServerError` para `google/gemini-3.8-flash`. Los registros de esa versión solo guardaban la categoría del error, así que no permiten distinguir entre crédito o presupuesto, permisos y un problema del proveedor. Esta actualización añade el estado HTTP y el identificador de generación del Gateway cuando los devuelve; falta observar una nueva solicitud de producción para confirmar la causa y volver a comprobar la generación de cuentos y pistas con IA.
 
 El alcance de estas comprobaciones es técnico. No son resultados de un piloto educativo ni demuestran mejora en comprensión lectora.
 

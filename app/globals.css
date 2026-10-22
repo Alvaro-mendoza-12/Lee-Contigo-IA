@@ -1702,6 +1702,20 @@ svg {
 .answer-feedback.retry strong {
   color: #805b26;
 }
+.answer-feedback.revealed {
+  background: #eef3e9;
+  color: var(--ink);
+}
+.answer-evidence {
+  border-left: 3px solid #b78b48;
+  margin: 12px 0 0;
+  padding-left: 12px;
+  color: var(--forest);
+  line-height: 1.7;
+}
+.answer-level-link {
+  margin-top: 12px;
+}
 .question-actions {
   display: flex;
   justify-content: flex-end;
