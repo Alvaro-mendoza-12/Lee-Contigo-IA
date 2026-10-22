@@ -26,10 +26,10 @@ test("seleccionar una palabra da explicación, ejemplo y pistas progresivas sin 
     });
   });
   await page.goto("/leer/luz-del-bosque?nivel=reto");
+  await page.locator(".reading-settings > summary").click();
   await page.getByLabel("¿Quién te lee?").selectOption("sarah");
-  await expect(
-    page.getByText("Voz elegida. Toca Escuchar para oírla.", { exact: true }),
-  ).toBeVisible();
+  await page.locator(".reading-settings > summary").click();
+  await expect(page.getByText("Voz elegida.", { exact: true })).toBeVisible();
   await page.locator(".book-page-text").evaluate((node) => {
     const text = node.firstChild!;
     const start = text.textContent!.indexOf("diminuta");
@@ -69,9 +69,7 @@ test("seleccionar una palabra da explicación, ejemplo y pistas progresivas sin 
   expect(axe.violations).toEqual([]);
   await page.keyboard.press("Escape");
   await expect(help).not.toBeVisible();
-  await expect(
-    page.getByRole("button", { name: "Ayuda con este párrafo" }),
-  ).toBeFocused();
+  await expect(page.getByRole("button", { name: "No entendí" })).toBeFocused();
 });
 
 test("párrafo completo funciona sin seleccionar y un fallo conserva la lectura", async ({
@@ -96,7 +94,7 @@ test("párrafo completo funciona sin seleccionar y un fallo conserva la lectura"
     )[0].text,
   );
   const before = await page.locator(".book-page-text").innerText();
-  await page.getByRole("button", { name: "Ayuda con este párrafo" }).click();
+  await page.getByRole("button", { name: "No entendí" }).click();
   const help = page.getByRole("dialog", { name: "Lo pensamos juntos" });
   await expect(help.getByText(/Ayuda preparada/)).toBeVisible();
   expect(requests[0].mode).toBe("paragraph");

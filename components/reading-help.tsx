@@ -236,13 +236,8 @@ export function ReadingHelp({
           )
         }
       >
-        <Lightbulb size={18} aria-hidden="true" /> Ayuda con este párrafo
+        <Lightbulb size={18} aria-hidden="true" /> No entendí
       </button>
-      {!selection ? (
-        <span className="selection-guide">
-          También puedes marcar una palabra o frase.
-        </span>
-      ) : null}
       <span className="sr-only" role="status">
         {notice ||
           (selection
@@ -289,10 +284,18 @@ export function ReadingHelp({
             <X size={23} aria-hidden="true" />
           </button>
         </div>
-        <blockquote className="help-selected-quote">
-          {target?.text.slice(0, 180)}
-          {target && target.text.length > 180 ? "…" : ""}
-        </blockquote>
+        {target?.mode === "paragraph" ? (
+          <details className="help-passage">
+            <summary>Ver el texto</summary>
+            <blockquote className="help-selected-quote">
+              {target.text}
+            </blockquote>
+          </details>
+        ) : (
+          <blockquote className="help-selected-quote">
+            {target?.text}
+          </blockquote>
+        )}
         <div
           className="help-response"
           role="status"

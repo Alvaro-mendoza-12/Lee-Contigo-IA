@@ -29,7 +29,7 @@ import { levels, type Level } from "@/lib/stories";
 import { BookSpread } from "./book-spread";
 import { ReadingPause } from "./reading-pause";
 import { useNarration } from "./use-narration";
-import { VoicePicker } from "./voice-picker";
+import { ReadingSettings } from "./reading-settings";
 import { ReadingHelp } from "./reading-help";
 import { GeneratedScene } from "./generated-scene";
 import {
@@ -516,9 +516,8 @@ export function StoryCreator() {
         <>
           <header className="creator-heading">
             <h1 ref={activeHeading} tabIndex={-1}>
-              Tu idea, tu cuento
+              Crea tu cuento
             </h1>
-            <p>Imagina un personaje. Nosotros abrimos su aventura.</p>
           </header>
           <div
             className="creator-workspace-tabs"
@@ -532,7 +531,7 @@ export function StoryCreator() {
               onClick={() => setWorkspace("create")}
             >
               <Sparkles size={18} aria-hidden="true" />
-              Crear un cuento
+              Crear
             </button>
             <button
               type="button"
@@ -558,10 +557,10 @@ export function StoryCreator() {
           ) : (
             <form className="creator-form" onSubmit={submitIdea}>
               <label className="creator-label" htmlFor="story-idea">
-                Mi idea para el cuento
+                Mi idea
               </label>
 
-              <p className="creator-help" id="idea-help">
+              <p className="creator-help sr-only" id="idea-help">
                 Por ejemplo: «Una tortuga busca un faro».
               </p>
               <textarea
@@ -609,7 +608,7 @@ export function StoryCreator() {
               </details>
 
               <fieldset className="creator-levels">
-                <legend>¿Cómo te gustaría leer?</legend>
+                <legend>Quiero leer</legend>
                 {(Object.entries(levels) as [Level, typeof levels.paso][]).map(
                   ([id, item]) => (
                     <label
@@ -636,9 +635,6 @@ export function StoryCreator() {
                       </span>
                       <span>
                         <strong>{item.label}</strong>
-                        <small>
-                          {id === "paso" ? "Frases cortas" : "Nuevas palabras"}
-                        </small>
                       </span>
                       {level === id ? (
                         <Check size={18} aria-hidden="true" />
@@ -654,8 +650,8 @@ export function StoryCreator() {
               >
                 <ShieldCheck size={22} aria-hidden="true" />
                 <div>
-                  <strong>Personajes inventados, sin datos personales.</strong>
-                  <Link href="/privacidad">Información para familias</Link>
+                  <strong>Inventa personajes. No escribas tu nombre.</strong>
+                  <Link href="/privacidad">Para familias</Link>
                 </div>
               </aside>
 
@@ -666,10 +662,7 @@ export function StoryCreator() {
                   onChange={(event) => setAdultReviewed(event.target.checked)}
                   required
                 />
-                <span>
-                  Una persona adulta está conmigo y revisó mi idea para crear el
-                  cuento y sus ilustraciones.
-                </span>
+                <span>Un adulto revisó mi idea y está conmigo.</span>
               </label>
 
               {error ? (
@@ -684,11 +677,6 @@ export function StoryCreator() {
                   ) : null}
                 </div>
               ) : null}
-
-              <p className="creator-save-note">
-                <BookOpen size={16} aria-hidden="true" />
-                Libros guardados 7 días en este dispositivo.
-              </p>
 
               <button
                 className="button creator-submit"
@@ -766,7 +754,7 @@ export function StoryCreator() {
             {saveState === "saving"
               ? "Guardando tu libro…"
               : saveState === "saved"
-                ? "Guardado en este dispositivo durante siete días."
+                ? "Guardado por 7 días."
                 : saveState === "unavailable"
                   ? "No pudimos guardarlo aquí. Puedes seguir leyendo mientras esta página esté abierta."
                   : ""}
@@ -800,7 +788,6 @@ export function StoryCreator() {
               </button>
             </div>
             <div className="creator-reader-actions">
-              <VoicePicker value={voice} onChange={changeVoice} />
               {canSpeak ? (
                 <button
                   className="text-button"
@@ -816,15 +803,12 @@ export function StoryCreator() {
                       : "Escuchar página"}
                 </button>
               ) : null}
-              <label className="book-animation-control">
-                <input
-                  type="checkbox"
-                  checked={animate}
-
-                  onChange={(event) => setAnimate(event.target.checked)}
-                />
-                Animar páginas
-              </label>
+              <ReadingSettings
+                voice={voice}
+                onVoiceChange={changeVoice}
+                animate={animate}
+                onAnimateChange={setAnimate}
+              />
             </div>
           </div>
 
@@ -958,7 +942,7 @@ export function StoryCreator() {
                   size={16}
                   aria-hidden="true"
                 />
-                Preparando las ilustraciones… Puedes empezar a leer.
+                Dibujando… Ya puedes leer.
               </p>
             ) : coverState === "unavailable" ? (
               <p role="status">
@@ -975,8 +959,8 @@ export function StoryCreator() {
               <p role="status" aria-live="polite">
                 <Check size={16} aria-hidden="true" />
                 {coverFromCollection
-                  ? "Ilustraciones de nuestra colección para acompañar tu lectura."
-                  : "Tu libro está ilustrado. Las escenas cambian al avanzar."}
+                  ? "Dibujos de la biblioteca."
+                  : "Ilustraciones listas."}
               </p>
             )}
           </div>

@@ -30,17 +30,11 @@ export function Footer() {
   return (
     <footer className="site-footer">
       <div className="container footer-inner">
-        <Logo />
-        <span>Pequeñas lecturas. Grandes descubrimientos.</span>
         <div>
-          <Link href="/acompanar">Guía para adultos</Link>
+          <Link href="/acompanar">Familias</Link>
           <Link href="/privacidad">Privacidad</Link>
         </div>
       </div>
-      <p className="footer-note">
-        Prototipo educativo · Equipo LeeContigo · Textos originales de
-        demostración
-      </p>
     </footer>
   );
 }

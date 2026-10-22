@@ -7,6 +7,7 @@ import {
   type CSSProperties,
   type ReactNode,
 } from "react";
+import { MoveHorizontal } from "lucide-react";
 
 export type BookPage = {
   id: string;
@@ -32,6 +33,12 @@ export function BookSpread({
   onNavigate: (offset: number) => void;
 }) {
   const latest = useRef(page);
+  const gesture = useRef<{
+    pointer: number;
+    x: number;
+    y: number;
+    time: number;
+  } | null>(null);
   const [opening, setOpening] = useState(true);
   const [turn, setTurn] = useState<{
     id: string;
@@ -96,6 +103,11 @@ export function BookSpread({
     ) : (
       <div className={`paper-face paper-${side} paper-art`}>
         {item.illustration}
+        {!copy ? (
+          <span className="book-swipe-hint" aria-hidden="true">
+            <MoveHorizontal size={16} /> Desliza
+          </span>
+        ) : null}
         <span className="paper-art-mark" aria-hidden="true">
           Un mundo por descubrir
         </span>
@@ -117,7 +129,45 @@ export function BookSpread({
         className="paper-book"
         role="region"
         tabIndex={0}
-        aria-label="Libro ilustrado. Usa las flechas para pasar páginas."
+        aria-label="Libro ilustrado. Usa las flechas o desliza la ilustración para pasar páginas."
+        onDragStart={(event) => {
+          if ((event.target as HTMLElement).closest(".paper-art"))
+            event.preventDefault();
+        }}
+        onPointerDown={(event) => {
+          if (
+            !event.isPrimary ||
+            event.button !== 0 ||
+            !(event.target as Element).closest(".paper-spread > .paper-art")
+          )
+            return;
+          gesture.current = {
+            pointer: event.pointerId,
+            x: event.clientX,
+            y: event.clientY,
+            time: performance.now(),
+          };
+          event.currentTarget.setPointerCapture(event.pointerId);
+        }}
+        onPointerCancel={() => {
+          gesture.current = null;
+        }}
+        onLostPointerCapture={() => {
+          gesture.current = null;
+        }}
+        onPointerUp={(event) => {
+          const start = gesture.current;
+          gesture.current = null;
+          if (!start || start.pointer !== event.pointerId) return;
+          const dx = event.clientX - start.x,
+            dy = event.clientY - start.y;
+          if (
+            Math.abs(dx) >= 60 &&
+            Math.abs(dx) > Math.abs(dy) * 1.5 &&
+            performance.now() - start.time < 1600
+          )
+            onNavigate(dx < 0 ? 1 : -1);
+        }}
         onKeyDown={(event) => {
           if (event.key === "ArrowRight" || event.key === "ArrowLeft") {
             event.preventDefault();

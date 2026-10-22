@@ -6,19 +6,19 @@ import { Check, Lightbulb } from "lucide-react";
 const prompts = [
   {
     title: "Imagina",
-    text: "Mira la escena y el comienzo. ¿Qué crees que le gustaría conseguir al personaje?",
+    text: "¿Qué quiere hacer el personaje?",
   },
   {
     title: "Busca una pista",
-    text: "Elige un detalle de esta parte. ¿Qué te ayuda a entender lo que está pasando?",
+    text: "¿Qué detalle te ayuda a entender?",
   },
   {
     title: "Conecta las ideas",
-    text: "¿Por qué crees que el personaje hace eso? Busca una frase que te ayude a explicarlo.",
+    text: "¿Por qué lo hizo? Busca una pista.",
   },
   {
     title: "Cuéntalo a tu manera",
-    text: "¿Qué cambió desde el principio? Cuenta la aventura con tus propias palabras.",
+    text: "¿Qué cambió al final?",
   },
 ];
 
@@ -34,14 +34,10 @@ export function ReadingPause({ scene }: { scene: number }) {
         ) : (
           <Lightbulb size={18} aria-hidden="true" />
         )}
-        {done ? "Ya te detuviste a pensar" : "Una pausa para descubrir"}
-        <span>{prompt.title}</span>
+        {done ? "Ya lo pensé" : "Pensemos"}
       </summary>
       <div>
         <p>{prompt.text}</p>
-        <p className="small muted">
-          Piénsalo o cuéntaselo a quien lee contigo.
-        </p>
         <button
           type="button"
           className="text-button"

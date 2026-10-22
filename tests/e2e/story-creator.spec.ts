@@ -110,9 +110,9 @@ test("las seis ilustraciones generadas cambian con la escena y se conservan al r
   );
   await page.goto("/crear");
   await page
-    .getByLabel("Mi idea para el cuento")
+    .getByLabel("Mi idea", { exact: true })
     .fill("Una tortuga comparte un mapa");
-  await page.getByLabel(/Una persona adulta está conmigo/).check();
+  await page.getByLabel(/Un adulto revisó mi idea/).check();
   await page
     .getByRole("button", { name: "Crear mi cuento", exact: true })
     .click();
@@ -126,9 +126,7 @@ test("las seis ilustraciones generadas cambian con la escena y se conservan al r
     await page.getByRole("button", { name: "Página siguiente" }).click();
   }
   await expect(art).toHaveAttribute("src", pageImages[1]);
-  await expect(
-    page.getByText("Guardado en este dispositivo durante siete días."),
-  ).toBeVisible();
+  await expect(page.getByText("Guardado por 7 días.")).toBeVisible();
   await page.reload();
   await page
     .getByRole("button", { name: `Abrir ${story.title}`, exact: true })
@@ -182,20 +180,27 @@ test("un libro creado dibuja personajes por página, conserva las escenas y perm
   });
   await page.goto("/crear");
   await page
-    .getByLabel("Mi idea para el cuento")
+    .getByLabel("Mi idea", { exact: true })
     .fill("Una tortuga sigue un mapa con su amiga");
-  await page.getByLabel(/Una persona adulta está conmigo/).check();
+  await page.getByLabel(/Un adulto revisó mi idea/).check();
   await page
     .getByRole("button", { name: "Crear mi cuento", exact: true })
     .click();
   const art = page.locator(".paper-spread .composed-story-scene");
   await expect(art).toHaveCount(1);
   const first = await art.screenshot({ animations: "disabled" });
-  await page.getByRole("button", { name: "Página siguiente" }).click();
+  const illustration = page.locator(".paper-spread > .paper-art");
+  await illustration.scrollIntoViewIfNeeded();
+  const bounds = (await illustration.boundingBox())!;
+  const y = bounds.y + bounds.height / 2;
+  await page.mouse.move(bounds.x + bounds.width * 0.8, y);
+  await page.mouse.down();
+  await page.mouse.move(bounds.x + bounds.width * 0.2, y, { steps: 8 });
+  await page.mouse.up();
   await expect(art).toHaveAttribute("data-scene-page", "1");
   const second = await art.screenshot({ animations: "disabled" });
   expect(first.equals(second)).toBe(false);
-  await page.getByRole("button", { name: "Ayuda con este párrafo" }).click();
+  await page.getByRole("button", { name: "No entendí" }).click();
   const dialog = page.getByRole("dialog", { name: "Lo pensamos juntos" });
   await expect(dialog.getByText(/El mapa es un dibujo/)).toBeVisible();
   expect(helpRequests[0]).toMatchObject({
@@ -208,9 +213,7 @@ test("un libro creado dibuja personajes por página, conserva las escenas y perm
     .withTags(["wcag2a", "wcag2aa", "wcag21aa", "wcag22aa"])
     .analyze();
   expect(axe.violations).toEqual([]);
-  await expect(
-    page.getByText("Guardado en este dispositivo durante siete días."),
-  ).toBeVisible();
+  await expect(page.getByText("Guardado por 7 días.")).toBeVisible();
   await page.reload();
   await page
     .getByRole("button", { name: `Abrir ${story.title}`, exact: true })
@@ -253,21 +256,19 @@ test("el cuento creado conecta la respuesta con una cita del texto sin reenviar 
 
   await page.goto("/crear");
   await page
-    .getByLabel("Mi idea para el cuento")
+    .getByLabel("Mi idea", { exact: true })
     .fill("Una tortuga busca un faro");
-  await page.getByLabel(/Una persona adulta está conmigo/).check();
+  await page.getByLabel(/Un adulto revisó mi idea/).check();
   await page.getByRole("button", { name: "Crear mi cuento" }).click();
-  await expect(
-    page.getByText(
-      "Ilustraciones de nuestra colección para acompañar tu lectura.",
-    ),
-  ).toBeVisible();
+  await expect(page.getByText("Dibujos de la biblioteca.")).toBeVisible();
   expect(illustrationRequests).toHaveLength(1);
   await expect(page.getByText("¿Quieres ilustrar la portada?")).toHaveCount(0);
   const audioRequest = page.waitForRequest((r) =>
     r.url().endsWith("/api/narrar"),
   );
+  await page.locator(".reading-settings > summary").click();
   await page.getByLabel("¿Quién te lee?").selectOption("daniel");
+  await page.locator(".reading-settings > summary").click();
   await page
     .getByRole("button", { name: "Escuchar página", exact: true })
     .click();
@@ -313,7 +314,7 @@ test("el cuento creado conecta la respuesta con una cita del texto sin reenviar 
   expect(accessibility.violations).toEqual([]);
   expect(tutorRequests).toEqual([]);
   await page.reload();
-  const shelf = page.getByRole("region", { name: "Mis libros recientes" });
+  const shelf = page.getByRole("region", { name: "Mis libros" });
   await expect(
     shelf.getByRole("button", { name: `Abrir ${story.title}` }),
   ).toBeVisible();
@@ -323,9 +324,7 @@ test("el cuento creado conecta la respuesta con una cita del texto sin reenviar 
   expect(accessibilityShelf.violations).toEqual([]);
   await shelf.getByRole("button", { name: `Abrir ${story.title}` }).click();
   await expect(page.getByRole("heading", { name: story.title })).toBeVisible();
-  await expect(
-    page.getByText("Guardado en este dispositivo durante siete días."),
-  ).toBeVisible();
+  await expect(page.getByText("Guardado por 7 días.")).toBeVisible();
   expect(illustrationRequests).toHaveLength(1);
   await expect(page.locator(".paper-art img").first()).toHaveAttribute(
     "src",
@@ -369,9 +368,9 @@ test("el lector sigue disponible si el navegador no permite guardar", async ({
   );
   await page.goto("/crear");
   await page
-    .getByLabel("Mi idea para el cuento")
+    .getByLabel("Mi idea", { exact: true })
     .fill("Una tortuga visita la colina");
-  await page.getByLabel(/Una persona adulta está conmigo/).check();
+  await page.getByLabel(/Un adulto revisó mi idea/).check();
   await page
     .getByRole("button", { name: "Crear mi cuento", exact: true })
     .click();

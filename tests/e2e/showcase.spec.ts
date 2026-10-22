@@ -47,15 +47,32 @@ test("el cambio automático se puede pausar y la animación no desborda", async 
   ).toBeVisible();
   await page.mouse.move(0, 0);
   await deck.scrollIntoViewIfNeeded();
+  await deck.getByRole("button", { name: /Ir al cuento 1:/ }).click();
   await expect(
     deck.getByRole("heading", { name: "Una luz en el bosque" }),
   ).toBeVisible();
-  // Give the visibility observer a frame, then advance the real carousel timer.
   await page.clock.runFor(100);
-  await page.clock.runFor(3100);
+  await page.clock.pauseAt((await page.evaluate(() => Date.now())) + 1000);
+  await deck
+    .getByRole("button", { name: "Animar cambio automático de cuentos" })
+    .click();
+  await page.mouse.move(0, 0);
+  await page.clock.runFor(1999);
+  await expect(
+    deck.getByRole("heading", { name: "Una luz en el bosque" }),
+  ).toBeVisible();
+  await page.clock.runFor(1);
   await expect(
     deck.getByRole("heading", { name: "La semilla viajera" }),
   ).toBeVisible();
+  await expect(deck.locator(".is-departing")).toHaveCSS(
+    "animation-name",
+    "book-to-back",
+  );
+  await expect(deck.locator(".is-front")).toHaveCSS(
+    "animation-name",
+    "book-to-front",
+  );
   expect(
     await page.evaluate(
       () => document.documentElement.scrollWidth <= innerWidth,
@@ -70,8 +87,37 @@ test("el cambio automático se puede pausar y la animación no desborda", async 
     deck.getByRole("heading", { name: "La semilla viajera" }),
   ).toBeVisible();
   await expect(
-    deck.getByRole("button", { name: "Activar cambio automático de cuentos" }),
+    deck.getByRole("button", { name: "Animar cambio automático de cuentos" }),
   ).toBeVisible();
+});
+
+test("con movimiento reducido las portadas cambian sin animarse hasta elegir Animar", async ({
+  page,
+}) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.clock.install();
+  await page.goto("/");
+  const deck = page.getByRole("region", { name: "Cuentos para descubrir" });
+  await deck.scrollIntoViewIfNeeded();
+  await page.mouse.move(0, 0);
+  await page.clock.runFor(2100);
+  await expect(
+    deck.getByRole("heading", { name: "La semilla viajera" }),
+  ).toBeVisible();
+  await expect(deck.locator(".is-front")).toHaveCSS("animation-name", "none");
+  await deck
+    .getByRole("button", { name: "Pausar cambio automático de cuentos" })
+    .click();
+  await deck
+    .getByRole("button", { name: "Animar cambio automático de cuentos" })
+    .click();
+  await page.mouse.move(0, 0);
+  await page.clock.runFor(2100);
+  await expect(deck.locator(".is-front")).toHaveCSS(
+    "animation-name",
+    "book-to-front",
+  );
+  await expect(deck.locator(".hero-book-stack")).toHaveClass(/allow-motion/);
 });
 
 test("un error permite pedir apoyo de reintento sin enviar la respuesta", async ({
@@ -106,9 +152,9 @@ test("un error permite pedir apoyo de reintento sin enviar la respuesta", async 
     tier: 0,
     support: "retry",
   });
-  await expect(
-    page.getByText("Una ayuda para volver a intentarlo"),
-  ).toBeVisible({ timeout: 12000 });
+  await expect(page.getByText("Pista preparada", { exact: true })).toBeVisible({
+    timeout: 12000,
+  });
   await expect(
     page.getByRole("button", { name: "Dame otra pista", exact: true }),
   ).toBeFocused();

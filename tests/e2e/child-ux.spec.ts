@@ -25,15 +25,15 @@ test("la portada infantil organiza sus destinos y no desborda a 320 px", async (
 }) => {
   await page.goto("/");
   await expect(page.getByRole("heading", { level: 1 })).toHaveText(
-    "Abre un cuento.Empieza la aventura.",
+    "¿Leemos un cuento?",
   );
-  const chapters = page.getByRole("region", { name: "¿Qué aventura eliges?" });
+  const chapters = page.getByRole("region", { name: "Más aventuras" });
   await expect(chapters.getByRole("link")).toHaveCount(2);
   await expect(
-    chapters.getByRole("link", { name: /Explora la biblioteca/ }),
+    chapters.getByRole("link", { name: /Más cuentos/ }),
   ).toHaveAttribute("href", "/biblioteca");
   await expect(
-    chapters.getByRole("link", { name: /Inventa tu cuento/ }),
+    chapters.getByRole("link", { name: /Crear un cuento/ }),
   ).toHaveAttribute("href", "/crear");
   const axe = await new AxeBuilder({ page })
     .withTags(["wcag2a", "wcag2aa", "wcag21aa", "wcag22aa"])
@@ -46,7 +46,7 @@ test("la portada infantil organiza sus destinos y no desborda a 320 px", async (
     ),
   ).toBe(true);
   await page.goto("/crear");
-  await expect(page.getByLabel("Mi idea para el cuento")).toBeVisible();
+  await expect(page.getByLabel("Mi idea", { exact: true })).toBeVisible();
   expect(
     await page.evaluate(
       () => document.documentElement.scrollWidth <= innerWidth,
@@ -62,7 +62,7 @@ test("inicio directo, diez cuentos completos y navegación visible en móvil", a
   await expect(page).toHaveURL(/\/leer\/luz-del-bosque/);
   await page
     .getByRole("navigation")
-    .getByRole("link", { name: "Biblioteca", exact: true })
+    .getByRole("link", { name: "Cuentos", exact: true })
     .click();
   const books = page.locator(".story-card-direct");
   await expect(books).toHaveCount(10);
@@ -136,7 +136,9 @@ test("la voz reproduce audio, detiene al cambiar de página y reutiliza la pági
     page.getByRole("button", { name: "Detener lectura" }),
   ).toBeVisible();
   expect(requests).toHaveLength(1);
+  await page.locator(".reading-settings > summary").click();
   await page.getByLabel("¿Quién te lee?").selectOption("sarah");
+  await page.locator(".reading-settings > summary").click();
   await expect(
     page.getByRole("button", { name: "Escuchar", exact: true }),
   ).toBeVisible();
@@ -147,6 +149,7 @@ test("la voz reproduce audio, detiene al cambiar de página y reutiliza la pági
   expect(requests).toHaveLength(2);
   expect(requests[1]).toMatchObject({ voice: "sarah" });
   await page.reload();
+  await page.locator(".reading-settings > summary").click();
   await expect(page.getByLabel("¿Quién te lee?")).toHaveValue("sarah");
 });
 

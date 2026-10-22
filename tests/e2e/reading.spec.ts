@@ -7,7 +7,7 @@ test("recorrido completo, reintento y pista de respaldo", async ({ page }) => {
   const errors: string[] = [];
   page.on("pageerror", (error) => errors.push(error.message));
   await page.goto("/");
-  await page.getByRole("link", { name: /Explora la biblioteca/ }).click();
+  await page.getByRole("link", { name: /Más cuentos/ }).click();
   await expect(
     page.getByRole("heading", { name: "Elige tu cuento" }),
   ).toBeVisible();
@@ -17,7 +17,7 @@ test("recorrido completo, reintento y pista de respaldo", async ({ page }) => {
     .click();
   await page.getByRole("button", { name: "Aumentar tamaño de letra" }).click();
   await expect(page.getByText("Muy grande", { exact: true })).toBeVisible();
-  const explore = page.getByRole("link", { name: "Ya leí, vamos a explorar" });
+  const explore = page.getByRole("link", { name: "Vamos a pensar" });
   for (let turns = 0; turns < 40 && !(await explore.isVisible()); turns++) {
     const next = page.getByRole("button", { name: "Página siguiente" });
     await next.scrollIntoViewIfNeeded();
@@ -74,7 +74,7 @@ test("nuevo reto y otra historia preservan el nivel en las rutas", async ({
   await expect(
     page.getByText(/Al guardar su abrigo, Nico descubrió/),
   ).toBeVisible();
-  const explore = page.getByRole("link", { name: "Ya leí, vamos a explorar" });
+  const explore = page.getByRole("link", { name: "Vamos a pensar" });
   for (let turns = 0; turns < 40 && !(await explore.isVisible()); turns++) {
     const next = page.getByRole("button", { name: "Página siguiente" });
     await next.scrollIntoViewIfNeeded();
@@ -116,15 +116,19 @@ test("el libro cambia nivel, conserva tamaño y responde al pasar páginas", asy
   await expect(page).toHaveURL(/nivel=reto/);
   await expect(page.locator(".book-page-text")).toContainText("Cada anochecer");
   await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.locator(".reading-settings > summary").click();
   const animation = page.getByLabel("Animar páginas");
   await expect(animation).toBeEnabled();
   await expect(animation).toBeChecked();
   if (await animation.isEnabled()) {
     await animation.uncheck();
+    await page.locator(".reading-settings > summary").click();
     await next.scrollIntoViewIfNeeded();
     await next.click();
     await expect(page.locator(".book-turn-sheet")).toHaveCount(0);
+    await page.locator(".reading-settings > summary").click();
     await animation.check();
+    await page.locator(".reading-settings > summary").click();
     await next.scrollIntoViewIfNeeded();
     await next.click();
     await expect(page.locator(".book-turn-sheet")).toHaveCSS(

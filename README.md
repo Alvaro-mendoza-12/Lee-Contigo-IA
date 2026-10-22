@@ -1,6 +1,6 @@
 # LeeContigo IA
 
-Tutor web de comprensión lectora para niños de aproximadamente 8 a 10 años. MVP del desafío de lectura de la Hackathon futurX 2026.
+Tutor web de comprensión lectora con una interfaz orientada a niños de aproximadamente 6 a 10 años y niveles según su habilidad lectora. MVP del desafío de lectura de la Hackathon futurX 2026. Requiere acompañamiento adulto y validación pedagógica con usuarios reales.
 
 - **Web:** https://lee-contigo-ia.vercel.app
 - **Repositorio:** https://github.com/Alvaro-mendoza-12/Lee-Contigo-IA
@@ -8,19 +8,21 @@ Tutor web de comprensión lectora para niños de aproximadamente 8 a 10 años. M
 
 ## Qué incluye
 
-**Inicio infantil:** portada de libro con lomo verde, papel soleado y portadas que cambian. Una acción principal para leer y dos destinos con iconos: biblioteca e inventar un cuento. En móvil hay menos texto periférico y un creador más compacto. Ver `documentacion_tutor_lectura_ia/26_portada_infantil_y_movil.md`.
+**Inicio infantil:** portada de libro con lomo verde, papel soleado y portadas que cambian. Una acción principal para leer y dos destinos con iconos: Más cuentos y Crear un cuento. Se quitaron lemas y etiquetas repetidas; las voces y la animación están en Ajustes. En móvil, el texto visible fuera del cuento pasó de 45 a 17 palabras en el inicio y de 61 a 34 en el lector. Ver `documentacion_tutor_lectura_ia/27_minimalismo_6_a_10_y_carrusel.md` para el método y sus límites.
 
 **Lector rediseñado:** libro abierto a todo el ancho, pliegue y hojas con volumen, giro de 180 grados, texto e ilustración que alternan de lado y ocho escenas interiores en los cuatro cuentos iniciales y cuatro escenas en cada cuento nuevo. En teléfonos se usa una hoja vertical legible. Los controles se simplificaron y la caja permanece estable al avanzar. Ver `documentacion_tutor_lectura_ia/18_lector_editorial_y_validacion.md`.
 
 Diez relatos originales, cada uno adaptado editorialmente a dos niveles: **Paso a paso** y **Un nuevo reto**. La lectura se presenta como un libro por páginas, con once tamaños de letra, voz opcional, animación de cambio de página que se puede desactivar y acceso al texto continuo. En móvil, el relato se reparte en páginas más cortas. La biblioteca usa una sola tarjeta por destino y el inicio abre directamente un cuento.
 
+La biblioteca se organiza en filas horizontales de **Amigos**, **Naturaleza** y **Descubrimientos**. Se navegan con el dedo, flechas y teclado. El menú móvil reúne iconos y nombres en una sola fila. En tablet horizontal, el libro muestra dos caras; deslizar la ilustración pasa hojas sin interceptar la selección del texto. El mismo gesto funciona en los libros creados.
+
 En **Para acompañar**, una persona adulta puede elegir cuento, nivel y objetivo de conversación; la guía propone preguntas para antes, durante y al terminar. Esas opciones continúan en la lectura. El estudiante explora tres preguntas. El tutor genera una pista estructurada con IA: una acción de lectura y una pregunta de reflexión, adaptadas a la habilidad, el nivel y el momento de apoyo. Tras un error, propone otra estrategia sin enviar la respuesta elegida ni las opciones al modelo. Cada pista permite consultar la evidencia en el texto. La respuesta incorrecta muestra un aviso claro, color de apoyo, un sonido breve que se puede silenciar y una pista audible. No se revela automáticamente la solución al tercer error.
 
 En **Crea tu cuento**, el niño propone una idea breve y elige un nivel. Una persona adulta debe revisar la idea. Con AI Gateway y respaldo gratuito de OpenRouter, genera un relato de seis párrafos con tres preguntas: localizar información, inferir e identificar la idea principal. Cada pregunta incluye dos pistas graduales y una cita literal verificada contra el párrafo señalado. Las respuestas e intentos quedan en memoria. El libro incorpora de inmediato escenas vectoriales con personajes y objetos del relato; puede ajustar su plan con IA. Con Cloudflare configurado, genera seis imágenes distintas, una por párrafo, mientras el niño puede seguir leyendo. Si un párrafo ocupa varias hojas por el tamaño de letra, su ilustración conserva la escena y varía el encuadre. Los seis libros más recientes, sus ilustraciones y sus autorizaciones se guardan durante siete días en IndexedDB, sin la idea original, respuestas ni perfiles. Se pueden borrar desde Mis libros. Se conservan los libros anteriores con sus imágenes de colección.
 
-La portada presenta los cuentos apilados, con un intercambio suave cada tres segundos. Incluye navegación manual y pausa; se detiene con foco de teclado, al pasar el cursor, al salir de pantalla o al ocultar la pestaña. Con movimiento reducido no hay reproducción automática ni animación.
+La portada presenta los cuentos apilados, con un intercambio cada dos segundos y una transición de 850 ms: la portada delantera se desliza al fondo y la siguiente avanza. Incluye navegación manual y pausa; se detiene con foco de teclado, al pasar el cursor del ratón, al salir de pantalla o al ocultar la pestaña. Con movimiento reducido las portadas cambian sin animación; pulsar Animar permite activar expresamente el movimiento. Los toques en móvil no provocan una pausa por hover.
 
-Los relatos de biblioteca están preparados en el catálogo; durante la práctica, la IA genera una acción de lectura y una pregunta de reflexión alineadas con la habilidad y el nivel. Dentro de ambos lectores, seleccionar una palabra o frase permite pedir una explicación, un ejemplo y una pregunta guiada. «Ayuda con este párrafo» ofrece una alternativa sin selección. Hay tres etapas de apoyo y ayudas preparadas ante fallos, identificadas por su origen. No hay chat abierto ni envío de respuestas libres. El contenido generado puede contener errores y necesita revisión adulta y pedagógica; no se afirma una mejora educativa ya demostrada.
+Los relatos de biblioteca están preparados en el catálogo; durante la práctica, la IA genera una acción de lectura y una pregunta de reflexión alineadas con la habilidad y el nivel. Dentro de ambos lectores, seleccionar una palabra o frase permite pedir una explicación, un ejemplo y una pregunta guiada. «No entendí» ofrece ayuda sobre el párrafo sin necesitar selección. Hay tres etapas de apoyo y ayudas preparadas ante fallos, identificadas por su origen. No hay chat abierto ni envío de respuestas libres. El contenido generado puede contener errores y necesita revisión adulta y pedagógica; no se afirma una mejora educativa ya demostrada.
 
 ## Ejecutar en local
 
@@ -82,7 +84,7 @@ La trazabilidad de RF-01 a RF-04 y RNF-01 a RNF-03 está en documentacion_tutor_
 
 ELEVENLABS_API_KEY se configura solo en servidor. ELEVENLABS_VOICE_ID es opcional. La ruta /api/narrar reconstruye el texto editorial o valida una autorización firmada del párrafo de un libro creado; nunca acepta un prompt libre. Si falla, utiliza la voz del navegador. El plan configurado y sus límites y licencias se revisan en ElevenLabs; el código no compra créditos.
 
-El selector «¿Quién te lee?» permite elegir George, Sarah o Daniel, y recuerda únicamente esa preferencia en el dispositivo. Cambiar de voz detiene el audio y la caché distingue cada voz.
+Dentro de Ajustes, el selector «¿Quién te lee?» permite elegir George, Sarah o Daniel, y recuerda únicamente esa preferencia en el dispositivo. Cambiar de voz detiene el audio y la caché distingue cada voz.
 
 Cloudflare necesita `CLOUDFLARE_API_TOKEN` con acceso de Workers AI y `CLOUDFLARE_ACCOUNT_ID` en servidor. Se usa exclusivamente `@cf/black-forest-labs/flux-1-schnell`, cuatro pasos y dos solicitudes simultáneas; no activa planes ni compra créditos. Las imágenes se comprimen a WebP y se guardan con el libro local. La disponibilidad depende del permiso y la cuota de la cuenta. Sin configuración, o ante un fallo, siguen las ilustraciones vectoriales.
 

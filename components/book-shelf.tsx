@@ -24,8 +24,8 @@ export function BookShelf({
     <section className="saved-books" aria-labelledby="saved-books-title">
       <div className="shelf-heading">
         <div>
-          <h2 id="saved-books-title">Mis libros recientes</h2>
-          <p>Hasta seis libros, disponibles siete días en este dispositivo.</p>
+          <h2 id="saved-books-title">Mis libros</h2>
+          <p>6 libros · 7 días · En este dispositivo</p>
         </div>
         {books.length ? (
           <button

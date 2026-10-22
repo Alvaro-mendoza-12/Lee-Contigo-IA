@@ -7,6 +7,7 @@ import "./workshop.css";
 import "./child-ux.css";
 import "./reading-help.css";
 import "./home-cover.css";
+import "./child-minimal.css";
 const nunito = Nunito_Sans({
   subsets: ["latin"],
   variable: "--font-nunito",

@@ -2,14 +2,7 @@
 
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import Link from "next/link";
-import {
-  ArrowLeft,
-  ArrowRight,
-  BookOpen,
-  Pause,
-  Play,
-  Sparkles,
-} from "lucide-react";
+import { ArrowLeft, ArrowRight, Pause, Play } from "lucide-react";
 import { StoryArt } from "./art";
 import type { StoryArtVariant } from "@/lib/stories";
 
@@ -21,6 +14,8 @@ export function StoryShowcase({ covers }: { covers: Cover[] }) {
   const [departing, setDeparting] = useState<number | null>(null);
   const [playing, setPlaying] = useState(true);
   const [reducedMotion, setReducedMotion] = useState(true);
+  const [motionOverride, setMotionOverride] = useState(false);
+  const animate = !reducedMotion || motionOverride;
   const [hovered, setHovered] = useState(false);
   const [visible, setVisible] = useState(true);
   const [inView, setInView] = useState(false);
@@ -48,22 +43,14 @@ export function StoryShowcase({ covers }: { covers: Cover[] }) {
   }, []);
 
   useEffect(() => {
-    if (
-      !playing ||
-      reducedMotion ||
-      hovered ||
-      !visible ||
-      !inView ||
-      covers.length < 2
-    )
-      return;
+    if (!playing || hovered || !visible || !inView || covers.length < 2) return;
     const timer = window.setTimeout(() => {
       setHasMoved(true);
-      setDeparting(active);
+      setDeparting(animate ? active : null);
       setActive((current) => (current + 1) % covers.length);
-    }, 3000);
+    }, 2000);
     return () => window.clearTimeout(timer);
-  }, [active, playing, reducedMotion, hovered, visible, inView, covers.length]);
+  }, [active, playing, animate, hovered, visible, inView, covers.length]);
 
   useEffect(() => {
     if (departing === null) return;
@@ -75,7 +62,7 @@ export function StoryShowcase({ covers }: { covers: Cover[] }) {
     setPlaying(false);
     if (next === active) return;
     setHasMoved(true);
-    setDeparting(reducedMotion ? null : active);
+    setDeparting(animate ? active : null);
     setActive(next);
     setAnnouncement(
       `${covers[next].title}. Historia ${next + 1} de ${covers.length}.`,
@@ -91,23 +78,23 @@ export function StoryShowcase({ covers }: { covers: Cover[] }) {
       role="region"
       aria-roledescription="carrusel"
       aria-label="Cuentos para descubrir"
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
+      onPointerEnter={(event) => {
+        if (event.pointerType === "mouse") setHovered(true);
+      }}
+      onPointerLeave={() => setHovered(false)}
       onFocusCapture={(event) => {
         if (!(event.target as HTMLElement).closest("[data-rotation-control]"))
           setPlaying(false);
       }}
     >
-      <div className="floating-note note-top" aria-hidden="true">
-        <span className="note-icon">
-          <Sparkles size={18} />
-        </span>
-        <span>
-          <strong>¿Abrimos este?</strong>
-        </span>
-      </div>
       <div className="hero-deck-stage">
-        <div className={"hero-book-stack" + (hasMoved ? " has-moved" : "")}>
+        <div
+          className={
+            "hero-book-stack" +
+            (hasMoved ? " has-moved" : "") +
+            (motionOverride ? " allow-motion" : "")
+          }
+        >
           {covers.map((cover, index) => {
             const front = index === active;
             const depth = (index - active + covers.length) % covers.length;
@@ -140,7 +127,6 @@ export function StoryShowcase({ covers }: { covers: Cover[] }) {
                   </div>
                   <div className="hero-book-caption">
                     <div>
-                      <span className="small-label">Un cuento para ti</span>
                       <h2>{cover.title}</h2>
                     </div>
                     <span className="circle-link" aria-hidden="true">
@@ -152,14 +138,6 @@ export function StoryShowcase({ covers }: { covers: Cover[] }) {
             );
           })}
         </div>
-      </div>
-      <div className="floating-note note-bottom" aria-hidden="true">
-        <span className="note-icon warm">
-          <BookOpen size={18} />
-        </span>
-        <span>
-          <strong>A tu ritmo</strong>
-        </span>
       </div>
       {covers.length > 1 ? (
         <div className="book-deck-controls">
@@ -198,28 +176,27 @@ export function StoryShowcase({ covers }: { covers: Cover[] }) {
               <ArrowRight size={18} aria-hidden="true" />
             </button>
           </div>
-          {!reducedMotion ? (
-            <button
-              type="button"
-              className="book-deck-play"
-              data-rotation-control
-              onClick={() => setPlaying((current) => !current)}
-              aria-label={
-                playing
-                  ? "Pausar cambio automático de cuentos"
-                  : "Activar cambio automático de cuentos"
-              }
-            >
-              {playing ? (
-                <Pause size={15} aria-hidden="true" />
-              ) : (
-                <Play size={15} aria-hidden="true" />
-              )}
-              {playing ? "Pausar" : "Animar"}
-            </button>
-          ) : (
-            <span className="book-deck-manual">A tu ritmo</span>
-          )}
+          <button
+            type="button"
+            className="book-deck-play"
+            data-rotation-control
+            onClick={() => {
+              if (!playing) setMotionOverride(true);
+              setPlaying((current) => !current);
+            }}
+            aria-label={
+              playing
+                ? "Pausar cambio automático de cuentos"
+                : "Animar cambio automático de cuentos"
+            }
+          >
+            {playing ? (
+              <Pause size={15} aria-hidden="true" />
+            ) : (
+              <Play size={15} aria-hidden="true" />
+            )}
+            {playing ? "Pausar" : "Animar"}
+          </button>
         </div>
       ) : null}
       <span className="sr-only" aria-live="polite" aria-atomic="true">

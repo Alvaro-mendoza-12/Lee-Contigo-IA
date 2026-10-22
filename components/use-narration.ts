@@ -40,7 +40,7 @@ export function useNarration() {
     stop();
     setVoice(next);
     setProvider(null);
-    setMessage("Voz elegida. Toca Escuchar para oírla.");
+    setMessage("Voz elegida.");
     try {
       localStorage.setItem("lee-contigo-voice", next);
     } catch {

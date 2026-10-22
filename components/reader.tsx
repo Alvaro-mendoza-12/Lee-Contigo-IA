@@ -32,7 +32,7 @@ import { useReadingLevel } from "./use-reading-level";
 import { getIllustrationScene } from "@/lib/story-creator";
 import { useNarration } from "./use-narration";
 import { ReadingHelp } from "./reading-help";
-import { VoicePicker } from "./voice-picker";
+import { ReadingSettings } from "./reading-settings";
 
 export function Reader({
   story,
@@ -53,7 +53,6 @@ export function Reader({
   const dialogRef = useRef<HTMLElement>(null);
   const expandControlRef = useRef<HTMLButtonElement>(null);
   const [animate, setAnimate] = useState(true);
-  const [reducedMotion, setReducedMotion] = useState(true);
   const [compact, setCompact] = useState(false);
   const {
     speaking,
@@ -83,18 +82,11 @@ export function Reader({
     ];
 
   useEffect(() => {
-    const preference = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const update = () => {
-      setReducedMotion(preference.matches);
-    };
-    update();
-    preference.addEventListener("change", update);
     const compactPreference = window.matchMedia("(max-width: 900px)");
     const updateCompact = () => setCompact(compactPreference.matches);
     updateCompact();
     compactPreference.addEventListener("change", updateCompact);
     return () => {
-      preference.removeEventListener("change", update);
       compactPreference.removeEventListener("change", updateCompact);
       if ("speechSynthesis" in window) window.speechSynthesis.cancel();
     };
@@ -280,7 +272,6 @@ export function Reader({
                 </button>
               </div>
               <div className="book-tool-actions">
-                <VoicePicker value={voice} onChange={changeVoice} />
                 {canSpeak ? (
                   <button
                     type="button"
@@ -317,38 +308,29 @@ export function Reader({
                   )}
                   {expanded ? "Cerrar ampliación" : "Ampliar"}
                 </button>
-                <label className="book-animation-control">
-                  <input
-                    type="checkbox"
-                    checked={animate}
-                    onChange={(event) => setAnimate(event.target.checked)}
-                  />
-                  Animar páginas
-                </label>
-                <details className="book-settings">
-                  <summary>Opciones</summary>
-                  <div>
-                    {reducedMotion ? (
-                      <p>Puedes desactivar «Animar páginas» cuando quieras.</p>
-                    ) : null}
-                    <button
-                      type="button"
-                      className="text-button"
-                      aria-pressed={fullText}
-                      onClick={() => {
-                        stopVoice();
-                        setFullText((value) => !value);
-                      }}
-                    >
-                      {fullText ? (
-                        <BookOpen size={16} aria-hidden="true" />
-                      ) : (
-                        <AlignLeft size={16} aria-hidden="true" />
-                      )}
-                      {fullText ? "Volver al libro" : "Ver relato completo"}
-                    </button>
-                  </div>
-                </details>
+                <ReadingSettings
+                  voice={voice}
+                  onVoiceChange={changeVoice}
+                  animate={animate}
+                  onAnimateChange={setAnimate}
+                >
+                  <button
+                    type="button"
+                    className="text-button"
+                    aria-pressed={fullText}
+                    onClick={() => {
+                      stopVoice();
+                      setFullText((value) => !value);
+                    }}
+                  >
+                    {fullText ? (
+                      <BookOpen size={16} aria-hidden="true" />
+                    ) : (
+                      <AlignLeft size={16} aria-hidden="true" />
+                    )}
+                    {fullText ? "Volver al libro" : "Ver relato completo"}
+                  </button>
+                </ReadingSettings>
               </div>
             </div>
             <p className="voice-status" role="status">
@@ -452,14 +434,10 @@ export function Reader({
                   className="button"
                   href={`/practicar/${story.id}?nivel=${level}`}
                 >
-                  Ya leí, vamos a explorar
+                  Vamos a pensar
                   <ArrowRight size={19} aria-hidden="true" />
                 </Link>
-              ) : (
-                <p className="reading-reassurance">
-                  A tu ritmo. Las preguntas te esperan al final.
-                </p>
-              )}
+              ) : null}
             </div>
             {accompanied ? (
               <div className="reading-companion-inline">

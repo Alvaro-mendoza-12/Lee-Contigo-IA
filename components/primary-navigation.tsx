@@ -16,10 +16,10 @@ export function PrimaryNavigation() {
             : undefined
         }
       >
-        <BookOpen size={18} aria-hidden="true" /> Biblioteca
+        <BookOpen size={18} aria-hidden="true" /> Cuentos
       </Link>
       <Link href="/crear" aria-current={path === "/crear" ? "page" : undefined}>
-        <Sparkles size={18} aria-hidden="true" /> Crea tu cuento
+        <Sparkles size={18} aria-hidden="true" /> Crear
       </Link>
     </nav>
   );
