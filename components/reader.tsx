@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, type CSSProperties } from "react";
+import { useEffect, useRef, useState, type CSSProperties } from "react";
 import Link from "next/link";
 import {
   ArrowLeft,
@@ -11,6 +11,8 @@ import {
   Clock3,
   HeartHandshake,
   Leaf,
+  Maximize2,
+  Minimize2,
   Minus,
   Plus,
   Square,
@@ -43,6 +45,9 @@ export function Reader({
   const [position, setPosition] = useState({ paragraph: 0, word: 0 });
   const [direction, setDirection] = useState("next");
   const [fullText, setFullText] = useState(false);
+  const [expanded, setExpanded] = useState(false);
+  const dialogRef = useRef<HTMLElement>(null);
+  const expandControlRef = useRef<HTMLButtonElement>(null);
   const [animate, setAnimate] = useState(true);
   const [reducedMotion, setReducedMotion] = useState(true);
   const [compact, setCompact] = useState(false);
@@ -78,6 +83,60 @@ export function Reader({
       if ("speechSynthesis" in window) window.speechSynthesis.cancel();
     };
   }, []);
+
+  useEffect(() => {
+    if (!expanded) return;
+
+    const previousOverflow = document.body.style.overflow;
+    const previousFocus =
+      document.activeElement instanceof HTMLElement
+        ? document.activeElement
+        : null;
+    document.body.style.overflow = "hidden";
+    const focusFrame = window.requestAnimationFrame(() =>
+      expandControlRef.current?.focus(),
+    );
+    function manageDialogKeys(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        setExpanded(false);
+        return;
+      }
+      if (event.key !== "Tab" || !dialogRef.current) return;
+      const focusable = Array.from(
+        dialogRef.current.querySelectorAll<HTMLElement>(
+          'a[href], button:not(:disabled), input:not(:disabled), [tabindex]:not([tabindex="-1"])',
+        ),
+      ).filter((element) => element.getClientRects().length > 0);
+      if (!focusable.length) {
+        event.preventDefault();
+        return;
+      }
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (
+        event.shiftKey &&
+        (document.activeElement === first ||
+          !dialogRef.current.contains(document.activeElement))
+      ) {
+        event.preventDefault();
+        last.focus();
+      } else if (
+        !event.shiftKey &&
+        (document.activeElement === last ||
+          !dialogRef.current.contains(document.activeElement))
+      ) {
+        event.preventDefault();
+        first.focus();
+      }
+    }
+    window.addEventListener("keydown", manageDialogKeys);
+    return () => {
+      window.cancelAnimationFrame(focusFrame);
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener("keydown", manageDialogKeys);
+      previousFocus?.focus();
+    };
+  }, [expanded]);
 
   useEffect(() => {
     setPosition({ paragraph: 0, word: 0 });
@@ -131,8 +190,20 @@ export function Reader({
         <ArrowLeft size={16} aria-hidden="true" />
         Volver a las historias
       </Link>
-      <div className="reading-layout">
-        <article className="reading-card">
+      <div
+        className={`reading-layout${expanded ? " reading-layout-expanded" : ""}`}
+      >
+        {expanded ? (
+          <div className="reading-expanded-backdrop" aria-hidden="true" />
+        ) : null}
+        <article
+          ref={dialogRef}
+          className={`reading-card${expanded ? " reading-card-expanded" : ""}`}
+          role={expanded ? "dialog" : undefined}
+          aria-modal={expanded ? true : undefined}
+          aria-labelledby={expanded ? "reader-title" : undefined}
+          tabIndex={expanded ? -1 : undefined}
+        >
           <div className="reading-content">
             <div className="reading-meta">
               <span className="small-label">UN LIBRO PARA LEER A TU RITMO</span>
@@ -141,7 +212,7 @@ export function Reader({
                 {story.minutes} min
               </span>
             </div>
-            <h1>{story.title}</h1>
+            <h1 id="reader-title">{story.title}</h1>
             <p className="story-subtitle">{story.subtitle}</p>
             <div
               className="reader-level-picker"
@@ -214,6 +285,7 @@ export function Reader({
               <button
                 type="button"
                 className="text-button"
+                aria-pressed={fullText}
                 onClick={() => {
                   stopVoice();
                   setFullText((value) => !value);
@@ -225,6 +297,23 @@ export function Reader({
                   <AlignLeft size={16} aria-hidden="true" />
                 )}
                 {fullText ? "Volver al libro" : "Ver relato completo"}
+              </button>
+              <button
+                ref={expandControlRef}
+                type="button"
+                className="text-button book-expand-control"
+                aria-pressed={expanded}
+                aria-label={
+                  expanded ? "Cerrar página ampliada" : "Ampliar página"
+                }
+                onClick={() => setExpanded((value) => !value)}
+              >
+                {expanded ? (
+                  <Minimize2 size={16} aria-hidden="true" />
+                ) : (
+                  <Maximize2 size={16} aria-hidden="true" />
+                )}
+                {expanded ? "Cerrar ampliación" : "Ampliar página"}
               </button>
               {!fullText ? (
                 <label className="book-animation-control">

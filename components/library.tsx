@@ -69,6 +69,16 @@ export function Library({ initialLevel = "paso" }: { initialLevel?: Level }) {
           </p>
         </div>
       </div>
+      <Link className="library-create-card" href="/crear">
+        <span className="library-create-icon">
+          <Sparkles size={24} aria-hidden="true" />
+        </span>
+        <span>
+          <strong>¿Tienes una idea para un cuento?</strong>
+          <small>La IA la convierte en una historia con su propia portada.</small>
+        </span>
+        <ArrowRight size={20} aria-hidden="true" />
+      </Link>
       <div className="story-grid">
         {stories.map((story, index) => (
           <article className="story-card" key={story.id}>

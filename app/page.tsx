@@ -39,6 +39,9 @@ export default function Home() {
           <Link className="button" href="/biblioteca">
             Elige tu primera historia <ArrowRight size={19} />
           </Link>
+          <Link className="button button-outline hero-create-link" href="/crear">
+            <Sparkles size={18} /> Crea un cuento con IA
+          </Link>
           <div className="hero-reassurance">
             <span>
               <Check size={16} /> Sin crear una cuenta

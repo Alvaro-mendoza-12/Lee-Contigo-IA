@@ -12,9 +12,11 @@ Dos relatos originales, cada uno adaptado editorialmente a dos niveles: **Paso a
 
 En **Para acompañar**, una persona adulta puede elegir cuento, nivel y objetivo de conversación; la guía propone preguntas para antes, durante y al terminar. Esas opciones continúan en la lectura. El estudiante explora tres preguntas. El tutor genera pistas breves con IA según el relato, la pregunta y el nivel. Tras un error, el modo de reintento pide otra estrategia para buscar evidencia, sin enviar la respuesta seleccionada. Cada pista permite consultar la evidencia en el texto.
 
+En **Crea tu cuento**, el niño propone una idea breve y elige un nivel. Una persona adulta debe revisar la idea. AI Gateway genera un relato de cuatro páginas con tres preguntas de comprensión. La ilustración de portada es opcional y requiere una segunda confirmación adulta: se genera con FLUX 3 Image, que actualmente figura a USD 0.05 por imagen y cuya política permite usar prompts e imágenes para mejorar modelos. Revisa el aviso en pantalla antes de solicitarla. La lectura aparece como libro con cambio de página, tamaño ajustable, voz opcional y preguntas al final. El texto y la ilustración se conservan solo en memoria mientras la página está abierta; no se guardan en una cuenta ni una base de datos. Si falla el proveedor o faltan créditos, se puede leer el cuento igualmente.
+
 La portada presenta los cuentos apilados, con un intercambio suave cada siete segundos. Incluye navegación manual y pausa; se detiene con foco de teclado, al pasar el cursor, al salir de pantalla o al ocultar la pestaña. Con movimiento reducido no hay reproducción automática ni animación.
 
-La adaptación del relato está preparada en el catálogo; la IA reformula las pistas durante la práctica. No se afirma que el modelo genere o valide automáticamente los cuentos ni que el producto ya haya demostrado mejorar el aprendizaje. El contenido está pendiente de revisión docente.
+Los relatos de biblioteca están preparados en el catálogo; la IA reformula las pistas durante la práctica y puede crear relatos e ilustraciones a partir de una idea del usuario. El contenido generado puede contener errores y debe revisarlo una persona adulta; no se afirma que el producto ya haya demostrado mejorar el aprendizaje. El contenido está pendiente de revisión docente.
 
 ## Ejecutar en local
 
@@ -51,7 +53,7 @@ AI Gateway ofrece una asignación gratuita limitada a modelos elegibles; no es u
 
 ## Privacidad y alcance
 
-El MVP no solicita nombres, cuentas, colegio, grabaciones ni texto libre. Las respuestas quedan en memoria de la página, no se envían al modelo ni se guardan en una base de datos. El hosting y el proveedor de IA pueden procesar datos técnicos de conexión. El límite de solicitudes es temporal y por instancia; no sustituye protección distribuida para un lanzamiento masivo.
+La biblioteca y el tutor no solicitan texto libre; el tutor recibe identificadores editoriales, no las respuestas. El creador sí envía la idea escrita a AI Gateway para generar el relato, y envía al modelo de imagen una descripción visual derivada del cuento. No escribir nombres reales, colegio, dirección, teléfono, correo ni ubicación: los filtros no detectan todos los datos personales. El servidor solicita enrutamiento sin entrenamiento cuando hay un proveedor compatible; las reglas de retención dependen del proveedor. El texto y la imagen quedan en memoria de la página y no se guardan en una base de datos. El hosting y el proveedor de IA pueden procesar datos técnicos de conexión. El límite de solicitudes es temporal y por instancia; no sustituye protección distribuida para un lanzamiento masivo.
 
 No incluye cuentas institucionales, cobros, estadísticas longitudinales ni un piloto educativo realizado. El modelo comercial propuesto es licencia institucional o acceso patrocinado; debe validarse con compradores y requiere alojamiento compatible con uso comercial.
 

@@ -22,9 +22,48 @@ export default function Privacy() {
         modo de apoyo: explorar o volver a intentarlo. Este modo indica qué
         ayuda se solicita; no incluye la respuesta seleccionada. El servidor
         puede enviar el relato original y la pregunta a un modelo mediante
-        Vercel AI Gateway. No enviamos el nombre, la voz, una respuesta libre ni
-        un identificador de estudiante. El proveedor y el hosting pueden
-        procesar información técnica de conexión según sus condiciones.
+        Vercel AI Gateway. En este recorrido no enviamos el nombre, la voz, una
+        respuesta libre ni un identificador de estudiante.
+      </p>
+      <h2>Crear un cuento y su portada con IA</h2>
+      <p>
+        Si usas «Crea tu cuento», la idea breve y el nivel elegido se envían a un
+        modelo de IA para escribir la historia y sus preguntas. Vercel AI
+        Gateway enruta esa solicitud a los proveedores disponibles para Gemini;
+        consulta la{" "}
+        <a href="https://cloud.google.com/privacy" target="_blank" rel="noreferrer">
+          política de privacidad de Google Cloud
+        </a>
+        . Después, otra solicitud usa únicamente la descripción visual generada para pedir una
+        portada; no necesita volver a enviar la idea original. La aplicación no
+        guarda la idea, el cuento ni la imagen en una cuenta, base de datos o
+        almacenamiento del navegador: permanecen en memoria mientras la página
+        está abierta. El proveedor de IA y el alojamiento pueden procesar las
+        solicitudes y datos técnicos según sus propias condiciones. Esta versión no fuerza el
+        filtro de «no entrenamiento» porque los proveedores elegidos no ofrecen
+        una ruta compatible con ese control. Vercel indica que AI Gateway no usa
+        las solicitudes para entrenar, pero las condiciones de los proveedores
+        que las reciben pueden variar.
+      </p>
+      <p>
+        Esta función intenta bloquear correos, teléfonos, enlaces y algunas
+        frases que parecen datos personales, pero no puede reconocer todos los
+        nombres ni todos los datos sensibles. No escribas información real:
+        inventa personajes y lugares. Una persona adulta debe revisar la idea y
+        leer el resultado junto contigo. La portada es opcional y solo se envía
+        después de una segunda confirmación adulta. Se genera con FLUX 3 Image,
+        de Black Forest Labs. Su política indica que puede usar prompts e
+        imágenes para mejorar sus modelos. El precio publicado actualmente por
+        Vercel es USD 0.05 por imagen y puede cambiar; se descuenta de los
+        créditos disponibles. Lee la{" "}
+        <a
+          href="https://bfl.ai/legal/privacy-policy"
+          target="_blank"
+          rel="noreferrer"
+        >
+          política de privacidad de Black Forest Labs
+        </a>
+        . Si el cuento incluye algo extraño, cierra la página y crea otro.
       </p>
       <h2>Pistas con IA y pistas preparadas</h2>
       <p>
@@ -39,6 +78,8 @@ export default function Privacy() {
         servidor limita solicitudes con una huella temporal de la dirección de
         conexión; no guarda la dirección original ni la vincula a respuestas. No
         usamos publicidad, rastreadores de marketing ni cookies de perfilado.
+        Los límites de creación se aplican por instancia y durante un periodo
+        corto; no equivalen a una cuota global ni a un control parental.
       </p>
       <h2>Acompañamiento y pruebas</h2>
       <p>
@@ -50,8 +91,8 @@ export default function Privacy() {
       </p>
       <h2>Volver a empezar</h2>
       <p>
-        Recarga la página para borrar el estado de la sesión. Puedes cerrar la
-        web en cualquier momento. No hay una cuenta que debas eliminar.
+        Recarga la página o cierra la web para borrar el estado local de la
+        historia. No hay una cuenta que debas eliminar.
       </p>
       <Link className="button button-outline" href="/biblioteca">
         Volver a las historias

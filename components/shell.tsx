@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { BookOpen, Leaf, ArrowUpRight } from "lucide-react";
+import { BookOpen, Leaf, ArrowUpRight, Sparkles } from "lucide-react";
 export function Logo() {
   return (
     <span className="brand">
@@ -22,6 +22,9 @@ export function Header() {
         </Link>
         <nav aria-label="Navegación principal">
           <Link href="/biblioteca">Las historias</Link>
+          <Link href="/crear">
+            <Sparkles size={14} aria-hidden="true" /> Crea tu cuento
+          </Link>
           <Link href="/acompanar">Para acompañar</Link>
         </nav>
         <Link href="/biblioteca" className="button button-small header-cta">
