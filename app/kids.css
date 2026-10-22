@@ -821,3 +821,8 @@ label:has(input:focus-visible) {
     animation-duration: 0.25s;
   }
 }
+
+/* Let sideways swipes turn pages while vertical scrolling still works. */
+.paper-book {
+  touch-action: pan-y;
+}

@@ -190,3 +190,34 @@ test("API rechaza instrucciones arbitrarias y origen ajeno", async ({
   expect([200, 429]).toContain(sameOrigin.status());
   expect((await sameOrigin.json()).hint).toBeTruthy();
 });
+test("en celular y tableta se pasa de página deslizando el dedo", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 820, height: 1180 });
+  await page.goto("/leer/luz-del-bosque?nivel=paso");
+  const book = page.locator(".paper-book");
+  await expect(page.getByText(/^Página 1 de \d+$/)).toBeVisible();
+  const swipe = async (fromX: number, toX: number, fromY = 300, toY = 300) => {
+    const point = (x: number, y: number) => [
+      { identifier: 0, clientX: x, clientY: y },
+    ];
+    await book.dispatchEvent("touchstart", {
+      touches: point(fromX, fromY),
+      changedTouches: point(fromX, fromY),
+    });
+    await book.dispatchEvent("touchend", {
+      touches: [],
+      changedTouches: point(toX, toY),
+    });
+  };
+  await swipe(600, 200);
+  await expect(page.getByText(/^Página 2 de \d+$/)).toBeVisible();
+  await swipe(200, 600);
+  await expect(page.getByText(/^Página 1 de \d+$/)).toBeVisible();
+  // A vertical scroll gesture must not turn the page.
+  await swipe(300, 340, 600, 200);
+  await expect(page.getByText(/^Página 1 de \d+$/)).toBeVisible();
+  // The buttons keep working alongside the swipe.
+  await page.getByRole("button", { name: "Página siguiente" }).click();
+  await expect(page.getByText(/^Página 2 de \d+$/)).toBeVisible();
+});
