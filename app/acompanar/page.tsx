@@ -59,13 +59,14 @@ export default function Guide() {
           <p>
             En los cuentos creados a partir de una idea, prepara un relato al
             nivel elegido, preguntas para localizar información, inferir y
-            encontrar la idea principal, y dos pistas por pregunta. Si una
-            respuesta no coincide, la página muestra la pista siguiente y el
-            párrafo de apoyo; no envía la respuesta del niño a otra llamada. En
-            las historias de biblioteca, formula pistas a partir del relato y la
-            pregunta. No es un chat abierto ni hace diagnósticos. Si la IA no
-            está disponible, aparece una pista preparada y se indica su
-            procedencia.
+            encontrar la idea principal y dos pistas por pregunta. La página
+            añade paisajes ilustrados de nuestra colección para acompañar la
+            lectura. Si una respuesta no coincide, la página muestra la pista
+            siguiente y el párrafo de apoyo; no envía la respuesta del niño a
+            otra llamada. En las historias de biblioteca, formula pistas a
+            partir del relato y la pregunta. No es un chat abierto ni hace
+            diagnósticos. Si la IA no está disponible, aparece una pista
+            preparada y se indica su procedencia.
           </p>
           <p>Comprueba las pistas contra el texto: la IA puede equivocarse.</p>
         </section>

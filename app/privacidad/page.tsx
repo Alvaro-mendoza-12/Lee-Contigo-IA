@@ -18,28 +18,42 @@ export default function Privacy() {
       </p>
       <h2>Qué se envía al solicitar una pista</h2>
       <p>
-        Solo identificadores de relato, pregunta, nivel, número de pista y un
-        modo de apoyo: explorar o volver a intentarlo. Este modo indica qué
-        ayuda se solicita; no incluye la respuesta seleccionada. El servidor
-        puede enviar el relato original y la pregunta a un modelo mediante
-        Vercel AI Gateway. La solicitud permite usar Gemini y, si no responde,
-        GPT-5.4 Nano. Gemini puede servirse mediante Google o Google Vertex AI;
-        GPT-5.4 Nano, mediante OpenAI o Azure. La selección depende de las rutas
-        disponibles en AI Gateway. El catálogo consultado no marca estas rutas
-        como compatibles con el filtro de no entrenamiento, así que no lo
-        activamos. Revisa las políticas de cada proveedor; no prometemos que sus
-        datos se excluyan de otros usos ni que no se conserven. En este
-        recorrido no enviamos el nombre, la voz, una respuesta libre ni un
-        identificador de estudiante.
+        El navegador envía solo identificadores de relato y pregunta, nivel,
+        número de pista y modo de apoyo: explorar o volver a intentarlo. El
+        servidor recupera el título, relato, pregunta, habilidad y fragmento de
+        evidencia del catálogo y puede enviarlos a un modelo mediante Vercel AI
+        Gateway. No envía las opciones ni la respuesta seleccionada. La
+        solicitud permite usar Gemini y, si no responde, GPT-5.4 Nano. Gemini
+        puede servirse mediante Google o Google Vertex AI; GPT-5.4 Nano,
+        mediante OpenAI o Azure. La selección depende de las rutas disponibles
+        en AI Gateway. Como respaldo, el servidor puede usar OpenRouter con
+        modelos gratuitos. En OpenRouter se solicita excluir proveedores que
+        declaran usar el contenido para entrenamiento; esto no garantiza que no
+        exista retención técnica. Consulta su{" "}
+        <a
+          href="https://openrouter.ai/docs/guides/privacy/provider-logging"
+          target="_blank"
+          rel="noreferrer"
+        >
+          política de proveedores
+        </a>
+        . El catálogo de AI Gateway consultado no marca estas rutas como
+        compatibles con el filtro de no entrenamiento, así que no lo activamos.
+        Revisa las políticas de cada proveedor; no prometemos que sus datos se
+        excluyan de otros usos ni que no se conserven. En este recorrido no
+        enviamos el nombre, la voz, una respuesta libre ni un identificador de
+        estudiante.
       </p>
-      <h2>Crear un cuento y su portada con IA</h2>
+      <h2>Crear un libro ilustrado</h2>
       <p>
         Si usas «Crea tu cuento», la idea breve y el nivel elegido se envían a
         un modelo de IA para escribir la historia y sus preguntas. Vercel AI
         Gateway intenta Gemini 3.8 Flash y, si no está disponible, puede probar
         GPT-5.4 Nano. Google o Google Vertex AI pueden servir el primer modelo;
         OpenAI o Azure pueden servir el respaldo. Las políticas y condiciones de
-        cada proveedor pueden variar. Consulta la{" "}
+        cada proveedor pueden variar. Si AI Gateway falla, puede intentarse
+        mediante OpenRouter con modelos gratuitos y las mismas validaciones.
+        Consulta la{" "}
         <a
           href="https://cloud.google.com/privacy"
           target="_blank"
@@ -65,12 +79,13 @@ export default function Privacy() {
         </a>{" "}
         y las políticas del proveedor seleccionado. El filtro de no
         entrenamiento no se activa y no se fuerza retención cero. Después, otra
-        solicitud usa únicamente la descripción visual generada para pedir una
-        portada; no necesita volver a enviar la idea original. La aplicación no
-        guarda la idea, el cuento ni la imagen en una cuenta, base de datos o
-        almacenamiento del navegador: permanecen en memoria mientras la página
-        está abierta. El proveedor de IA y el alojamiento pueden procesar las
-        solicitudes y datos técnicos según sus propias condiciones.
+        solicitud automática usa la descripción visual y cuatro fragmentos del
+        cuento generado para ilustrar sus escenas; no vuelve a enviar la idea
+        original. La aplicación no guarda la idea, el cuento ni la imagen en una
+        cuenta, base de datos o almacenamiento del navegador: permanecen en
+        memoria mientras la página está abierta. El proveedor de IA y el
+        alojamiento pueden procesar las solicitudes y datos técnicos según sus
+        propias condiciones.
       </p>
       <p>
         El cuento incluye tres tipos de preguntas —buscar información, inferir y
@@ -85,20 +100,12 @@ export default function Privacy() {
         frases que parecen datos personales, pero no puede reconocer todos los
         nombres ni todos los datos sensibles. No escribas información real:
         inventa personajes y lugares. Una persona adulta debe revisar la idea y
-        leer el resultado junto contigo. La portada es opcional y solo se envía
-        después de una segunda confirmación adulta. Se genera con FLUX 3 Image,
-        de Black Forest Labs. Su política indica que puede usar prompts e
-        imágenes para mejorar sus modelos. El precio publicado actualmente por
-        Vercel es USD 0.05 por imagen y puede cambiar; se descuenta de los
-        créditos disponibles. Lee la{" "}
-        <a
-          href="https://bfl.ai/legal/privacy-policy"
-          target="_blank"
-          rel="noreferrer"
-        >
-          política de privacidad de Black Forest Labs
-        </a>
-        . Si el cuento incluye algo extraño, cierra la página y crea otro.
+        leer el resultado junto contigo. Al pulsar «Crear mi cuento» se añaden
+        ilustraciones originales de la colección: son paisajes decorativos, no
+        imágenes generadas a partir de esa idea ni evidencia para responder las
+        preguntas. En este modo gratuito no se envía la historia a un proveedor
+        de imágenes. Si el cuento incluye algo extraño, cierra la página y crea
+        otro.
       </p>
       <h2>Pistas con IA y pistas preparadas</h2>
       <p>

@@ -59,7 +59,9 @@ test("nuevo reto y otra historia preservan el nivel en las rutas", async ({
 }) => {
   await page.goto("/biblioteca");
   await page.getByRole("radio", { name: /Un nuevo reto/ }).check();
-  await page.getByRole("link", { name: "Quiero leerla" }).last().click();
+  await page
+    .getByRole("link", { name: "Leer La semilla viajera", exact: true })
+    .click();
   await expect(page).toHaveURL(/semilla-viajera\?nivel=reto/);
   await expect(
     page.getByText(/En lugar de tirarla, decidió averiguar/),
@@ -92,7 +94,10 @@ test("el libro cambia nivel, conserva tamaño y responde al pasar páginas", asy
     .click();
   await expect(page).toHaveURL(/nivel=reto/);
   await expect(page.locator(".book-page-text")).toContainText("Cada anochecer");
+  await page.emulateMedia({ reducedMotion: "reduce" });
   const animation = page.getByLabel("Animar páginas");
+  await expect(animation).toBeEnabled();
+  await expect(animation).not.toBeChecked();
   if (await animation.isEnabled()) {
     await animation.uncheck();
     await next.scrollIntoViewIfNeeded();
@@ -102,6 +107,10 @@ test("el libro cambia nivel, conserva tamaño y responde al pasar páginas", asy
     await next.scrollIntoViewIfNeeded();
     await next.click();
     await expect(page.locator(".book-leaf")).toHaveClass(/page-turn-/);
+    await expect(page.locator(".book-leaf")).toHaveCSS(
+      "animation-name",
+      "page-flip-in-next",
+    );
   }
 });
 test("la guía permite preparar y comenzar una lectura acompañada", async ({

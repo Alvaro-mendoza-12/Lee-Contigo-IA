@@ -20,6 +20,8 @@ import type { Story, Level } from "@/lib/stories";
 import { Journey } from "./journey";
 type Hint = {
   hint: string;
+  action?: string;
+  reflection?: string;
   quote: string;
   source: "ai" | "prepared";
   reason?: string;
@@ -351,8 +353,7 @@ export function Practice({ story, level }: { story: Story; level: Level }) {
             <span className="small-label">UN EMPUJONCITO</span>
           </div>
           <h2>
-            ¿Lo pensamos
-            <br />
+            ¿Lo pensamos <br />
             juntos?
           </h2>
           <p>A veces, una pequeña pista abre una gran idea.</p>
@@ -379,7 +380,7 @@ export function Practice({ story, level }: { story: Story; level: Level }) {
             {hints ? (
               <>
                 <span className="hint-source">
-                  <Sparkles size={13} />
+                  <Sparkles size={13} aria-hidden="true" />
                   {hints.source === "ai" ? "Pista con IA" : "Pista preparada"}
                 </span>
                 {hints.support === "retry" ? (
@@ -387,7 +388,18 @@ export function Practice({ story, level }: { story: Story; level: Level }) {
                     Una ayuda para volver a intentarlo
                   </span>
                 ) : null}
-                <p>{hints.hint}</p>
+                {hints.action && hints.reflection ? (
+                  <div className="hint-scaffold">
+                    <p>
+                      <strong>Prueba esto:</strong> {hints.action}
+                    </p>
+                    <p>
+                      <strong>Piensa:</strong> {hints.reflection}
+                    </p>
+                  </div>
+                ) : (
+                  <p>{hints.hint}</p>
+                )}
                 <details>
                   <summary>Ver el fragmento del relato</summary>
                   <blockquote>{hints.quote}</blockquote>

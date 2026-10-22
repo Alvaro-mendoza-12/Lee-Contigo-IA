@@ -76,6 +76,21 @@ test("el cuento creado conecta la respuesta con una cita del texto sin reenviar 
       body: JSON.stringify({ story }),
     });
   });
+  const illustrationRequests: unknown[] = [];
+  await page.route("**/api/crear/portada", async (route) => {
+    illustrationRequests.push(route.request().postDataJSON());
+    await route.fulfill({
+      contentType: "application/json",
+      body: JSON.stringify({
+        cover:
+          "data:image/svg+xml;base64," +
+          Buffer.from(
+            '<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024"><rect width="1024" height="1024" fill="#cedfc7"/></svg>',
+          ).toString("base64"),
+        layout: "atlas",
+      }),
+    });
+  });
 
   const tutorRequests: string[] = [];
   page.on("request", (request) => {
@@ -88,6 +103,11 @@ test("el cuento creado conecta la respuesta con una cita del texto sin reenviar 
     .fill("Una tortuga busca un faro");
   await page.getByLabel(/Una persona adulta está conmigo/).check();
   await page.getByRole("button", { name: "Crear mi cuento" }).click();
+  await expect(
+    page.getByText("Tu libro está ilustrado. Las escenas cambian al avanzar."),
+  ).toBeVisible();
+  expect(illustrationRequests).toHaveLength(1);
+  await expect(page.getByText("¿Quieres ilustrar la portada?")).toHaveCount(0);
 
   const nextPage = page.getByRole("button", { name: "Página siguiente" });
   const startQuestions = page.getByRole("button", { name: /Leer y explorar/ });

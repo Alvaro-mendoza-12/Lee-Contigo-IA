@@ -1,4 +1,14 @@
+import { extraStories } from "./extra-stories.ts";
+
 export type Level = "paso" | "reto";
+export type StoryArtVariant = "night" | "seed" | "lighthouse" | "kite";
+export const storyIds = [
+  "luz-del-bosque",
+  "semilla-viajera",
+  "camino-al-faro",
+  "cometa-en-equipo",
+] as const;
+export type StoryId = (typeof storyIds)[number];
 export type Question = {
   id: string;
   skill: string;
@@ -15,7 +25,7 @@ export type Story = {
   title: string;
   subtitle: string;
   theme: string;
-  art: "night" | "seed";
+  art: StoryArtVariant;
   minutes: number;
   description: string;
   versions: Record<Level, StoryVersion>;
@@ -312,6 +322,7 @@ export const stories: Story[] = [
       },
     },
   },
+  ...extraStories,
 ];
 export function getStory(id: string) {
   return stories.find((story) => story.id === id);

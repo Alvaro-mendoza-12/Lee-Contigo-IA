@@ -1,5 +1,7 @@
 .git
 artifacts
+output
+.playwright-cli
 tests
 test-results
 playwright-report

@@ -27,9 +27,9 @@ En el creador de cuentos, una sola generación produce el relato, tres preguntas
 
 1. Revisar el relato y la habilidad antes de incorporarlos al catálogo.
 2. Preparar preguntas y respuestas esperadas como contenido controlado.
-3. Enviar a la IA solo el relato aprobado, la pregunta, la banda de dificultad y el tipo de pista.
-4. Solicitar una respuesta corta que apunte al texto.
-5. Validar longitud, formato y relación con evidencia del relato.
+3. Enviar el relato aprobado, la pregunta, su habilidad, nivel, evidencia y modo de apoyo. No enviar las opciones ni la respuesta elegida.
+4. Solicitar una acción de lectura y una pregunta de reflexión breves, adecuadas a la habilidad y al nivel.
+5. Validar formato, longitud, pregunta final y ausencia de respuestas u opciones literales; ante una salida inválida, usar la pista editorial preparada.
 6. Revisar muestras de salida por una persona durante el piloto.
 7. Sustituir la salida por una pista preparada ante errores, contenido fuera de tema o latencia alta.
 8. Enrutar primero a Gemini 3.8 Flash y permitir el respaldo GPT-5.4 Nano si falla el modelo principal. El catálogo consultado no marca las rutas disponibles de estos modelos como compatibles con el filtro de no entrenamiento, por eso no se activa. Se informa que la política del proveedor seleccionado aplica; si no hay ruta disponible, el producto conserva su alternativa preparada o lleva a la biblioteca.
@@ -52,7 +52,7 @@ En el MVP, las respuestas del estudiante deben ser seleccionables o activarse co
 - Preparar ejemplos para cada relato, nivel y tipo de pregunta.
 - Hacer que la pista señale una frase o párrafo del relato.
 - No permitir que añada hechos externos.
-- Rechazar salidas que den la respuesta sin ayudar a encontrar evidencia.
+- Rechazar salidas que repitan literalmente una respuesta u opción, incluyan enlaces o no propongan una acción y una pregunta para encontrar evidencia.
 - Comprobar que el cuento cubra las tres habilidades y que cada pregunta tenga dos pistas cortas y un párrafo de evidencia válido.
 - Mostrar la explicación después de acertar o de tres intentos, nunca como primera respuesta al error.
 - Mantener opciones e intentos en el navegador; no incluirlos en prompts, registros ni analítica del MVP.

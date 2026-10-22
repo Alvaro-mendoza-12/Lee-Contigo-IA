@@ -12,10 +12,12 @@ const validStory = {
   title: "La tortuga y la luz",
   subtitle: "Una aventura pequeña con un gran descubrimiento",
   paragraphs: [
-    "Una tortuga curiosa encontró un mapa junto al jardín y quiso saber adónde llevaba el sendero.",
-    "El camino subía hasta una colina. La tortuga avanzó despacio y escuchó el viento entre las hojas.",
-    "Al llegar arriba, vio que una luciérnaga buscaba el camino de regreso a casa y parecía confundida.",
-    "La tortuga compartió el mapa y caminaron juntas bajo las estrellas, felices por haber encontrado compañía.",
+    "Una tortuga curiosa encontró un mapa junto al jardín y quiso saber adónde llevaba el sendero. Se detuvo para mirar los dibujos y preparar su bolso.",
+    "El camino subía hasta una colina. La tortuga avanzó despacio y escuchó el viento entre las hojas. Al llegar a la curva, volvió a consultar las señales del mapa.",
+    "Al llegar arriba, vio que una luciérnaga buscaba el camino de regreso a casa y parecía confundida. Se acercó con calma para escuchar su problema.",
+    "La tortuga compartió el mapa y caminaron juntas bajo las estrellas, felices por haber encontrado compañía. Entre las dos buscaron las pequeñas señales del sendero.",
+    "Al encontrar el jardín de la luciérnaga, dejaron una piedra junto al camino para reconocer la entrada. La tortuga guardó el mapa y se sentó a descansar un momento.",
+    "La luciérnaga le dio las gracias por compartir su mapa. La tortuga comprendió que ayudar también era mirar con calma y escuchar. Las dos prometieron volver a pasear juntas.",
   ],
   artDescription:
     "Una tortuga amable y una luciérnaga luminosa comparten un mapa en una colina verde al atardecer",
@@ -154,7 +156,7 @@ test("valida cuentos con estructura de lectura y bloquea datos o contenido inade
   const withEmail = {
     ...parsed.data,
     paragraphs: [
-      "Escribe a nina@example.com para buscar una pista y descubrir juntos cómo continúa el viaje por el bosque.",
+      "Escribe a nina@example.com para buscar una pista y descubrir juntos cómo continúa el viaje por el bosque hasta llegar a la colina del jardín.",
       ...parsed.data.paragraphs.slice(1),
     ],
   };

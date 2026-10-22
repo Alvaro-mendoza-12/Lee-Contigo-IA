@@ -11,8 +11,9 @@ import {
   Sparkles,
 } from "lucide-react";
 import { StoryArt } from "./art";
+import type { StoryArtVariant } from "@/lib/stories";
 
-type Cover = { id: string; title: string; art: "night" | "seed" };
+type Cover = { id: string; title: string; art: StoryArtVariant };
 
 export function StoryShowcase({ covers }: { covers: Cover[] }) {
   const [active, setActive] = useState(0);

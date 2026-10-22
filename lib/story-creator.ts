@@ -23,7 +23,7 @@ export const createStoryInput = z
 export const generatedStorySchema = z.object({
   title: z.string().trim().min(3).max(70),
   subtitle: z.string().trim().min(8).max(120),
-  paragraphs: z.array(z.string().trim().min(60).max(520)).length(4),
+  paragraphs: z.array(z.string().trim().min(120).max(700)).length(6),
   artDescription: z.string().trim().min(20).max(280),
   questions: z
     .array(
@@ -32,7 +32,7 @@ export const generatedStorySchema = z.object({
         prompt: z.string().trim().min(12).max(180),
         options: z.array(z.string().trim().min(1).max(100)).length(3),
         correctIndex: z.number().int().min(0).max(2),
-        evidenceParagraph: z.number().int().min(0).max(3),
+        evidenceParagraph: z.number().int().min(0).max(5),
         evidenceQuote: z.string().trim().min(20).max(150),
         explanation: z.string().trim().min(20).max(260),
         hints: z.array(z.string().trim().min(20).max(180)).length(2),
@@ -45,6 +45,7 @@ export type GeneratedStory = z.infer<typeof generatedStorySchema>;
 export const coverInput = z
   .object({
     artDescription: z.string().trim().min(20).max(280),
+    scenes: z.array(z.string().trim().min(20).max(700)).length(4).optional(),
     adultReviewed: z.literal(true),
   })
   .strict();
@@ -111,6 +112,13 @@ export function isAppropriateStory(
     !containsPersonalDetails(text) &&
     !unsafeStoryPattern.test(text)
   );
+}
+
+export function getIllustrationScene(
+  paragraph: number,
+  paragraphCount: number,
+) {
+  return Math.min(3, Math.floor((paragraph * 4) / Math.max(1, paragraphCount)));
 }
 
 function normalizeForComparison(value: string) {

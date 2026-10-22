@@ -6,8 +6,7 @@ import {
   ArrowRight,
   BookOpen,
   Check,
-  HeartHandshake,
-  ImagePlus,
+  ShieldCheck,
   Leaf,
   LoaderCircle,
   Minus,
@@ -27,8 +26,10 @@ import {
 } from "react";
 import { fontSteps, paginateStory } from "@/lib/reading";
 import { levels, type Level } from "@/lib/stories";
+import { ReadingPause } from "./reading-pause";
 import {
   comprehensionSkillLabels,
+  getIllustrationScene,
   type GeneratedStory,
 } from "@/lib/story-creator";
 
@@ -43,7 +44,8 @@ export function StoryCreator() {
   const [story, setStory] = useState<GeneratedStory | null>(null);
   const [cover, setCover] = useState<string | null>(null);
   const [coverState, setCoverState] = useState<CoverState>("idle");
-  const [adultCoverReviewed, setAdultCoverReviewed] = useState(false);
+  const [coverIsAtlas, setCoverIsAtlas] = useState(false);
+  const [coverFromCollection, setCoverFromCollection] = useState(false);
   const [error, setError] = useState("");
   const [gatewayUnavailable, setGatewayUnavailable] = useState(false);
   const [creating, setCreating] = useState(false);
@@ -59,6 +61,8 @@ export function StoryCreator() {
   const [questionIndex, setQuestionIndex] = useState(0);
   const [wrongAttempts, setWrongAttempts] = useState(0);
   const coverRequest = useRef(0);
+  const coverAbort = useRef<AbortController | null>(null);
+  const creationAbort = useRef<AbortController | null>(null);
   const activeHeading = useRef<HTMLHeadingElement>(null);
   const ideaField = useRef<HTMLTextAreaElement>(null);
   const answerGroupRef = useRef<HTMLDivElement>(null);
@@ -106,6 +110,9 @@ export function StoryCreator() {
     };
     window.addEventListener("pageshow", clearOnRestore);
     return () => {
+      coverRequest.current++;
+      coverAbort.current?.abort();
+      creationAbort.current?.abort();
       motion.removeEventListener("change", updateMotion);
       mobile.removeEventListener("change", updateCompact);
       window.removeEventListener("pageshow", clearOnRestore);
@@ -132,8 +139,11 @@ export function StoryCreator() {
     setSpeaking(false);
   }
 
-  async function createCover(description: string) {
+  async function createCover(createdStory: GeneratedStory) {
     const requestId = ++coverRequest.current;
+    coverAbort.current?.abort();
+    const controller = new AbortController();
+    coverAbort.current = controller;
     setCoverState("loading");
     setCover(null);
     try {
@@ -141,17 +151,31 @@ export function StoryCreator() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          artDescription: description,
+          artDescription: createdStory.artDescription,
+          scenes: [0, 1, 3, 5].map(
+            (index) =>
+              createdStory.paragraphs[
+                Math.min(index, createdStory.paragraphs.length - 1)
+              ],
+          ),
           adultReviewed: true,
         }),
+        signal: AbortSignal.any([
+          controller.signal,
+          AbortSignal.timeout(85_000),
+        ]),
       });
       const data = (await response.json()) as {
         cover?: string;
+        layout?: string;
+        source?: string;
         error?: string;
       };
       if (!response.ok || !data.cover) throw new Error(data.error ?? "cover");
       if (requestId !== coverRequest.current) return;
       setCover(data.cover);
+      setCoverIsAtlas(data.layout === "atlas");
+      setCoverFromCollection(data.source === "collection");
       setCoverState("ready");
     } catch {
       if (requestId === coverRequest.current) setCoverState("unavailable");
@@ -163,6 +187,9 @@ export function StoryCreator() {
     setError("");
     setGatewayUnavailable(false);
     setCreating(true);
+    creationAbort.current?.abort();
+    const controller = new AbortController();
+    creationAbort.current = controller;
     try {
       const response = await fetch("/api/crear", {
         method: "POST",
@@ -172,12 +199,17 @@ export function StoryCreator() {
           level,
           adultReviewed,
         }),
+        signal: AbortSignal.any([
+          controller.signal,
+          AbortSignal.timeout(55_000),
+        ]),
       });
       const data = (await response.json()) as {
         story?: GeneratedStory;
         error?: string;
         code?: string;
       };
+      if (controller.signal.aborted) return;
       if (!response.ok || !data.story) {
         setGatewayUnavailable(data.code === "AI_SERVICE_ACCESS_UNAVAILABLE");
         throw new Error(data.error ?? "No pudimos crear el cuento.");
@@ -192,21 +224,28 @@ export function StoryCreator() {
       setSelectedAnswer(null);
       setCoverState("idle");
       setCover(null);
-      setAdultCoverReviewed(false);
       setScreen("book");
+      void createCover(data.story);
     } catch (cause) {
+      if (controller.signal.aborted) return;
       setError(
-        cause instanceof Error
-          ? cause.message
-          : "No pudimos crear el cuento. Inténtalo otra vez.",
+        cause instanceof Error &&
+          ["AbortError", "TimeoutError"].includes(cause.name)
+          ? "El cuento está tardando más de lo habitual. Tu idea sigue aquí; inténtalo de nuevo en un momento."
+          : cause instanceof Error
+            ? cause.message
+            : "No pudimos crear el cuento. Inténtalo otra vez.",
       );
     } finally {
-      setCreating(false);
+      if (creationAbort.current === controller) setCreating(false);
     }
   }
 
   function resetCreator() {
     coverRequest.current += 1;
+    coverAbort.current?.abort();
+    creationAbort.current?.abort();
+    setCreating(false);
     stopSpeaking();
     setScreen("form");
     setStory(null);
@@ -217,7 +256,6 @@ export function StoryCreator() {
     setGatewayUnavailable(false);
     setLevel("paso");
     setAdultReviewed(false);
-    setAdultCoverReviewed(false);
     setPageIndex(0);
     setQuestionIndex(0);
     setSelectedAnswer(null);
@@ -288,8 +326,8 @@ export function StoryCreator() {
               ¿Qué historia imaginamos hoy?
             </h1>
             <p>
-              Cuéntanos una idea sencilla. La IA preparará un cuento a tu nivel,
-              preguntas y pistas para volver al texto. La portada es opcional.
+              Una idea tuya, un libro para descubrir. Con ilustraciones, páginas
+              para pasar y pequeñas preguntas para pensar.
             </p>
           </header>
 
@@ -316,6 +354,30 @@ export function StoryCreator() {
             />
             <div className="creator-count" id="idea-count" aria-live="polite">
               {idea.length} de 220 caracteres
+            </div>
+            <div
+              className="idea-starters"
+              role="group"
+              aria-label="Ideas para empezar"
+            >
+              {[
+                "Una tortuga busca un faro",
+                "Un zorro encuentra una nube perdida",
+                "Una semilla quiere conocer el bosque",
+              ].map((starter) => (
+                <button
+                  className="idea-starter"
+                  type="button"
+                  key={starter}
+                  disabled={creating}
+                  onClick={() => {
+                    setIdea(starter);
+                    ideaField.current?.focus();
+                  }}
+                >
+                  {starter}
+                </button>
+              ))}
             </div>
 
             <fieldset className="creator-levels">
@@ -360,23 +422,14 @@ export function StoryCreator() {
               className="creator-privacy-note"
               aria-label="Privacidad y seguridad"
             >
-              <HeartHandshake size={22} aria-hidden="true" />
+              <ShieldCheck size={22} aria-hidden="true" />
               <div>
-                <strong>Hagámoslo con cuidado</strong>
+                <strong>Imagina con libertad</strong>
                 <p>
-                  No escribas tu nombre, dirección, colegio, ciudad, teléfono ni
-                  correo. La idea y el nivel se envían a Vercel AI Gateway para
-                  crear el cuento, las preguntas y las pistas. Si Gemini no
-                  responde, puede intentarlo con GPT-5.4 Nano. El proveedor
-                  puede variar y aplica sus propias políticas. Tus respuestas no
-                  se envían al modelo. La portada es opcional: una persona
-                  adulta puede revisar las condiciones y el costo antes de
-                  pedirla. El cuento vive solo mientras esta página está
-                  abierta.
+                  Usa personajes imaginarios. Guarda para ti tu nombre, colegio,
+                  dirección y otros datos personales.
                 </p>
-                <Link href="/privacidad">
-                  Lee cómo se usa la IA y tus datos
-                </Link>
+                <Link href="/privacidad">Información para familias</Link>
               </div>
             </aside>
 
@@ -388,8 +441,8 @@ export function StoryCreator() {
                 required
               />
               <span>
-                Una persona adulta está conmigo, revisó que mi idea no tenga
-                datos personales y aprueba crear el cuento.
+                Una persona adulta está conmigo y revisó mi idea para crear el
+                cuento y sus ilustraciones.
               </span>
             </label>
 
@@ -414,7 +467,7 @@ export function StoryCreator() {
               {creating ? (
                 <>
                   <LoaderCircle className="creator-spinner" size={19} />
-                  Inventando tu cuento…
+                  Preparando tu aventura…
                 </>
               ) : (
                 <>
@@ -423,6 +476,26 @@ export function StoryCreator() {
                 </>
               )}
             </button>
+            {creating ? (
+              <ol className="creation-steps" aria-live="polite">
+                <li>
+                  <Check size={16} aria-hidden="true" />
+                  Tu idea está lista
+                </li>
+                <li>
+                  <LoaderCircle
+                    className="creator-spinner"
+                    size={16}
+                    aria-hidden="true"
+                  />
+                  Escribiendo la aventura y sus preguntas…
+                </li>
+                <li>
+                  <BookOpen size={16} aria-hidden="true" />
+                  Después, prepararemos sus ilustraciones
+                </li>
+              </ol>
+            ) : null}
           </form>
         </>
       ) : null}
@@ -491,8 +564,8 @@ export function StoryCreator() {
               <label className="book-animation-control">
                 <input
                   type="checkbox"
-                  checked={animate && !reducedMotion}
-                  disabled={reducedMotion}
+                  checked={animate}
+
                   onChange={(event) => setAnimate(event.target.checked)}
                 />
                 Animar páginas
@@ -500,13 +573,42 @@ export function StoryCreator() {
             </div>
           </div>
 
-          <div className="creator-open-book">
+          <div
+            className={`creator-open-book ${animate ? "art-motion user-motion-on" : ""}`}
+            tabIndex={0}
+            role="region"
+            aria-label="Libro ilustrado. Usa las flechas para pasar páginas."
+            onKeyDown={(event) => {
+              if (event.key === "ArrowRight" || event.key === "ArrowLeft") {
+                event.preventDefault();
+                turnPage(
+                  currentPageIndex + (event.key === "ArrowRight" ? 1 : -1),
+                );
+              }
+            }}
+          >
             <div className="creator-cover-page">
               {cover ? (
-                <img
-                  src={cover}
-                  alt={`Ilustración de portada para ${story.title}`}
-                />
+                <div
+                  className={`story-art ${coverIsAtlas ? "scene-art-grid" : ""}`}
+                  style={
+                    {
+                      "--scene-x": `${getIllustrationScene(currentPage?.paragraph ?? 0, story.paragraphs.length) % 2 ? -100 : 0}%`,
+                      "--scene-y": `${getIllustrationScene(currentPage?.paragraph ?? 0, story.paragraphs.length) > 1 ? -100 : 0}%`,
+                    } as CSSProperties
+                  }
+                >
+                  <img
+                    src={cover}
+                    width={1024}
+                    height={1024}
+                    alt={
+                      coverFromCollection
+                        ? "Paisaje imaginario de nuestra colección de lectura"
+                        : `Escena ${getIllustrationScene(currentPage?.paragraph ?? 0, story.paragraphs.length) + 1} del cuento: ${story.title}`
+                    }
+                  />
+                </div>
               ) : (
                 <div className="creator-cover-placeholder" aria-hidden="true">
                   {coverState === "loading" ? (
@@ -525,8 +627,8 @@ export function StoryCreator() {
               </div>
             </div>
             <article
-              key={currentPageIndex}
-              className={`creator-book-page ${animate && !reducedMotion ? `page-turn-${direction}` : ""}`}
+              key={`${currentPageIndex}-${fontSize}`}
+              className={`creator-book-page ${animate ? `page-turn-${direction}` : ""}`}
               style={
                 {
                   "--reading-font": `${fontSteps[fontSize].pixels}px`,
@@ -550,16 +652,12 @@ export function StoryCreator() {
             </article>
           </div>
 
-          <div
-            className="creator-page-progress"
+          <progress
+            className="book-progress"
+            max={pages.length}
+            value={currentPageIndex + 1}
             aria-label="Progreso del cuento"
-          >
-            <span
-              style={{
-                width: `${((currentPageIndex + 1) / pages.length) * 100}%`,
-              }}
-            />
-          </div>
+          />
           <div className="book-navigation creator-book-navigation">
             <button
               type="button"
@@ -595,72 +693,41 @@ export function StoryCreator() {
             )}
           </div>
 
+          <ReadingPause
+            key={currentPage?.paragraph ?? 0}
+            scene={getIllustrationScene(
+              currentPage?.paragraph ?? 0,
+              story.paragraphs.length,
+            )}
+          />
+
           <div className="creator-cover-status">
-            {coverState === "idle" || coverState === "unavailable" ? (
-              <div className="creator-cover-consent">
-                <div>
-                  <strong>
-                    {coverState === "idle"
-                      ? "¿Quieres ilustrar la portada?"
-                      : "La historia está lista; no pudimos generar la ilustración."}
-                  </strong>
-                  <p>
-                    Es opcional. La imagen usa solo la descripción visual del
-                    cuento y se envía a Black Forest Labs. Su política indica
-                    que puede usar prompts e imágenes para mejorar sus modelos.
-                    Vercel muestra actualmente un costo de USD 0.05 por imagen;
-                    se descuenta de créditos disponibles y esta app no compra ni
-                    recarga créditos.
-                  </p>
-                  <a
-                    href="https://bfl.ai/legal/privacy-policy"
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    Lee la política del proveedor de imágenes
-                  </a>
-                  <a
-                    href="https://vercel.com/ai-gateway/models/flux-3-image"
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    Consulta el costo actual en Vercel
-                  </a>
-                </div>
-                <label className="creator-adult-check">
-                  <input
-                    type="checkbox"
-                    checked={adultCoverReviewed}
-                    onChange={(event) =>
-                      setAdultCoverReviewed(event.target.checked)
-                    }
-                  />
-                  <span>
-                    Una persona adulta revisó este aviso y acepta solicitar la
-                    portada.
-                  </span>
-                </label>
-                <button
-                  type="button"
-                  className="button button-outline"
-                  disabled={!adultCoverReviewed}
-                  onClick={() => void createCover(story.artDescription)}
-                >
-                  <ImagePlus size={17} />
-                  {coverState === "idle"
-                    ? "Crear portada con IA"
-                    : "Intentar portada otra vez"}
-                </button>
-              </div>
-            ) : coverState === "loading" ? (
+            {coverState === "loading" ? (
               <p role="status" aria-live="polite">
-                <LoaderCircle className="creator-spinner" size={16} /> La IA
-                está pintando tu portada…
+                <LoaderCircle
+                  className="creator-spinner"
+                  size={16}
+                  aria-hidden="true"
+                />
+                Preparando las ilustraciones… Puedes empezar a leer.
+              </p>
+            ) : coverState === "unavailable" ? (
+              <p role="status">
+                Las ilustraciones no llegaron esta vez. Tu cuento sigue listo.{" "}
+                <button
+                  className="text-button"
+                  type="button"
+                  onClick={() => void createCover(story)}
+                >
+                  Reintentar ilustraciones
+                </button>
               </p>
             ) : (
               <p role="status" aria-live="polite">
-                <Check size={16} /> Portada ilustrada con IA. La historia no se
-                guarda al salir.
+                <Check size={16} aria-hidden="true" />
+                {coverFromCollection
+                  ? "Ilustraciones de nuestra colección para acompañar tu lectura."
+                  : "Tu libro está ilustrado. Las escenas cambian al avanzar."}
               </p>
             )}
           </div>
@@ -674,8 +741,7 @@ export function StoryCreator() {
             ¿Qué descubriste en el cuento?
           </h1>
           <p className="creator-quiz-intro">
-            El tutor IA preparó preguntas y pistas para practicar. Tus
-            respuestas no se envían a la IA.
+            Busca pistas en la historia. Puedes volver a leer cuando quieras.
           </p>
           <div className="creator-quiz-progress" role="status">
             Pregunta {questionIndex + 1} de {story.questions.length}

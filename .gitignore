@@ -9,5 +9,7 @@ playwright-report/
 *.tsbuildinfo
 .DS_Store
 artifacts/
+output/
+.playwright-cli/
 
 .codex-finalizer/

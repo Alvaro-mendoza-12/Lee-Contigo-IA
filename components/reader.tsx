@@ -27,7 +27,9 @@ import {
 } from "@/lib/reading";
 import { StoryArt } from "./art";
 import { Journey } from "./journey";
+import { ReadingPause } from "./reading-pause";
 import { useReadingLevel } from "./use-reading-level";
+import { getIllustrationScene } from "@/lib/story-creator";
 
 export function Reader({
   story,
@@ -65,12 +67,17 @@ export function Reader({
   const current = pages[index];
   const lastPage = index === pages.length - 1;
   const conversation =
-    readingGoals[goal].prompts[Math.min(current.paragraph, 3)];
+    readingGoals[goal].prompts[
+      getIllustrationScene(current.paragraph, version.paragraphs.length)
+    ];
 
   useEffect(() => {
     setCanSpeak("speechSynthesis" in window);
     const preference = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const update = () => setReducedMotion(preference.matches);
+    const update = () => {
+      setReducedMotion(preference.matches);
+      setAnimate(!preference.matches);
+    };
     update();
     preference.addEventListener("change", update);
     const compactPreference = window.matchMedia("(max-width: 760px)");
@@ -319,14 +326,20 @@ export function Reader({
                 <label className="book-animation-control">
                   <input
                     type="checkbox"
-                    checked={animate && !reducedMotion}
-                    disabled={reducedMotion}
+                    checked={animate}
+
                     onChange={(event) => setAnimate(event.target.checked)}
                   />
                   Animar páginas
                 </label>
               ) : null}
             </div>
+            {reducedMotion && !fullText ? (
+              <p className="motion-preference-note">
+                Tu dispositivo prefiere menos movimiento. Puedes activar «Animar
+                páginas» si te resulta cómodo.
+              </p>
+            ) : null}
             {fullText ? (
               <div
                 className="story-text book-full-text"
@@ -344,7 +357,19 @@ export function Reader({
             ) : (
               <>
                 <div
-                  className="open-storybook"
+                  className={`open-storybook ${animate ? "art-motion user-motion-on" : ""}`}
+                  tabIndex={0}
+                  role="region"
+                  aria-label="Libro ilustrado. Usa las flechas para pasar páginas."
+                  onKeyDown={(event) => {
+                    if (
+                      event.key === "ArrowRight" ||
+                      event.key === "ArrowLeft"
+                    ) {
+                      event.preventDefault();
+                      turnPage(index + (event.key === "ArrowRight" ? 1 : -1));
+                    }
+                  }}
                   style={
                     {
                       "--reading-font": `${fontSteps[size].pixels}px`,
@@ -352,12 +377,19 @@ export function Reader({
                   }
                 >
                   <div className="book-illustration">
-                    <StoryArt variant={story.art} priority />
+                    <StoryArt
+                      variant={story.art}
+                      scene={getIllustrationScene(
+                        current.paragraph,
+                        version.paragraphs.length,
+                      )}
+                      priority
+                    />
                     <span>{story.theme}</span>
                   </div>
                   <section
                     key={`${level}-${index}-${size}`}
-                    className={`book-leaf ${animate && !reducedMotion ? "page-turn-" + direction : ""}`}
+                    className={`book-leaf ${animate ? "page-turn-" + direction : ""}`}
                     aria-label={`Página ${index + 1}`}
                   >
                     <span className="book-chapter">
@@ -375,6 +407,12 @@ export function Reader({
                     </span>
                   </section>
                 </div>
+                <progress
+                  className="book-progress"
+                  max={pages.length}
+                  value={index + 1}
+                  aria-label="Progreso de lectura"
+                />
                 <div className="book-navigation">
                   <button
                     type="button"
@@ -399,6 +437,13 @@ export function Reader({
                     <ArrowRight size={17} aria-hidden="true" />
                   </button>
                 </div>
+                <ReadingPause
+                  key={`${level}-${current.paragraph}`}
+                  scene={getIllustrationScene(
+                    current.paragraph,
+                    version.paragraphs.length,
+                  )}
+                />
               </>
             )}
             {accompanied ? (

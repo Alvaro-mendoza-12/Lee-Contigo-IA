@@ -1,14 +1,16 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { stories, getLevel } from "../lib/stories.ts";
+import { stories, getLevel, type StoryId } from "../lib/stories.ts";
 import {
   tutorInput,
   getTutorContext,
-  getTutorSupport,
+  getTutorSkill,
+  getTutorStrategy,
+  buildTutorHint,
   isUsableHint,
 } from "../lib/tutor.ts";
-test("los dos relatos tienen niveles, tres preguntas y evidencia real", () => {
-  assert.equal(stories.length, 2);
+test("todos los relatos tienen niveles, tres preguntas y evidencia real", () => {
+  assert.equal(stories.length, 4);
   for (const story of stories)
     for (const level of ["paso", "reto"] as const) {
       const version = story.versions[level];
@@ -19,7 +21,7 @@ test("los dos relatos tienen niveles, tres preguntas y evidencia real", () => {
         );
         assert.ok(version.paragraphs[question.paragraph]);
         const context = getTutorContext({
-          storyId: story.id as "luz-del-bosque" | "semilla-viajera",
+          storyId: story.id as StoryId,
           level,
           questionId: question.id as "q1" | "q2" | "q3",
           tier: 0,
@@ -59,12 +61,75 @@ test("el tutor rechaza texto libre, datos personales y relatos inexistentes", ()
   );
 });
 test("el apoyo de reintento cambia la estrategia sin recibir respuestas", () => {
-  assert.notEqual(getTutorSupport("explore"), getTutorSupport("retry"));
-  assert.match(getTutorSupport("retry"), /acción concreta/);
-  assert.match(getTutorSupport("retry"), /No asumas la causa del error/);
+  const explore = getTutorStrategy("Leer entre líneas", "paso", 0, "explore");
+  const retry = getTutorStrategy("Leer entre líneas", "paso", 0, "retry");
+  assert.notEqual(explore, retry);
+  assert.match(retry, /cambia el enfoque/);
+  assert.match(retry, /no supongas por qué se equivocó/);
   assert.equal(
     isUsableHint(Array(46).fill("palabra").join(" "), "otra respuesta"),
     false,
+  );
+});
+test("la estrategia del tutor cambia según habilidad, nivel y momento", () => {
+  assert.equal(getTutorSkill("Encontrar información"), "localizar");
+  assert.equal(getTutorSkill("Leer entre líneas"), "inferir");
+  assert.equal(getTutorSkill("Descubrir la idea"), "idea_principal");
+  assert.equal(getTutorSkill("Vocabulario en contexto"), "vocabulario");
+
+  const locate = getTutorStrategy(
+    "Encontrar información",
+    "paso",
+    0,
+    "explore",
+  );
+  const infer = getTutorStrategy("Leer entre líneas", "reto", 1, "retry");
+  const mainIdea = getTutorStrategy("Descubrir la idea", "reto", 0, "explore");
+  const vocabulary = getTutorStrategy(
+    "Vocabulario en contexto",
+    "paso",
+    1,
+    "retry",
+  );
+
+  assert.match(locate, /localizar información/);
+  assert.match(infer, /conectar una acción/);
+  assert.match(infer, /cambia el enfoque/);
+  assert.match(mainIdea, /idea principal/);
+  assert.match(vocabulary, /palabras cercanas/);
+  assert.notEqual(locate, infer);
+});
+test("la pista estructurada da una acción y una reflexión sin repetir opciones", () => {
+  const options = [
+    "Porque no veía las piedras.",
+    "Porque quería buscar a la luna.",
+    "Porque estaba esperando a sus amigos.",
+  ];
+  const action =
+    "Vuelve al segundo párrafo y busca la frase que cuenta el problema.";
+  const reflection = "¿Qué detalle del texto se relaciona con la pregunta?";
+  assert.deepEqual(
+    buildTutorHint({ action, reflection }, options[0], options),
+    { action, reflection, hint: `${action} ${reflection}` },
+  );
+  assert.equal(
+    buildTutorHint(
+      {
+        action: "La respuesta es porque no veía las piedras.",
+        reflection,
+      },
+      options[0],
+      options,
+    ),
+    undefined,
+  );
+  assert.equal(
+    buildTutorHint(
+      { action, reflection: "¿La respuesta correcta?" },
+      options[0],
+      options,
+    ),
+    undefined,
   );
 });
 test("niveles desconocidos se recuperan con un nivel seguro", () => {

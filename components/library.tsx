@@ -75,7 +75,7 @@ export function Library({ initialLevel = "paso" }: { initialLevel?: Level }) {
         </span>
         <span>
           <strong>¿Tienes una idea para un cuento?</strong>
-          <small>La IA la convierte en una historia con su propia portada.</small>
+          <small>Conviértela en un libro ilustrado para leer y explorar.</small>
         </span>
         <ArrowRight size={20} aria-hidden="true" />
       </Link>
@@ -120,7 +120,7 @@ export function Library({ initialLevel = "paso" }: { initialLevel?: Level }) {
       </div>
       <div className="library-bottom">
         <BookOpen size={22} />
-        <p>Dos historias para empezar. Un montón de cosas por imaginar.</p>
+        <p>Cuatro aventuras para descubrir. ¿Cuál será la tuya?</p>
       </div>
     </div>
   );
