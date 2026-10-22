@@ -4,6 +4,10 @@ import { Lightbulb, X, LoaderCircle, ArrowRight } from "lucide-react";
 import type { Level, StoryId } from "@/lib/stories";
 import type { ReadingHelpInput, ReadingHelpOutput } from "@/lib/reading-help";
 import { ReadFeedback } from "./answer-audio";
+import {
+  preparedReadingHelp,
+  helpNarrationText,
+} from "@/lib/reading-help-copy";
 
 type Target = {
   paragraph: number;
@@ -12,7 +16,10 @@ type Target = {
   end?: number;
   text: string;
 };
-type Result = ReadingHelpOutput & { source: "ai" | "prepared" };
+type Result = ReadingHelpOutput & {
+  source: "ai" | "prepared";
+  audioAuthorization?: string;
+};
 export function ReadingHelp({
   paragraphs,
   paragraph,
@@ -20,6 +27,7 @@ export function ReadingHelp({
   level,
   storyId,
   authorizations = [],
+  onOpen,
 }: {
   paragraphs: string[];
   paragraph: number;
@@ -27,6 +35,7 @@ export function ReadingHelp({
   level: Level;
   storyId?: StoryId;
   authorizations?: string[];
+  onOpen?: () => void;
 }) {
   const [selection, setSelection] = useState<Target | null>(null);
   const [target, setTarget] = useState<Target | null>(null);
@@ -146,6 +155,7 @@ export function ReadingHelp({
   }, [open]);
 
   async function requestHelp(next: Target, nextStage: number) {
+    onOpen?.();
     const id = ++generation.current;
     abort.current?.abort();
     const controller = new AbortController();
@@ -186,7 +196,7 @@ export function ReadingHelp({
         body: JSON.stringify(input),
         signal: AbortSignal.any([
           controller.signal,
-          AbortSignal.timeout(13000),
+          AbortSignal.timeout(22000),
         ]),
       });
       if (!response.ok) throw new Error("HelpUnavailable");
@@ -203,15 +213,7 @@ export function ReadingHelp({
       if (generation.current === id)
         setResult({
           source: "prepared",
-          explanation: [
-            "Lee esa parte despacio y busca quién hace algo y qué ocurre.",
-            "Lee la frase anterior y la siguiente. Busca cómo se relacionan con esta parte.",
-            "Señala un detalle del párrafo y cuéntalo con tus propias palabras. Puedes pedir a alguien que lo lea contigo.",
-          ][nextStage],
-          example:
-            "Por ejemplo: «El gato buscó sombra porque tenía calor» une una acción con su causa.",
-          reflection:
-            "¿Qué detalle del texto te ayuda a explicar lo que está pasando?",
+          ...preparedReadingHelp(next.text, nextStage),
         });
     } finally {
       if (generation.current === id) setLoading(false);
@@ -314,12 +316,12 @@ export function ReadingHelp({
                 Paso {stage + 1} de 3
               </span>
               <p className="help-explanation">{result.explanation}</p>
-              <div className="help-example">
-                <strong>Un ejemplo</strong>
+              <details className="help-example" key={`${pageKey}-${stage}`}>
+                <summary>Ver un ejemplo</summary>
                 <p>{result.example}</p>
-              </div>
+              </details>
               <div className="help-reflection">
-                <strong>Ahora piensa</strong>
+                <strong>Piensa</strong>
                 <p>{result.reflection}</p>
               </div>
             </>
@@ -327,7 +329,8 @@ export function ReadingHelp({
         </div>
         {open && result ? (
           <ReadFeedback
-            text={`${result.explanation} ${result.example} ${result.reflection}`}
+            text={helpNarrationText(result)}
+            authorization={result.audioAuthorization}
           />
         ) : null}
         <div className="help-actions">

@@ -163,7 +163,7 @@ export default function Privacy() {
         </a>
         ; no prometemos retención cero de todos los proveedores implicados.
       </p>
-      <h2>Escuchar una página</h2>
+      <h2>Escuchar una página o una ayuda</h2>
       <p>
         Al pulsar «Escuchar», el texto de esa página puede enviarse a ElevenLabs
         para generar una narración en español. Puedes elegir entre George, Sarah
@@ -173,6 +173,14 @@ export default function Privacy() {
         autorización del servidor; los libros antiguos pueden usar directamente
         la voz del dispositivo. Las grabaciones de los niños no se solicitan ni
         se capturan.
+      </p>
+      <p>
+        En «No entendí», «Escuchar ayuda» puede enviar a ElevenLabs la
+        explicación, el ejemplo y la pregunta guiada que acabas de recibir.
+        Utiliza la misma voz elegida para el libro. El servidor autoriza ese
+        texto exacto durante diez minutos; no admite texto libre para narrar. Si
+        no hay autorización o el servicio falla, se intenta la voz del
+        dispositivo. No se añade un perfil ni se guardan las dudas del niño.
       </p>
       <p>
         ElevenLabs puede procesar y conservar el texto y el audio según sus

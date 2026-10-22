@@ -123,6 +123,40 @@ test("el respaldo cambia de estrategia y no admite enlaces ni respuestas de cues
     false,
   );
 });
+test("la ayuda de primaria limita el texto y ofrece tres pasos breves", () => {
+  for (const word of [
+    "bifurcación",
+    "diminuta",
+    "montículo",
+    "esponjosa",
+    "estable",
+    "otro fragmento",
+  ])
+    for (let stage = 0; stage < 3; stage++) {
+      const help = preparedReadingHelp(word, stage);
+      assert.ok(safeReadingHelp(help));
+      assert.deepEqual(completeReadingHelp(help), help);
+    }
+  const first = preparedReadingHelp("diminuta", 0);
+  assert.equal(
+    safeReadingHelp({
+      ...first,
+      explanation: Array(25).fill("palabra").join(" "),
+    }),
+    false,
+  );
+  assert.equal(
+    safeReadingHelp({ ...first, example: Array(15).fill("palabra").join(" ") }),
+    false,
+  );
+  assert.equal(
+    safeReadingHelp({
+      ...first,
+      reflection: `¿${Array(13).fill("palabra").join(" ")}?`,
+    }),
+    false,
+  );
+});
 test("las escenas gratuitas contienen personajes, objetos y seis composiciones validadas", () => {
   const paragraphs = [
     "La tortuga salió al jardín con su mapa.",

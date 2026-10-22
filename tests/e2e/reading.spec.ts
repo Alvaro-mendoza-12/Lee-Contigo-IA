@@ -70,7 +70,7 @@ test("nuevo reto y otra historia preservan el nivel en las rutas", async ({
   await expect(
     page.getByRole("status").filter({ hasText: "Reto listo." }),
   ).toBeVisible();
-  await expect(page.locator(".story-level-ribbon")).toHaveCount(10);
+  await expect(page.locator(".story-level-ribbon")).toHaveCount(12);
   for (const href of await page
     .locator(".story-card-direct")
     .evaluateAll((links) => links.map((link) => link.getAttribute("href"))))

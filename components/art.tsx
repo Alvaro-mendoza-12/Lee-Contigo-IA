@@ -13,11 +13,31 @@ import drum from "@/public/images/tambor-libro-4.png";
 import soundmap from "@/public/images/mapa-libro-4.png";
 import bread from "@/public/images/pan-libro-4.png";
 import sea from "@/public/images/mar-libro-4.png";
+import tracks from "@/public/images/sendero-libro-4.png";
+import mail from "@/public/images/buzon-libro-4.png";
 import type { StoryArtVariant } from "@/lib/stories";
 import type { CSSProperties } from "react";
 
 const illustrations = { night: forest, seed, lighthouse, kite };
 const collectionArt = {
+  tracks: {
+    image: tracks,
+    descriptions: [
+      "Nina y Beto llegan a dos caminos con una cesta de merienda.",
+      "Los amigos observan huellas de tres dedos en el barro.",
+      "Nina descubre una pluma dorada protegida bajo unas hojas.",
+      "Nina y Beto encuentran a Teo junto al estanque y comparten la merienda.",
+    ],
+  },
+  mail: {
+    image: mail,
+    descriptions: [
+      "Fito y Alma preparan un buzón azul junto a un árbol.",
+      "Alma recoge las cartas que el viento ha sacado del buzón.",
+      "Fito introduce un sobre por la abertura de la nueva tapa.",
+      "Los amigos leen una invitación junto al buzón cerrado.",
+    ],
+  },
   bridge: {
     image: bridge,
     descriptions: [

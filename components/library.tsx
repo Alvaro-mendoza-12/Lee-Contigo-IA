@@ -8,9 +8,15 @@ import {
   Compass,
   CheckCircle2,
 } from "lucide-react";
-import { stories, levels, type Level } from "@/lib/stories";
+import { stories, levels, storyCategories, type Level } from "@/lib/stories";
 import { StoryShelfRow } from "./story-shelf-row";
 import { useReadingLevel } from "./use-reading-level";
+const categoryIcons = { amigos: Users, naturaleza: Leaf, aventuras: Compass };
+const categoryIds = {
+  amigos: "cuentos-amigos",
+  naturaleza: "cuentos-naturaleza",
+  aventuras: "cuentos-descubrimientos",
+};
 export function Library({ initialLevel = "paso" }: { initialLevel?: Level }) {
   const [level, setLevel] = useReadingLevel(initialLevel);
   return (
@@ -63,45 +69,23 @@ export function Library({ initialLevel = "paso" }: { initialLevel?: Level }) {
         </p>
       </fieldset>
       <div className="story-shelves">
-        <StoryShelfRow
-          id="cuentos-amigos"
-          title="Amigos"
-          icon={<Users size={21} aria-hidden="true" />}
-          priority
-          level={level}
-          books={stories.filter((story) =>
-            [
-              "luz-del-bosque",
-              "cometa-en-equipo",
-              "puente-de-ardillas",
-            ].includes(story.id),
-          )}
-        />
-        <StoryShelfRow
-          id="cuentos-naturaleza"
-          title="Naturaleza"
-          icon={<Leaf size={21} aria-hidden="true" />}
-          level={level}
-          books={stories.filter((story) =>
-            ["semilla-viajera", "nube-perdida", "tambor-lluvia"].includes(
-              story.id,
-            ),
-          )}
-        />
-        <StoryShelfRow
-          id="cuentos-descubrimientos"
-          title="Aventuras"
-          icon={<Compass size={21} aria-hidden="true" />}
-          level={level}
-          books={stories.filter((story) =>
-            [
-              "camino-al-faro",
-              "mapa-sonidos",
-              "pan-abuela",
-              "botella-mar",
-            ].includes(story.id),
-          )}
-        />
+        {storyCategories.map((category, index) => {
+          const Icon = categoryIcons[category.id];
+          const books = stories.filter(
+            (story) => story.category === category.id,
+          );
+          return books.length ? (
+            <StoryShelfRow
+              key={category.id}
+              id={categoryIds[category.id]}
+              title={category.title}
+              icon={<Icon size={21} aria-hidden="true" />}
+              priority={index === 0}
+              level={level}
+              books={books}
+            />
+          ) : null;
+        })}
       </div>
       <Link className="library-create-card" href="/crear">
         <Sparkles size={24} aria-hidden="true" />

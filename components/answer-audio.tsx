@@ -64,22 +64,51 @@ export function SoundControl({
     </button>
   );
 }
-export function ReadFeedback({ text }: { text: string }) {
-  const { speaking, speak, stop, message } = useNarration();
+export function ReadFeedback({
+  text,
+  authorization,
+}: {
+  text: string;
+  authorization?: string;
+}) {
+  const { speaking, loading, speak, stop, message, provider } = useNarration();
   return (
     <>
       <button
         type="button"
         className="text-button feedback-listen"
-        onClick={() => (speaking ? stop() : void speak(text))}
+        aria-busy={loading}
+        onClick={() =>
+          speaking || loading
+            ? stop()
+            : void speak(
+                text,
+                authorization
+                  ? {
+                      source: "help",
+                      helpText: text,
+                      authorization,
+                      start: 0,
+                      end: text.trim().split(/\s+/).length,
+                    }
+                  : undefined,
+              )
+        }
       >
         {speaking ? (
           <Square size={17} aria-hidden="true" />
         ) : (
           <Volume2 size={17} aria-hidden="true" />
         )}
-        {speaking ? "Detener ayuda" : "Escuchar ayuda"}
+        {loading
+          ? "Cancelar voz…"
+          : speaking
+            ? "Detener ayuda"
+            : "Escuchar ayuda"}
       </button>
+      {provider === "elevenlabs" ? (
+        <small className="voice-credit">Voz: elevenlabs.io</small>
+      ) : null}
       {message ? (
         <p role="status" className="voice-status">
           {message}

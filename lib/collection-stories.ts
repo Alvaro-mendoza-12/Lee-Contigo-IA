@@ -324,6 +324,7 @@ const seaQuestions: Omit<Question, "id">[] = [
 export const collectionStories: Story[] = [
   {
     id: "puente-de-ardillas",
+    category: "amigos",
     title: "El puente de las ardillas",
     subtitle: "Una idea se vuelve mejor cuando la probamos.",
     theme: "Ingenio y amistad",
@@ -354,6 +355,7 @@ export const collectionStories: Story[] = [
   },
   {
     id: "nube-perdida",
+    category: "naturaleza",
     title: "La nube que se perdió",
     subtitle: "Un viaje puede encontrar un nuevo propósito.",
     theme: "Naturaleza y cuidado",
@@ -383,6 +385,7 @@ export const collectionStories: Story[] = [
   },
   {
     id: "tambor-lluvia",
+    category: "naturaleza",
     title: "El tambor de la lluvia",
     subtitle: "Hay ideas que empiezan por escuchar.",
     theme: "Música y curiosidad",
@@ -413,6 +416,7 @@ export const collectionStories: Story[] = [
   },
   {
     id: "mapa-sonidos",
+    category: "aventuras",
     title: "El mapa de los sonidos",
     subtitle: "Un parque también se descubre con los oídos.",
     theme: "Exploración y sentidos",
@@ -443,6 +447,7 @@ export const collectionStories: Story[] = [
   },
   {
     id: "pan-abuela",
+    category: "aventuras",
     title: "El pan de la abuela",
     subtitle: "Algunas cosas crecen cuando les damos tiempo.",
     theme: "Familia y descubrimiento",
@@ -472,6 +477,7 @@ export const collectionStories: Story[] = [
   },
   {
     id: "botella-mar",
+    category: "aventuras",
     title: "La botella del mar",
     subtitle: "Cada dibujo guarda una pista.",
     theme: "Aventura y cooperación",

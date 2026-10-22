@@ -54,7 +54,7 @@ test("el menú móvil ocupa una fila con iconos, nombres y estado actual", async
   ).toBe(true);
 });
 
-test("las tres categorías conservan diez cuentos y se deslizan con dedo, botones y teclado", async ({
+test("las tres categorías conservan doce cuentos y se deslizan con dedo, botones y teclado", async ({
   page,
 }) => {
   await page.setViewportSize({ width: 390, height: 844 });
@@ -72,11 +72,11 @@ test("las tres categorías conservan diez cuentos y se deslizan con dedo, botone
     page
       .getByRole("region", { name: "Aventuras", exact: true })
       .getByRole("link"),
-  ).toHaveCount(4);
+  ).toHaveCount(6);
   const hrefs = await page
     .locator(".story-card-direct")
     .evaluateAll((elements) => elements.map((el) => el.getAttribute("href")));
-  expect(new Set(hrefs).size).toBe(10);
+  expect(new Set(hrefs).size).toBe(12);
   const previous = friends.getByRole("button", {
     name: "Ver cuentos anteriores de Amigos",
   });

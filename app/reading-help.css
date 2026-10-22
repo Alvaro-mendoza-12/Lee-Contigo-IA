@@ -104,14 +104,24 @@
   background: var(--sky);
   border-radius: 14px;
   margin-top: 17px;
-  padding: 15px 18px;
+  padding: 0 16px;
 }
-.help-example strong,
+.help-example summary {
+  min-height: 44px;
+  padding-block: 11px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 800;
+}
+.help-example summary:hover {
+  color: var(--forest);
+}
 .help-reflection strong {
   font-size: 14px;
 }
 .help-example p {
-  margin-top: 5px;
+  padding-bottom: 14px;
+  font-size: 18px;
   line-height: 1.6;
 }
 .help-reflection {

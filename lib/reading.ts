@@ -34,6 +34,14 @@ export function paginateStory(
     const pages: ReadingPage[] = [];
     for (let start = 0; start < words.length;) {
       let end = Math.min(start + limit, words.length);
+      // Long words need more room than the word count alone suggests.
+      // Keep whole words so selection and narration share the same offsets.
+      const characters = limit * 7;
+      while (
+        end > start + 1 &&
+        words.slice(start, end).join(" ").length > characters
+      )
+        end--;
       if (end < words.length) {
         // Prefer a sentence boundary without making very short fragments.
         for (

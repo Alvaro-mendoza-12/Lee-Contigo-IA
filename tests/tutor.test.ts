@@ -1,6 +1,12 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { stories, getLevel, type StoryId } from "../lib/stories.ts";
+import {
+  stories,
+  storyIds,
+  storyCategories,
+  getLevel,
+  type StoryId,
+} from "../lib/stories.ts";
 import {
   tutorInput,
   getTutorContext,
@@ -10,8 +16,16 @@ import {
   isUsableHint,
 } from "../lib/tutor.ts";
 test("todos los relatos tienen niveles, tres preguntas y evidencia real", () => {
-  assert.equal(stories.length, 10);
-  assert.equal(new Set(stories.map((story) => story.id)).size, 10);
+  assert.equal(stories.length, 12);
+  assert.equal(new Set(stories.map((story) => story.id)).size, 12);
+  assert.deepEqual(
+    new Set(stories.map((story) => story.id)),
+    new Set(storyIds),
+  );
+  for (const story of stories)
+    assert.ok(
+      storyCategories.some((category) => category.id === story.category),
+    );
   for (const story of stories)
     assert.notDeepEqual(
       story.versions.paso.paragraphs,

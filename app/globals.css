@@ -3503,10 +3503,19 @@ svg {
 }
 .creator-book-topline {
   display: flex;
+  flex-wrap: wrap;
   align-items: flex-end;
   justify-content: space-between;
   gap: 20px;
   margin-bottom: 21px;
+}
+.creator-book-topline > div {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+.creator-book-topline h1 {
+  overflow-wrap: anywhere;
+  hyphens: auto;
 }
 .creator-book-topline .small-label {
   display: inline-block;

@@ -46,13 +46,23 @@ export function StoryShelfRow({
       observer.disconnect();
       element.removeEventListener("scroll", update);
     };
-  }, []);
+  }, [books.length]);
 
   function move(direction: number) {
     const element = rail.current;
     if (!element) return;
-    element.scrollBy({
-      left: direction * element.clientWidth * 0.85,
+    const items = Array.from(element.children) as HTMLElement[];
+    if (items.length < 2) return;
+    const step = items[1].offsetLeft - items[0].offsetLeft;
+    const columns =
+      Number(getComputedStyle(element).getPropertyValue("--rail-columns")) || 2;
+    const first = Math.round(element.scrollLeft / step);
+    const next = Math.max(
+      0,
+      Math.min(items.length - columns, first + direction * columns),
+    );
+    element.scrollTo({
+      left: items[next].offsetLeft - items[0].offsetLeft,
       behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches
         ? "instant"
         : "smooth",

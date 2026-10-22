@@ -117,7 +117,7 @@ export function useNarration() {
           body: key,
           signal: AbortSignal.any([
             controller.signal,
-            AbortSignal.timeout(14000),
+            AbortSignal.timeout(22000),
           ]),
         });
         if (

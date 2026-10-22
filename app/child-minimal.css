@@ -240,9 +240,10 @@
   cursor: default;
 }
 .story-rail {
+  --rail-columns: 4;
   display: grid;
   grid-auto-flow: column;
-  grid-auto-columns: clamp(170px, 22vw, 240px);
+  grid-auto-columns: calc((100% - 48px) / 4);
   gap: 16px;
   overflow-x: auto;
   overscroll-behavior-x: contain;
@@ -260,10 +261,17 @@
   display: flex;
 }
 .story-rail .story-card-direct {
+  display: flex;
+  flex-direction: column;
   width: 100%;
   height: 100%;
 }
+.story-rail .story-cover-link {
+  flex: none;
+}
 .child-library .story-rail .story-card-body {
+  flex: 1;
+  min-width: 0;
   padding: 12px;
 }
 .story-rail .story-card h3 {
@@ -271,6 +279,8 @@
   font-size: 20px;
   line-height: 1.35;
   letter-spacing: -0.3px;
+  overflow-wrap: anywhere;
+  hyphens: auto;
 }
 .paper-spread > .paper-art {
   touch-action: pan-y pinch-zoom;
@@ -297,6 +307,12 @@
   font-size: 12px;
   font-weight: 800;
   pointer-events: none;
+}
+@media (min-width: 601px) and (max-width: 1000px) {
+  .story-rail {
+    --rail-columns: 3;
+    grid-auto-columns: calc((100% - 32px) / 3);
+  }
 }
 @media (pointer: coarse) {
   .book-swipe-hint {
@@ -557,7 +573,8 @@
     font-size: 20px;
   }
   .story-rail {
-    grid-auto-columns: max(138px, 44%);
+    --rail-columns: 2;
+    grid-auto-columns: calc((100% - 14px) / 2);
     gap: 14px;
   }
   .story-rail .story-card h3 {

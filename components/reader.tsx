@@ -338,6 +338,7 @@ export function Reader({
               {voiceProvider === "elevenlabs" ? " Voz: elevenlabs.io" : ""}
             </p>
             <ReadingHelp
+              onOpen={stopVoice}
               paragraphs={version.paragraphs}
               paragraph={current.paragraph}
               pageKey={`${story.id}-${level}-${index}-${size}-${fullText}`}

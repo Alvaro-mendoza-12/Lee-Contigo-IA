@@ -12,7 +12,7 @@ Tutor web de comprensión lectora con una interfaz orientada a niños de aproxim
 
 **Lector rediseñado:** libro abierto a todo el ancho, pliegue y hojas con volumen, giro de 180 grados, texto e ilustración que alternan de lado y ocho escenas interiores en los cuatro cuentos iniciales y cuatro escenas en cada cuento nuevo. En teléfonos se usa una hoja vertical legible. Los controles se simplificaron y la caja permanece estable al avanzar. Ver `documentacion_tutor_lectura_ia/18_lector_editorial_y_validacion.md`.
 
-Diez relatos originales, cada uno adaptado editorialmente a dos niveles: **Paso a paso** y **Un nuevo reto**. La lectura se presenta como un libro por páginas, con once tamaños de letra, voz opcional, animación de cambio de página que se puede desactivar y acceso al texto continuo. En móvil, el relato se reparte en páginas más cortas. La biblioteca usa una sola tarjeta por destino y el inicio abre directamente un cuento.
+Doce relatos originales, cada uno adaptado editorialmente a dos niveles: **Paso a paso** y **Un nuevo reto**. La lectura se presenta como un libro por páginas, con once tamaños de letra, voz opcional, animación de cambio de página que se puede desactivar y acceso al texto continuo. En móvil, el relato se reparte en páginas más cortas. La biblioteca usa una sola tarjeta por destino y el inicio abre directamente un cuento.
 
 La biblioteca se organiza en filas horizontales de **Amigos**, **Naturaleza** y **Aventuras**, con cubiertas de lomo y fondos suaves. Se navegan con el dedo, flechas y teclado. Seleccionar **Un nuevo reto** muestra una confirmación y marca las portadas; al abrir una se lee su versión de reto y se practican sus preguntas. El menú móvil reúne iconos y nombres en una sola fila. En tablet horizontal, el libro muestra dos caras; deslizar la ilustración pasa hojas sin interceptar la selección del texto. El mismo gesto funciona en los libros creados.
 
@@ -27,6 +27,8 @@ La portada presenta los cuentos apilados, con un intercambio cada dos segundos y
 Los relatos de biblioteca están preparados en el catálogo; durante la práctica, la IA genera una acción de lectura y una pregunta de reflexión alineadas con la habilidad y el nivel. Dentro de ambos lectores, seleccionar una palabra o frase permite pedir una explicación, un ejemplo y una pregunta guiada. «No entendí» ofrece ayuda sobre el párrafo sin necesitar selección. Hay tres etapas de apoyo y ayudas preparadas ante fallos, identificadas por su origen. No hay chat abierto ni envío de respuestas libres. El contenido generado puede contener errores y necesita revisión adulta y pedagógica; no se afirma una mejora educativa ya demostrada.
 
 ## Ejecutar en local
+
+Actualización del 22 de octubre: **No entendí** ofrece explicaciones más cortas, ejemplo desplegable y voz ElevenLabs con la preferencia del lector. El catálogo tiene doce cuentos; las flechas recorren portadas enteras y los nuevos relatos se distribuyen por categoría. Detalles y guía para agregar cuentos en [ayuda, voz y catálogo](documentacion_tutor_lectura_ia/30_ayuda_primaria_voz_y_catalogo_12.md).
 
 Requiere Node.js 22 o posterior; el proyecto se ha construido con Node.js 24.
 
@@ -45,7 +47,7 @@ npm.cmd test
 npx.cmd playwright test
 ```
 
-Comprobación del corte actual: 30 pruebas unitarias y 44 recorridos de navegador en escritorio y móvil aprobados contra una compilación de producción. Incluyen accesibilidad automática con axe, selección y ayuda contextual, cambio de nivel, animación, elección de voz, respaldo audible y guardado local de ilustraciones simuladas. Se comprobaron las tres voces mediante ElevenLabs real; la generación real de Cloudflare respondió correctamente y OpenRouter devolvió un límite de disponibilidad en la última comprobación. Las pruebas simuladas no garantizan disponibilidad de proveedores ni eficacia educativa. Los documentos 18, 24 y 25 distinguen comprobaciones anteriores y actuales.
+Comprobación del corte actual: 35 pruebas unitarias y 60 recorridos de navegador en escritorio y móvil aprobados contra una compilación de producción. Incluyen accesibilidad automática con axe, selección y ayuda contextual, cambio de nivel, animación, elección de voz, respaldo audible y guardado local de ilustraciones simuladas. Se comprobaron las tres voces mediante ElevenLabs real; la generación real de Cloudflare respondió correctamente y OpenRouter devolvió un límite de disponibilidad en la última comprobación. Las pruebas simuladas no garantizan disponibilidad de proveedores ni eficacia educativa. Los documentos 18, 24 y 25 distinguen comprobaciones anteriores y actuales.
 
 Para las comprobaciones de navegador hay que instalar Chromium con `npx.cmd playwright install chromium`. Se pueden dirigir al despliegue público mediante `TEST_BASE_URL`.
 

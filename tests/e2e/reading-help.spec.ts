@@ -3,6 +3,85 @@ import AxeBuilder from "@axe-core/playwright";
 import { paginateStory } from "../../lib/reading";
 import { getStory } from "../../lib/stories";
 
+function sampleAudio() {
+  const data = Buffer.alloc(44 + 16000 * 6);
+  data.write("RIFF");
+  data.writeUInt32LE(data.length - 8, 4);
+  data.write("WAVEfmt ", 8);
+  data.writeUInt32LE(16, 16);
+  data.writeUInt16LE(1, 20);
+  data.writeUInt16LE(1, 22);
+  data.writeUInt32LE(8000, 24);
+  data.writeUInt32LE(16000, 28);
+  data.writeUInt16LE(2, 32);
+  data.writeUInt16LE(16, 34);
+  data.write("data", 36);
+  data.writeUInt32LE(data.length - 44, 40);
+  return data;
+}
+
+test("la ayuda usa ElevenLabs con la voz elegida y se detiene al cerrarse", async ({
+  page,
+}) => {
+  const requests: Record<string, unknown>[] = [];
+  const helpText = {
+    explanation: "Diminuta significa muy pequeña.",
+    example: "Una semilla diminuta cabe en tu dedo.",
+    reflection: "¿Cómo imaginas la luz de Lina?",
+  };
+  await page.route("**/api/lectura/ayuda", (route) =>
+    route.fulfill({
+      contentType: "application/json",
+      body: JSON.stringify({
+        ...helpText,
+        source: "ai",
+        audioAuthorization: "test-help-authorization",
+      }),
+    }),
+  );
+  await page.route("**/api/narrar", (route) => {
+    requests.push(route.request().postDataJSON());
+    return route.fulfill({ contentType: "audio/wav", body: sampleAudio() });
+  });
+  await page.goto("/leer/luz-del-bosque?nivel=reto");
+  await page.locator(".reading-settings > summary").click();
+  await page.getByLabel("¿Quién te lee?").selectOption("daniel");
+  await page.locator(".reading-settings > summary").click();
+  await page.getByRole("button", { name: "Escuchar", exact: true }).click();
+  await expect(
+    page.getByRole("button", { name: "Detener lectura" }),
+  ).toBeVisible();
+  await page.getByRole("button", { name: "No entendí" }).click();
+  const help = page.getByRole("dialog", { name: "Lo pensamos juntos" });
+  await help
+    .getByRole("button", { name: "Escuchar ayuda", exact: true })
+    .click();
+  await expect(
+    help.getByRole("button", { name: "Detener ayuda", exact: true }),
+  ).toBeVisible();
+  expect(requests[1]).toMatchObject({
+    source: "help",
+    voice: "daniel",
+    authorization: "test-help-authorization",
+    helpText: Object.values(helpText).join(" "),
+    start: 0,
+  });
+  await expect(
+    help.getByText("Voz: elevenlabs.io", { exact: true }),
+  ).toBeVisible();
+  await help
+    .getByRole("button", { name: "Cerrar ayuda y volver al libro" })
+    .click();
+  await expect(help).not.toBeVisible();
+  await expect(
+    page.getByRole("button", { name: "Escuchar", exact: true }),
+  ).toBeVisible();
+  await page.getByRole("button", { name: "No entendí" }).click();
+  await expect(
+    help.getByRole("button", { name: "Escuchar ayuda", exact: true }),
+  ).toBeVisible();
+});
+
 test("seleccionar una palabra da explicación, ejemplo y pistas progresivas sin chat", async ({
   page,
   isMobile,
@@ -20,8 +99,7 @@ test("seleccionar una palabra da explicación, ejemplo y pistas progresivas sin 
             ? "Diminuta significa muy pequeña. Describe el tamaño de esa luz."
             : "Compara una lucecita cercana con una lámpara grande. Fíjate en cómo se describe cada una.",
         example: "Una semilla diminuta cabe en la punta de un dedo.",
-        reflection:
-          "¿Qué detalle de la frase te ayuda a imaginar el tamaño de la luz?",
+        reflection: "¿Qué palabra describe el tamaño de la luz?",
       }),
     });
   });
@@ -50,7 +128,15 @@ test("seleccionar una palabra da explicación, ejemplo y pistas progresivas sin 
       "Diminuta significa muy pequeña. Describe el tamaño de esa luz.",
     ),
   ).toBeVisible();
-  await expect(help.getByText("Un ejemplo", { exact: true })).toBeVisible();
+  const example = help.getByText("Ver un ejemplo", { exact: true });
+  await expect(example).toBeVisible();
+  await expect(
+    help.getByText("Una semilla diminuta cabe en la punta de un dedo."),
+  ).not.toBeVisible();
+  await example.click();
+  await expect(
+    help.getByText("Una semilla diminuta cabe en la punta de un dedo."),
+  ).toBeVisible();
   await expect(help.getByRole("textbox")).toHaveCount(0);
   expect(calls[0]).toMatchObject({
     source: "catalogue",
@@ -100,9 +186,9 @@ test("párrafo completo funciona sin seleccionar y un fallo conserva la lectura"
   expect(requests[0].mode).toBe("paragraph");
   expect(requests[0]).not.toHaveProperty("start");
   await help.getByRole("button", { name: "Necesito otra pista" }).click();
-  await expect(help.getByText(/Lee la frase anterior/)).toBeVisible();
+  await expect(help.getByText(/Lee la frase de antes/)).toBeVisible();
   await help.getByRole("button", { name: "Necesito otra pista" }).click();
-  await expect(help.getByText(/Señala un detalle del párrafo/)).toBeVisible();
+  await expect(help.getByText(/Busca una acción del personaje/)).toBeVisible();
   await expect(
     help.getByRole("button", { name: "Necesito otra pista" }),
   ).toHaveCount(0);

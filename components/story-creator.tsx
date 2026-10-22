@@ -854,6 +854,7 @@ export function StoryCreator() {
             {voiceProvider === "elevenlabs" ? " Voz: elevenlabs.io" : ""}
           </p>
           <ReadingHelp
+            onOpen={stopNarration}
             paragraphs={story.paragraphs}
             paragraph={currentPage?.paragraph ?? 0}
             pageKey={`${story.title}-${currentPageIndex}-${fontSize}`}

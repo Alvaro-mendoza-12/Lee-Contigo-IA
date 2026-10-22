@@ -54,7 +54,7 @@ test("la portada infantil organiza sus destinos y no desborda a 320 px", async (
   ).toBe(true);
 });
 
-test("inicio directo, diez cuentos completos y navegación visible en móvil", async ({
+test("inicio directo, doce cuentos completos y navegación visible en móvil", async ({
   page,
 }) => {
   await page.goto("/");
@@ -65,11 +65,11 @@ test("inicio directo, diez cuentos completos y navegación visible en móvil", a
     .getByRole("link", { name: "Cuentos", exact: true })
     .click();
   const books = page.locator(".story-card-direct");
-  await expect(books).toHaveCount(10);
+  await expect(books).toHaveCount(12);
   const hrefs = await books.evaluateAll((links) =>
     links.map((link) => link.getAttribute("href")),
   );
-  expect(new Set(hrefs).size).toBe(10);
+  expect(new Set(hrefs).size).toBe(12);
   for (const href of hrefs) {
     await page.goto(href!);
     await expect(page.locator(".book-page-text")).not.toBeEmpty();

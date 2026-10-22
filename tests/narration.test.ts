@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import {
   narrationInput,
   signParagraph,
+  signHelpNarration,
   verifyParagraph,
   resolveNarration,
 } from "../lib/narration.ts";
@@ -11,6 +12,71 @@ import {
   narrationVoiceIds,
   isNarrationVoice,
 } from "../lib/narration-voices.ts";
+import {
+  preparedReadingHelp,
+  helpNarrationText,
+} from "../lib/reading-help-copy.ts";
+
+test("la voz de ayuda exige texto firmado y no reutiliza permisos de cuentos", () => {
+  const helpText = helpNarrationText(preparedReadingHelp("diminuta", 0));
+  const secret = "unit-help-secret";
+  const input = narrationInput.parse({
+    source: "help",
+    helpText,
+    authorization: signHelpNarration(helpText, secret),
+    voice: "sarah",
+    start: 0,
+    end: helpText.split(/\s+/).length,
+  });
+  if (input.source !== "help") throw new Error("Expected help");
+  assert.equal(resolveNarration(input, secret), helpText);
+  assert.equal(
+    resolveNarration(
+      { ...input, helpText: "Otro texto que no fue autorizado." },
+      secret,
+    ),
+    null,
+  );
+  assert.equal(
+    resolveNarration(
+      {
+        ...input,
+        authorization: signHelpNarration(helpText, secret, Date.now() - 1),
+      },
+      secret,
+    ),
+    null,
+  );
+  assert.equal(
+    resolveNarration(
+      { ...input, authorization: signParagraph(helpText, secret) },
+      secret,
+    ),
+    null,
+  );
+  assert.equal(
+    resolveNarration(
+      {
+        source: "generated",
+        paragraphText: helpText,
+        authorization: input.authorization,
+        start: 0,
+        end: 4,
+      },
+      secret,
+    ),
+    null,
+  );
+  assert.equal(
+    narrationInput.safeParse({ source: "help", helpText, start: 0, end: 4 })
+      .success,
+    false,
+  );
+  assert.equal(
+    narrationInput.safeParse({ ...input, voice: "any-voice-id" }).success,
+    false,
+  );
+});
 
 test("solo se aceptan las tres voces revisadas, sin identificadores arbitrarios", () => {
   const input = {

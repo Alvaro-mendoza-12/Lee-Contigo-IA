@@ -31,3 +31,22 @@ test("la paginación conserva el relato y reduce texto por página en móvil", (
     assert.ok(mobilePages.length >= desktopPages.length);
   }
 });
+test("las palabras largas no deforman páginas ni cambian los rangos de voz", () => {
+  const text = Array(50).fill("extraordinariamente").join(" ");
+  for (let size = 0; size < fontSteps.length; size++)
+    for (const compact of [false, true]) {
+      const pages = paginateStory([text], size, compact);
+      assert.equal(pages.map((page) => page.text).join(" "), text);
+      for (const page of pages) {
+        assert.equal(
+          page.text,
+          text.split(/\s+/).slice(page.start, page.end).join(" "),
+        );
+        assert.ok(page.end > page.start);
+      }
+      const words = compact
+        ? Math.max(size >= 8 ? 4 : 8, Math.floor(fontSteps[size].words * 0.45))
+        : fontSteps[size].words;
+      assert.ok(pages.every((page) => page.text.length <= words * 7));
+    }
+});

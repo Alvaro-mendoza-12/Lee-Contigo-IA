@@ -1,5 +1,6 @@
 import { extraStories } from "./extra-stories.ts";
 import { collectionStories } from "./collection-stories.ts";
+import { discoveryStories } from "./discovery-stories.ts";
 
 export type Level = "paso" | "reto";
 export type StoryArtVariant =
@@ -12,7 +13,15 @@ export type StoryArtVariant =
   | "drum"
   | "soundmap"
   | "bread"
-  | "sea";
+  | "sea"
+  | "tracks"
+  | "mail";
+export const storyCategories = [
+  { id: "amigos", title: "Amigos" },
+  { id: "naturaleza", title: "Naturaleza" },
+  { id: "aventuras", title: "Aventuras" },
+] as const;
+export type StoryCategory = (typeof storyCategories)[number]["id"];
 export const storyIds = [
   "luz-del-bosque",
   "semilla-viajera",
@@ -24,6 +33,8 @@ export const storyIds = [
   "mapa-sonidos",
   "pan-abuela",
   "botella-mar",
+  "sendero-huellas",
+  "buzon-bosque",
 ] as const;
 export type StoryId = (typeof storyIds)[number];
 export type Question = {
@@ -40,6 +51,7 @@ export type StoryVersion = { paragraphs: string[]; questions: Question[] };
 export type Story = {
   id: string;
   title: string;
+  category: StoryCategory;
   subtitle: string;
   theme: string;
   art: StoryArtVariant;
@@ -60,6 +72,7 @@ export const levels: Record<Level, { label: string; description: string }> = {
 export const stories: Story[] = [
   {
     id: "luz-del-bosque",
+    category: "amigos",
     title: "Una luz en el bosque",
     subtitle: "Las pequeñas cosas también iluminan.",
     theme: "Amistad y naturaleza",
@@ -201,6 +214,7 @@ export const stories: Story[] = [
   },
   {
     id: "semilla-viajera",
+    category: "naturaleza",
     title: "La semilla viajera",
     subtitle: "Crecer también es aprender a esperar.",
     theme: "Curiosidad y cuidado",
@@ -341,6 +355,7 @@ export const stories: Story[] = [
   },
   ...extraStories,
   ...collectionStories,
+  ...discoveryStories,
 ];
 export function getStory(id: string) {
   return stories.find((story) => story.id === id);
