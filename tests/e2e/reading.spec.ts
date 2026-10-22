@@ -51,19 +51,29 @@ test("recorrido completo, error claro y pista de respaldo", async ({
   ).toEqual({ local: 0, session: 0 });
   expect(errors).toEqual([]);
 });
-test("la biblioteca muestra 10 cuentos y conserva el nivel", async ({
+test("los botones de nivel separan cuentos cortos y largos", async ({
   page,
 }) => {
   await page.goto("/biblioteca");
   await expect(page).toHaveURL(/\/\?nivel=paso/);
+  // 10 short stories plus the "create your story" card.
   await expect(page.locator(".kid-story-grid li")).toHaveCount(11);
-  await page.getByRole("radio", { name: /Un nuevo reto/ }).check();
-  await page
-    .getByRole("link", { name: "Leer La semilla viajera", exact: true })
-    .click();
-  await expect(page).toHaveURL(/semilla-viajera\?nivel=reto/);
   await expect(
-    page.getByText(/Al guardar su abrigo, Nico descubrió/),
+    page.getByRole("link", { name: /Leer El gran viaje del barco/ }),
+  ).toHaveCount(0);
+  await page.getByRole("radio", { name: /Un nuevo reto/ }).check();
+  await expect(page).toHaveURL(/nivel=reto/);
+  await expect(page.locator(".kid-story-grid li")).toHaveCount(2);
+  await expect(
+    page.getByRole("link", { name: "Leer La semilla viajera", exact: true }),
+  ).toHaveCount(0);
+  await expect(page.locator(".kid-empty-shelf")).toHaveCount(0);
+  await page
+    .getByRole("link", { name: "Leer El gran viaje del barco de papel" })
+    .click();
+  await expect(page).toHaveURL(/barco-de-papel\?nivel=reto/);
+  await expect(
+    page.getByText(/Valeria se había mudado al barrio/),
   ).toBeVisible();
   const explore = page.getByRole("link", { name: /A las preguntas/ });
   for (let turns = 0; turns < 40 && !(await explore.isVisible()); turns++) {
@@ -73,8 +83,20 @@ test("la biblioteca muestra 10 cuentos y conserva el nivel", async ({
   }
   await explore.click();
   await expect(
-    page.getByRole("heading", { name: /¿Qué significa «asomara»/ }),
+    page.getByRole("heading", { name: /escoltándolo/ }),
   ).toBeVisible();
+});
+test("crear explica cada nivel al pasar el cursor", async ({
+  page,
+  isMobile,
+}) => {
+  test.skip(isMobile, "El cursor solo existe en computadora");
+  await page.goto("/crear");
+  const tooltip = page.locator("#nivel-detalle-reto");
+  await expect(tooltip).toBeHidden();
+  await page.locator(".creator-level-option").nth(1).hover();
+  await expect(tooltip).toBeVisible();
+  await expect(tooltip).toContainText("Un cuento más largo");
 });
 test("el libro conserva tamaño y responde al pasar páginas", async ({
   page,
@@ -145,6 +167,9 @@ test("accesibilidad automática y ausencia de desbordamiento", async ({
     "/leer/cometa-en-equipo?nivel=paso",
     "/leer/dragon-de-flores?nivel=paso",
     "/practicar/luz-del-bosque?nivel=paso",
+    "/?nivel=reto",
+    "/leer/barco-de-papel?nivel=reto",
+    "/crear",
     "/acompanar",
     "/leer/semilla-viajera?nivel=reto&juntos=1&objetivo=imaginar",
     "/privacidad",

@@ -1,5 +1,6 @@
 import { extraStories } from "./extra-stories.ts";
 import { moreStories } from "./more-stories.ts";
+import { longStories } from "./long-stories.ts";
 
 export type Level = "paso" | "reto";
 export type StoryArtVariant =
@@ -12,7 +13,8 @@ export type StoryArtVariant =
   | "space"
   | "farm"
   | "rain"
-  | "music";
+  | "music"
+  | "boat";
 export const storyIds = [
   "luz-del-bosque",
   "semilla-viajera",
@@ -24,6 +26,7 @@ export const storyIds = [
   "gallina-cuenta",
   "paraguas-de-colores",
   "orquesta-del-bosque",
+  "barco-de-papel",
 ] as const;
 export type StoryId = (typeof storyIds)[number];
 export type Question = {
@@ -43,18 +46,27 @@ export type Story = {
   subtitle: string;
   theme: string;
   art: StoryArtVariant;
+  /** Library shelf the story is listed on; defaults to "paso". */
+  shelf?: Level;
   minutes: number;
   description: string;
   versions: Record<Level, StoryVersion>;
 };
-export const levels: Record<Level, { label: string; description: string }> = {
+export const levels: Record<
+  Level,
+  { label: string; description: string; details: string }
+> = {
   paso: {
     label: "Paso a paso",
     description: "Frases cortas.",
+    details:
+      "Un cuento corto, con frases sencillas y palabras fáciles. Ideal para quienes empiezan a leer solos. Las preguntas piden encontrar datos en el texto.",
   },
   reto: {
     label: "Un nuevo reto",
     description: "Más largo.",
+    details:
+      "Un cuento más largo, con frases más completas y palabras nuevas. Para quienes ya leen con soltura. Las preguntas invitan a pensar y relacionar ideas.",
   },
 };
 export const stories: Story[] = [
@@ -341,7 +353,11 @@ export const stories: Story[] = [
   },
   ...extraStories,
   ...moreStories,
+  ...longStories,
 ];
+export function storiesForShelf(level: Level) {
+  return stories.filter((story) => (story.shelf ?? "paso") === level);
+}
 export function getStory(id: string) {
   return stories.find((story) => story.id === id);
 }

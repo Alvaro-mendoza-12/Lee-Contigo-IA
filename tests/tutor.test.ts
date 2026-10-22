@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import {
   stories,
   storyIds,
+  storiesForShelf,
   getLevel,
   type StoryId,
 } from "../lib/stories.ts";
@@ -15,7 +16,12 @@ import {
   isUsableHint,
 } from "../lib/tutor.ts";
 test("todos los relatos tienen niveles, tres preguntas y evidencia real", () => {
-  assert.equal(stories.length, 10);
+  assert.equal(stories.length, 11);
+  assert.equal(storiesForShelf("paso").length, 10);
+  assert.deepEqual(
+    storiesForShelf("reto").map((story) => story.id),
+    ["barco-de-papel"],
+  );
   assert.deepEqual(
     stories.map((story) => story.id),
     [...storyIds],

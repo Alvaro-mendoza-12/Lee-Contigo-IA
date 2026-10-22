@@ -27,6 +27,9 @@ export function Header() {
           <Link href="/crear">
             <span aria-hidden="true">✨</span> Crear
           </Link>
+          <Link href="/acompanar">
+            <span aria-hidden="true">👨‍👩‍👧</span> Adultos
+          </Link>
         </nav>
       </div>
     </header>
@@ -38,7 +41,6 @@ export function Footer() {
       <div className="container footer-inner">
         <Logo />
         <div>
-          <Link href="/acompanar">Para adultos</Link>
           <Link href="/privacidad">Privacidad</Link>
         </div>
       </div>

@@ -413,6 +413,7 @@ export function StoryCreator() {
                       value={id}
                       checked={level === id}
                       onChange={() => setLevel(id)}
+                      aria-describedby={`nivel-detalle-${id}`}
                     />
                     <span className="creator-level-icon">
                       {id === "paso" ? (
@@ -428,6 +429,13 @@ export function StoryCreator() {
                     {level === id ? (
                       <Check size={18} aria-hidden="true" />
                     ) : null}
+                    <span
+                      className="level-tooltip"
+                      id={`nivel-detalle-${id}`}
+                      role="tooltip"
+                    >
+                      {item.details}
+                    </span>
                   </label>
                 ),
               )}

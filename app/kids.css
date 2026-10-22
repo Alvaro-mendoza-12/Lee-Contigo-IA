@@ -826,3 +826,112 @@ label:has(input:focus-visible) {
 .paper-book {
   touch-action: pan-y;
 }
+
+/* Painted illustrations get a slow, gentle zoom, like the emoji scenes. */
+.story-art img {
+  transform-origin: var(--drift-origin, 50% 50%);
+  animation: art-drift 9s ease-in-out infinite alternate;
+}
+@keyframes art-drift {
+  from {
+    transform: scale(1);
+  }
+  to {
+    transform: scale(1.09);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .story-art img {
+    animation: none;
+  }
+}
+
+.kid-empty-shelf {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  margin: 0 auto 26px;
+  padding: 26px 20px;
+  max-width: 520px;
+  text-align: center;
+  font-size: 20px;
+  font-weight: 850;
+  background: var(--white);
+  border: 4px dashed var(--purple);
+  border-radius: 24px;
+}
+.kid-empty-shelf span {
+  font-size: 54px;
+  line-height: 1;
+}
+
+/* Hover/focus explanation for the reading levels in the story creator. */
+.creator-level-option {
+  position: relative;
+}
+.level-tooltip {
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 12px);
+  z-index: 20;
+  width: min(300px, 80vw);
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: var(--ink);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 650;
+  line-height: 1.45;
+  text-align: left;
+  box-shadow: 0 10px 24px #23204a40;
+  opacity: 0;
+  visibility: hidden;
+  transform: translate(-50%, 6px);
+  transition:
+    opacity 0.15s ease,
+    transform 0.15s ease,
+    visibility 0.15s;
+  pointer-events: none;
+}
+.level-tooltip::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  margin-left: -8px;
+  border: 8px solid transparent;
+  border-top-color: var(--ink);
+}
+@media (hover: hover) {
+  .creator-level-option:hover .level-tooltip {
+    opacity: 1;
+    visibility: visible;
+    transform: translate(-50%, 0);
+  }
+}
+.creator-level-option:focus-within .level-tooltip {
+  opacity: 1;
+  visibility: visible;
+  transform: translate(-50%, 0);
+}
+
+/* Three header pills must fit on small phones. */
+@media (max-width: 480px) {
+  .site-header .header-inner {
+    gap: 10px;
+  }
+  .kid-nav {
+    gap: 6px;
+  }
+  .header-inner nav.kid-nav {
+    gap: 6px;
+  }
+  .kid-nav a {
+    padding: 8px 11px;
+    font-size: 14px;
+  }
+  .kid-nav a > span {
+    display: none;
+  }
+}

@@ -1,6 +1,6 @@
 "use client";
 import Link from "next/link";
-import { stories, levels, type Level } from "@/lib/stories";
+import { storiesForShelf, levels, type Level } from "@/lib/stories";
 import { StoryArt } from "./art";
 import { useReadingLevel } from "./use-reading-level";
 
@@ -9,6 +9,7 @@ const cardColors = ["sun", "sky", "pink", "lime", "orange", "purple"];
 
 export function Library({ initialLevel = "paso" }: { initialLevel?: Level }) {
   const [level, setLevel] = useReadingLevel(initialLevel);
+  const shelf = storiesForShelf(level);
   return (
     <div className="container kid-library">
       <header className="kid-hello">
@@ -42,8 +43,16 @@ export function Library({ initialLevel = "paso" }: { initialLevel?: Level }) {
           </label>
         ))}
       </fieldset>
+      {shelf.length === 0 ? (
+        <p className="kid-empty-shelf" role="status">
+          <span aria-hidden="true">📭</span>
+          {level === "reto"
+            ? "Todavía no hay cuentos largos. ¡Pronto llegarán!"
+            : "Todavía no hay cuentos aquí. ¡Pronto llegarán!"}
+        </p>
+      ) : null}
       <ul className="kid-story-grid">
-        {stories.map((story, index) => (
+        {shelf.map((story, index) => (
           <li key={story.id}>
             <Link
               className={`kid-story-card card-${cardColors[index % cardColors.length]}`}

@@ -63,6 +63,15 @@ const emojiScenes: Record<
       { main: "🌈", extras: ["☀️", "😄", "🐶"], label: "Sale un arcoíris en el cielo." },
     ],
   },
+  boat: {
+    colors: ["#8be9ff", "#4f8cff"],
+    scenes: [
+      { main: "⛵", extras: ["👧", "📝", "🏠"], label: "Valeria escribe un mensaje en un barco de papel." },
+      { main: "⛵", extras: ["🦆", "🐥", "🌊"], label: "El barco navega junto a los patos." },
+      { main: "⛵", extras: ["🌬️", "🍃", "💦"], label: "El viento libera al barco y baja por la cascada." },
+      { main: "👦", extras: ["⛵", "👧", "💛"], label: "Samuel encuentra el barco y conoce a Valeria." },
+    ],
+  },
   music: {
     colors: ["#a5f3a0", "#4fc3f7"],
     scenes: [
@@ -218,6 +227,10 @@ export function StoryArt({
           "--atlas-rows": book ? 4 : 2,
           "--art-zoom": book ? 1.035 + (frame % 3) * 0.025 : 1.02,
           "--art-focus": `${frame % 2 ? 60 : 40}% ${frame % 3 === 0 ? 45 : 55}%`,
+          // Centre of the visible panel, so the slow zoom stays on it.
+          "--drift-origin": atlas
+            ? `${((sourcePanel % 2) + 0.5) * 50}% ${((Math.floor(sourcePanel / 2) + 0.5) / (book ? 4 : 2)) * 100}%`
+            : "50% 50%",
         } as CSSProperties
       }
       data-scene={book ? panel : "cover"}
