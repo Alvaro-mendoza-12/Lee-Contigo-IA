@@ -116,6 +116,7 @@ export async function POST(request: Request) {
         evidencia: quote,
       }),
       schema: tutorHintSchema,
+      signal: request.signal,
       feature: "reading-tutor",
       maxOutputTokens: 600,
       timeoutMs: 12_500,

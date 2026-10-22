@@ -31,6 +31,8 @@ import { ReadingPause } from "./reading-pause";
 import { useReadingLevel } from "./use-reading-level";
 import { getIllustrationScene } from "@/lib/story-creator";
 import { useNarration } from "./use-narration";
+import { ReadingHelp } from "./reading-help";
+import { VoicePicker } from "./voice-picker";
 
 export function Reader({
   story,
@@ -58,6 +60,8 @@ export function Reader({
     loading: voiceLoading,
     message: voiceMessage,
     provider: voiceProvider,
+    voice,
+    changeVoice,
     speak,
     stop: stopNarration,
   } = useNarration();
@@ -109,6 +113,7 @@ export function Reader({
       expandControlRef.current?.focus(),
     );
     function manageDialogKeys(event: KeyboardEvent) {
+      if (document.querySelector("dialog[open]")) return;
       if (event.key === "Escape") {
         setExpanded(false);
         return;
@@ -275,6 +280,7 @@ export function Reader({
                 </button>
               </div>
               <div className="book-tool-actions">
+                <VoicePicker value={voice} onChange={changeVoice} />
                 {canSpeak ? (
                   <button
                     type="button"
@@ -349,6 +355,13 @@ export function Reader({
               {voiceMessage}
               {voiceProvider === "elevenlabs" ? " Voz: elevenlabs.io" : ""}
             </p>
+            <ReadingHelp
+              paragraphs={version.paragraphs}
+              paragraph={current.paragraph}
+              pageKey={`${story.id}-${level}-${index}-${size}-${fullText}`}
+              level={level}
+              storyId={story.id as import("@/lib/stories").StoryId}
+            />
             {fullText ? (
               <div
                 className="story-text book-full-text"
@@ -360,7 +373,9 @@ export function Reader({
                 }
               >
                 {version.paragraphs.map((paragraph, i) => (
-                  <p key={i}>{paragraph}</p>
+                  <p key={i} data-help-paragraph={i}>
+                    {paragraph}
+                  </p>
                 ))}
               </div>
             ) : (
@@ -374,6 +389,8 @@ export function Reader({
                     book: `${story.id}-${level}-${size}-${compact}`,
                     number: index + 1,
                     text: current.text,
+                    paragraph: current.paragraph,
+                    startWord: current.start,
                     chapter:
                       index === 0
                         ? "Érase una vez…"

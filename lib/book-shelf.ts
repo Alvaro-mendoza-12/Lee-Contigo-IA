@@ -14,6 +14,7 @@ import {
   type GeneratedStory,
 } from "./story-creator.ts";
 import type { Level } from "./stories.ts";
+import { scenePlanSchema, pageImagesSchema } from "./story-illustrations.ts";
 
 export const BOOK_LIFETIME = 7 * 24 * 60 * 60 * 1000;
 export const MAX_SAVED_BOOKS = 6;
@@ -37,6 +38,8 @@ const recordSchema = z
     atlas: z.boolean(),
     collection: z.boolean(),
     audioTokens: z.array(z.string().max(200)).length(6).optional(),
+    illustrationPlan: scenePlanSchema.optional(),
+    pageImages: pageImagesSchema.optional(),
   })
   .strict();
 export type SavedBook = z.infer<typeof recordSchema>;

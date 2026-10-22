@@ -1,0 +1,175 @@
+.reading-help-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 16px;
+  padding: 6px 0 12px;
+}
+.paragraph-help {
+  min-height: 44px;
+  padding: 8px 12px;
+  border-radius: 12px;
+  background: #e4f0df;
+  font-size: 14px;
+}
+.selection-guide {
+  color: var(--muted);
+  font-size: 13px;
+}
+.selection-help-button {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 45;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  max-width: min(380px, calc(100vw - 32px));
+  border: 2px solid var(--forest-dark);
+  border-radius: 17px;
+  padding: 13px 18px;
+  background: #ffd66b;
+  color: var(--forest-dark);
+  box-shadow: 0 8px 30px #16362b26;
+  font: inherit;
+  font-weight: 850;
+  text-align: left;
+}
+.selection-help-button small {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  margin-top: 3px;
+  overflow-wrap: anywhere;
+}
+.reading-help-dialog {
+  color: var(--ink);
+  border: 1px solid #cbdac8;
+  border-radius: 24px;
+  background: var(--paper);
+  width: min(570px, calc(100vw - 28px));
+  max-height: calc(100dvh - 28px);
+  padding: 25px;
+  overflow: auto;
+  overscroll-behavior: contain;
+  font-family: var(--font-nunito), Arial, sans-serif;
+}
+.reading-help-dialog::backdrop {
+  background: #173c3359;
+}
+.reading-help-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+.reading-help-heading h2 {
+  font-size: 27px;
+}
+.reading-help-heading > button {
+  min-height: 44px;
+  min-width: 44px;
+  justify-content: center;
+}
+.help-selected-quote {
+  border-left: 4px solid #cca638;
+  background: #fff4cf;
+  padding: 13px 16px;
+  margin: 0 0 20px;
+  font-size: 17px;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+.help-response {
+  min-height: 100px;
+}
+.help-response > p {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.help-source {
+  font-size: 12px;
+  font-weight: 750;
+  color: var(--forest);
+}
+.help-response .help-explanation {
+  display: block;
+  font-size: 20px;
+  line-height: 1.65;
+  margin-top: 12px;
+}
+.help-example {
+  background: var(--sky);
+  border-radius: 14px;
+  margin-top: 17px;
+  padding: 15px 18px;
+}
+.help-example strong,
+.help-reflection strong {
+  font-size: 14px;
+}
+.help-example p {
+  margin-top: 5px;
+  line-height: 1.6;
+}
+.help-reflection {
+  margin-top: 20px;
+}
+.help-reflection p {
+  margin-top: 6px;
+  font-size: 19px;
+  line-height: 1.65;
+  font-weight: 700;
+}
+.help-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 24px;
+}
+.help-actions .button {
+  padding: 12px 18px;
+  font-size: 14px;
+  min-height: 48px;
+}
+.help-actions > p {
+  font-size: 14px;
+}
+@media (max-width: 600px) {
+  .selection-help-button {
+    bottom: calc(14px + env(safe-area-inset-bottom));
+    left: 14px;
+    right: 14px;
+    max-width: none;
+  }
+  .selection-guide {
+    display: none;
+  }
+  .reading-help-controls {
+    padding-block: 4px 8px;
+  }
+  .paragraph-help {
+    width: 100%;
+    justify-content: center;
+  }
+  .reading-help-dialog {
+    padding: 19px;
+    border-radius: 20px;
+  }
+  .reading-help-heading h2 {
+    font-size: 23px;
+  }
+  .help-selected-quote {
+    font-size: 15px;
+  }
+  .help-response .help-explanation {
+    font-size: 18px;
+  }
+  .help-actions > button {
+    width: 100%;
+  }
+}

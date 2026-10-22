@@ -15,6 +15,8 @@ export type BookPage = {
   text: string;
   chapter: string;
   illustration: ReactNode;
+  paragraph?: number;
+  startWord?: number;
 };
 
 /** A stable open spread, with a two-sided leaf crossing the centre binding. */
@@ -82,6 +84,8 @@ export function BookSpread({
         <p
           className={copy ? "paper-copy-paragraph" : "book-page-text"}
           id={copy ? undefined : "lectura"}
+          data-help-paragraph={copy ? undefined : item.paragraph}
+          data-help-start={copy ? undefined : item.startWord}
         >
           {item.text}
         </p>

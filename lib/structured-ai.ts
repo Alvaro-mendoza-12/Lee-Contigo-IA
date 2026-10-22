@@ -20,6 +20,7 @@ export async function generateStructuredText<T>({
   maxOutputTokens,
   timeoutMs,
   feature,
+  signal,
 }: {
   schema: z.ZodType<T>;
   instructions: string;
@@ -27,8 +28,11 @@ export async function generateStructuredText<T>({
   maxOutputTokens: number;
   timeoutMs: number;
   feature: string;
+  signal?: AbortSignal;
 }): Promise<{ output: T }> {
-  const deadline = AbortSignal.timeout(timeoutMs);
+  const deadline = signal
+    ? AbortSignal.any([signal, AbortSignal.timeout(timeoutMs)])
+    : AbortSignal.timeout(timeoutMs);
   const keys = getOpenRouterKeys();
   const gatewayConfigured = Boolean(
     process.env.AI_GATEWAY_API_KEY ||

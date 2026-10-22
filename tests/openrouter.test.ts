@@ -38,6 +38,7 @@ test("OpenRouter uses the next credential after invalid authentication and valid
       const body = JSON.parse(options?.body as string);
       assert.deepEqual(body.provider.max_price, { prompt: 0, completion: 0 });
       assert.equal(body.provider.data_collection, "deny");
+      assert.deepEqual(body.reasoning, { enabled: false, exclude: true });
       return authorization.length === 1
         ? Response.json({ error: { code: 401 } }, { status: 401 })
         : Response.json({

@@ -1,5 +1,7 @@
 import { expect, test } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
+import { composeStoryPlan } from "../../lib/story-illustrations";
+import sharp from "sharp";
 
 const story = {
   title: "La tortuga y la luz",
@@ -69,6 +71,155 @@ const story = {
   ],
 };
 
+test("las seis ilustraciones generadas cambian con la escena y se conservan al recargar", async ({
+  page,
+}) => {
+  const illustrationPlan = composeStoryPlan(
+    story.paragraphs,
+    story.artDescription,
+  );
+  const pageImages = await Promise.all(
+    Array.from({ length: 6 }, async (_, i) => {
+      const bytes = await sharp({
+        create: {
+          width: 8,
+          height: 8,
+          channels: 3,
+          background: { r: 30 + i * 30, g: 110, b: 90 },
+        },
+      })
+        .webp()
+        .toBuffer();
+      return `data:image/webp;base64,${bytes.toString("base64")}`;
+    }),
+  );
+  await page.route("**/api/crear", (route) =>
+    route.fulfill({
+      json: { story, audioTokens: story.paragraphs.map(() => "test-token") },
+    }),
+  );
+  await page.route("**/api/crear/portada", (route) =>
+    route.fulfill({
+      json: {
+        layout: "vector",
+        illustrationPlan,
+        pageImages,
+        imageSource: "cloudflare",
+      },
+    }),
+  );
+  await page.goto("/crear");
+  await page
+    .getByLabel("Mi idea para el cuento")
+    .fill("Una tortuga comparte un mapa");
+  await page.getByLabel(/Una persona adulta está conmigo/).check();
+  await page
+    .getByRole("button", { name: "Crear mi cuento", exact: true })
+    .click();
+  const art = page.locator(".paper-spread .generated-story-scene img");
+  await expect(art).toHaveAttribute("src", pageImages[0]);
+  for (
+    let i = 0;
+    i < 8 && (await art.getAttribute("src")) === pageImages[0];
+    i++
+  ) {
+    await page.getByRole("button", { name: "Página siguiente" }).click();
+  }
+  await expect(art).toHaveAttribute("src", pageImages[1]);
+  await expect(
+    page.getByText("Guardado en este dispositivo durante siete días."),
+  ).toBeVisible();
+  await page.reload();
+  await page
+    .getByRole("button", { name: `Abrir ${story.title}`, exact: true })
+    .click();
+  await expect(art).toHaveAttribute("src", pageImages[0]);
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= innerWidth,
+    ),
+  ).toBe(true);
+});
+
+test("un libro creado dibuja personajes por página, conserva las escenas y permite ayuda del párrafo", async ({
+  page,
+}) => {
+  const audioTokens = story.paragraphs.map((_, i) => `test-authorization-${i}`);
+  const illustrationPlan = composeStoryPlan(
+    story.paragraphs,
+    story.artDescription,
+  );
+  await page.route("**/api/crear", (route) =>
+    route.fulfill({
+      contentType: "application/json",
+      body: JSON.stringify({ story, audioTokens }),
+    }),
+  );
+  await page.route("**/api/crear/portada", (route) =>
+    route.fulfill({
+      contentType: "application/json",
+      body: JSON.stringify({
+        layout: "vector",
+        source: "ai-composed",
+        illustrationPlan,
+      }),
+    }),
+  );
+  const helpRequests: unknown[] = [];
+  await page.route("**/api/lectura/ayuda", (route) => {
+    helpRequests.push(route.request().postDataJSON());
+    return route.fulfill({
+      contentType: "application/json",
+      body: JSON.stringify({
+        source: "ai",
+        explanation:
+          "El mapa es un dibujo que representa el recorrido de la tortuga.",
+        example:
+          "Por ejemplo, puedes dibujar el camino de una puerta a una ventana.",
+        reflection: "¿Qué detalle del dibujo ayudó a encontrar el camino?",
+      }),
+    });
+  });
+  await page.goto("/crear");
+  await page
+    .getByLabel("Mi idea para el cuento")
+    .fill("Una tortuga sigue un mapa con su amiga");
+  await page.getByLabel(/Una persona adulta está conmigo/).check();
+  await page
+    .getByRole("button", { name: "Crear mi cuento", exact: true })
+    .click();
+  const art = page.locator(".paper-spread .composed-story-scene");
+  await expect(art).toHaveCount(1);
+  const first = await art.screenshot({ animations: "disabled" });
+  await page.getByRole("button", { name: "Página siguiente" }).click();
+  await expect(art).toHaveAttribute("data-scene-page", "1");
+  const second = await art.screenshot({ animations: "disabled" });
+  expect(first.equals(second)).toBe(false);
+  await page.getByRole("button", { name: "Ayuda con este párrafo" }).click();
+  const dialog = page.getByRole("dialog", { name: "Lo pensamos juntos" });
+  await expect(dialog.getByText(/El mapa es un dibujo/)).toBeVisible();
+  expect(helpRequests[0]).toMatchObject({
+    source: "generated",
+    mode: "paragraph",
+    authorization: expect.any(String),
+  });
+  await dialog.getByRole("button", { name: "Seguir leyendo" }).click();
+  const axe = await new AxeBuilder({ page })
+    .withTags(["wcag2a", "wcag2aa", "wcag21aa", "wcag22aa"])
+    .analyze();
+  expect(axe.violations).toEqual([]);
+  await expect(
+    page.getByText("Guardado en este dispositivo durante siete días."),
+  ).toBeVisible();
+  await page.reload();
+  await page
+    .getByRole("button", { name: `Abrir ${story.title}`, exact: true })
+    .click();
+  await expect(page.locator(".paper-spread .composed-story-scene")).toHaveCount(
+    1,
+  );
+});
+
 test("el cuento creado conecta la respuesta con una cita del texto sin reenviar respuestas", async ({
   page,
 }) => {
@@ -80,7 +231,9 @@ test("el cuento creado conecta la respuesta con una cita del texto sin reenviar 
     });
   });
   const illustrationRequests: unknown[] = [];
-  await page.route("**/api/narrar", route => route.fulfill({ status: 503, contentType: "application/json", body: "{}" }));
+  await page.route("**/api/narrar", (route) =>
+    route.fulfill({ status: 503, contentType: "application/json", body: "{}" }),
+  );
   await page.route("**/api/crear/portada", async (route) => {
     illustrationRequests.push(route.request().postDataJSON());
     await route.fulfill({
@@ -111,9 +264,20 @@ test("el cuento creado conecta la respuesta con una cita del texto sin reenviar 
   ).toBeVisible();
   expect(illustrationRequests).toHaveLength(1);
   await expect(page.getByText("¿Quieres ilustrar la portada?")).toHaveCount(0);
-  const audioRequest = page.waitForRequest(r => r.url().endsWith("/api/narrar"));
-  await page.getByRole("button", { name: "Escuchar página", exact: true }).click();
-  expect((await audioRequest).postDataJSON()).toMatchObject({ source: "generated", paragraphText: story.paragraphs[0], authorization: audioTokens[0], start: 0 });
+  const audioRequest = page.waitForRequest((r) =>
+    r.url().endsWith("/api/narrar"),
+  );
+  await page.getByLabel("¿Quién te lee?").selectOption("daniel");
+  await page
+    .getByRole("button", { name: "Escuchar página", exact: true })
+    .click();
+  expect((await audioRequest).postDataJSON()).toMatchObject({
+    source: "generated",
+    paragraphText: story.paragraphs[0],
+    authorization: audioTokens[0],
+    start: 0,
+    voice: "daniel",
+  });
 
   const nextPage = page.getByRole("button", { name: "Página siguiente" });
   const startQuestions = page.getByRole("button", { name: /Leer y explorar/ });

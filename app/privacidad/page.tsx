@@ -81,9 +81,8 @@ export default function Privacy() {
         y las políticas del proveedor seleccionado. El filtro de no
         entrenamiento no se activa y no se fuerza retención cero. El proveedor
         de IA y el alojamiento pueden procesar las solicitudes y datos técnicos
-        según sus propias condiciones. En el modo gratuito activo, el servidor
-        elige ilustraciones de la colección incluida; no llama a un proveedor de
-        imágenes.
+        según sus propias condiciones. Las ilustraciones se preparan
+        automáticamente mediante el recorrido descrito más abajo.
       </p>
       <h2>Mis libros: guardado temporal en este dispositivo</h2>
       <p>
@@ -118,21 +117,56 @@ export default function Privacy() {
         frases que parecen datos personales, pero no puede reconocer todos los
         nombres ni todos los datos sensibles. No escribas información real:
         inventa personajes y lugares. Una persona adulta debe revisar la idea y
-        leer el resultado junto contigo. Al pulsar «Crear mi cuento» se añaden
-        ilustraciones originales de la colección: son paisajes decorativos, no
-        imágenes generadas a partir de esa idea ni evidencia para responder las
-        preguntas. En este modo gratuito no se envía la historia a un proveedor
-        de imágenes. Si el cuento incluye algo extraño, cierra la página y crea
-        otro.
+        leer el resultado junto contigo. Las ilustraciones acompañan el relato;
+        las respuestas de comprensión se comprueban con el texto. Si el cuento
+        incluye algo extraño, cierra la página y crea otro.
+      </p>
+      <h2>Ayuda para una palabra, frase o párrafo</h2>
+      <p>
+        Seleccionar texto no hace una llamada a la IA. Al pulsar «Ayúdame con
+        esta parte» o «Ayuda con este párrafo», el servidor reconstruye el
+        pasaje del catálogo o verifica la autorización de un párrafo de un libro
+        creado. Puede enviar a AI Gateway u OpenRouter el párrafo, la parte
+        seleccionada, el nivel y la etapa de ayuda. No enviamos una respuesta
+        libre ni grabamos voz. La explicación, el ejemplo y la pregunta guiada
+        pueden contener errores y deben contrastarse con el relato. Si el
+        servicio falla, mostramos una ayuda preparada identificada como tal. Los
+        fragmentos de cuentos creados no se guardan en la caché de ayuda del
+        servidor; los resultados de catálogo se reutilizan por un periodo corto.
+        No guardamos un historial personal de las consultas.
+      </p>
+      <h2>Ilustraciones con personajes</h2>
+      <p>
+        Los libros nuevos muestran de inmediato composiciones vectoriales de
+        personajes, objetos y lugares. El servidor puede pedir un plan de seis
+        escenas a la IA y, cuando Cloudflare Workers AI está configurado, enviar
+        los párrafos autorizados y la descripción ficticia de los personajes a
+        FLUX.1 schnell para generar seis imágenes. No enviamos la idea original,
+        las respuestas ni identificadores del estudiante a Cloudflare. Las
+        imágenes generadas pueden no representar exactamente el relato y no
+        sustituyen su texto. Si el proveedor falla o se agota su cuota,
+        conservamos las composiciones vectoriales. Las imágenes y el plan se
+        guardan con el libro en este navegador durante el periodo indicado. Los
+        libros anteriores conservan sus ilustraciones. Consulta las{" "}
+        <a
+          href="https://developers.cloudflare.com/workers-ai/platform/data-usage/"
+          target="_blank"
+          rel="noreferrer"
+        >
+          condiciones de datos de Workers AI
+        </a>
+        ; no prometemos retención cero de todos los proveedores implicados.
       </p>
       <h2>Escuchar una página</h2>
       <p>
         Al pulsar «Escuchar», el texto de esa página puede enviarse a ElevenLabs
-        para generar una narración en español. No enviamos la voz del niño, sus
-        respuestas ni identificadores de estudiante. Los párrafos de libros
-        nuevos llevan una autorización del servidor; los libros antiguos pueden
-        usar directamente la voz del dispositivo. Las grabaciones de los niños
-        no se solicitan ni se capturan.
+        para generar una narración en español. Puedes elegir entre George, Sarah
+        y Daniel; la preferencia de voz se recuerda localmente hasta que borres
+        los datos del sitio. No enviamos la voz del niño, sus respuestas ni
+        identificadores de estudiante. Los párrafos de libros nuevos llevan una
+        autorización del servidor; los libros antiguos pueden usar directamente
+        la voz del dispositivo. Las grabaciones de los niños no se solicitan ni
+        se capturan.
       </p>
       <p>
         ElevenLabs puede procesar y conservar el texto y el audio según sus

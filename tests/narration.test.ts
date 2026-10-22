@@ -7,6 +7,31 @@ import {
   resolveNarration,
 } from "../lib/narration.ts";
 import { stories } from "../lib/stories.ts";
+import {
+  narrationVoiceIds,
+  isNarrationVoice,
+} from "../lib/narration-voices.ts";
+
+test("solo se aceptan las tres voces revisadas, sin identificadores arbitrarios", () => {
+  const input = {
+    source: "catalogue",
+    storyId: "luz-del-bosque",
+    level: "paso",
+    paragraph: 0,
+    start: 0,
+    end: 2,
+  };
+  for (const voice of narrationVoiceIds) {
+    assert.equal(narrationInput.safeParse({ ...input, voice }).success, true);
+    assert.equal(isNarrationVoice(voice), true);
+  }
+  assert.equal(
+    narrationInput.safeParse({ ...input, voice: "arbitrary-provider-id" })
+      .success,
+    false,
+  );
+  assert.equal(isNarrationVoice(null), false);
+});
 
 test("la narración reconstruye todas las páginas editoriales y rechaza rangos inválidos", () => {
   for (const story of stories)

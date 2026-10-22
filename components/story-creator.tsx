@@ -29,6 +29,15 @@ import { levels, type Level } from "@/lib/stories";
 import { BookSpread } from "./book-spread";
 import { ReadingPause } from "./reading-pause";
 import { useNarration } from "./use-narration";
+import { VoicePicker } from "./voice-picker";
+import { ReadingHelp } from "./reading-help";
+import { GeneratedScene } from "./generated-scene";
+import {
+  composeStoryPlan,
+  scenePlanSchema,
+  pageImagesSchema,
+  type ScenePlan,
+} from "@/lib/story-illustrations";
 import { useAnswerSound, SoundControl, ReadFeedback } from "./answer-audio";
 import { BookShelf } from "./book-shelf";
 import {
@@ -61,6 +70,10 @@ export function StoryCreator() {
   const [adultReviewed, setAdultReviewed] = useState(false);
   const [story, setStory] = useState<GeneratedStory | null>(null);
   const [cover, setCover] = useState<string | null>(null);
+  const [pageImages, setPageImages] = useState<(string | null)[] | undefined>();
+  const [illustrationPlan, setIllustrationPlan] = useState<ScenePlan | null>(
+    null,
+  );
   const [coverState, setCoverState] = useState<CoverState>("idle");
   const [coverIsAtlas, setCoverIsAtlas] = useState(false);
   const [coverFromCollection, setCoverFromCollection] = useState(false);
@@ -76,6 +89,8 @@ export function StoryCreator() {
     loading: voiceLoading,
     message: voiceMessage,
     provider: voiceProvider,
+    voice,
+    changeVoice,
     speak,
     stop: stopNarration,
   } = useNarration();
@@ -207,6 +222,13 @@ export function StoryCreator() {
     setAudioTokens(book.audioTokens ?? []);
     setLevel(book.level);
     setCover(book.cover);
+    setPageImages(book.pageImages);
+    setIllustrationPlan(
+      book.illustrationPlan ??
+        (!book.cover
+          ? composeStoryPlan(book.story.paragraphs, book.story.artDescription)
+          : null),
+    );
     setCoverIsAtlas(book.atlas);
     setCoverFromCollection(book.collection);
     setCoverState(book.cover ? "ready" : "unavailable");
@@ -247,23 +269,30 @@ export function StoryCreator() {
     coverAbort.current = controller;
     setCoverState("loading");
     setCover(null);
+    setPageImages(undefined);
+    const fallbackPlan = composeStoryPlan(
+      createdStory.paragraphs,
+      createdStory.artDescription,
+    );
+    setIllustrationPlan(fallbackPlan);
+    const authorizations = currentBook.current?.audioTokens;
+    if (!authorizations || authorizations.length !== 6) {
+      setCoverState("ready");
+      return;
+    }
     try {
       const response = await fetch("/api/crear/portada", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           artDescription: createdStory.artDescription,
-          scenes: [0, 1, 3, 5].map(
-            (index) =>
-              createdStory.paragraphs[
-                Math.min(index, createdStory.paragraphs.length - 1)
-              ],
-          ),
+          scenes: createdStory.paragraphs,
+          authorizations,
           adultReviewed: true,
         }),
         signal: AbortSignal.any([
           controller.signal,
-          AbortSignal.timeout(85_000),
+          AbortSignal.timeout(65000),
         ]),
       });
       const data = (await response.json()) as {
@@ -271,17 +300,30 @@ export function StoryCreator() {
         layout?: string;
         source?: string;
         error?: string;
+        illustrationPlan?: ScenePlan;
+        pageImages?: (string | null)[];
       };
-      if (!response.ok || !data.cover) throw new Error(data.error ?? "cover");
+      if (!response.ok || (!data.cover && !data.illustrationPlan))
+        throw new Error(data.error ?? "cover");
       if (requestId !== coverRequest.current) return;
-      setCover(data.cover);
+      const plan = data.illustrationPlan
+        ? scenePlanSchema.parse(data.illustrationPlan)
+        : null;
+      setIllustrationPlan(plan);
+      const images = data.pageImages
+        ? pageImagesSchema.parse(data.pageImages)
+        : undefined;
+      setPageImages(images);
+      setCover(data.cover ?? null);
       setCoverIsAtlas(data.layout === "atlas");
       setCoverFromCollection(data.source === "collection");
       setCoverState("ready");
       if (currentBook.current?.story === createdStory) {
         const updated = {
           ...currentBook.current,
-          cover: data.cover,
+          cover: data.cover ?? null,
+          illustrationPlan: plan ?? undefined,
+          pageImages: images,
           atlas: data.layout === "atlas",
           collection: data.source === "collection",
         };
@@ -289,7 +331,10 @@ export function StoryCreator() {
         persistBook(updated);
       }
     } catch {
-      if (requestId === coverRequest.current) setCoverState("unavailable");
+      if (requestId === coverRequest.current) {
+        setIllustrationPlan(fallbackPlan);
+        setCoverState("ready");
+      }
     }
   }
 
@@ -328,6 +373,11 @@ export function StoryCreator() {
       }
 
       setStory(data.story);
+      const initialPlan = composeStoryPlan(
+        data.story.paragraphs,
+        data.story.artDescription,
+      );
+      setIllustrationPlan(initialPlan);
       setAudioTokens(data.audioTokens ?? []);
       setIdea("");
       setPosition({ paragraph: 0, word: 0 });
@@ -337,10 +387,12 @@ export function StoryCreator() {
       setSelectedAnswer(null);
       setCoverState("idle");
       setCover(null);
+      setPageImages(undefined);
       setScreen("book");
       const saved = {
         ...makeSavedBook(data.story, level),
         audioTokens: data.audioTokens,
+        illustrationPlan: initialPlan,
       };
       currentBook.current = saved;
       persistBook(saved);
@@ -370,9 +422,11 @@ export function StoryCreator() {
     stopSpeaking();
     setScreen("form");
     setStory(null);
+    setIllustrationPlan(null);
     setAudioTokens([]);
     setAnimate(true);
     setCover(null);
+    setPageImages(undefined);
     setCoverState("idle");
     setIdea("");
     setError("");
@@ -753,6 +807,7 @@ export function StoryCreator() {
               </button>
             </div>
             <div className="creator-reader-actions">
+              <VoicePicker value={voice} onChange={changeVoice} />
               {canSpeak ? (
                 <button
                   className="text-button"
@@ -784,6 +839,13 @@ export function StoryCreator() {
             {voiceMessage}
             {voiceProvider === "elevenlabs" ? " Voz: elevenlabs.io" : ""}
           </p>
+          <ReadingHelp
+            paragraphs={story.paragraphs}
+            paragraph={currentPage?.paragraph ?? 0}
+            pageKey={`${story.title}-${currentPageIndex}-${fontSize}`}
+            level={level}
+            authorizations={audioTokens}
+          />
           <BookSpread
             animated={animate}
             fontSize={fontSteps[fontSize].pixels}
@@ -793,13 +855,22 @@ export function StoryCreator() {
               book: `${story.title}-${fontSize}-${compact}`,
               number: currentPageIndex + 1,
               text: currentPage?.text ?? "",
+              paragraph: currentPage?.paragraph,
+              startWord: currentPage?.start,
               chapter:
                 currentPageIndex === 0
                   ? "Érase una vez…"
                   : currentPageIndex === pages.length - 1
                     ? "Y al final…"
                     : "La historia continúa…",
-              illustration: cover ? (
+              illustration: illustrationPlan ? (
+                <GeneratedScene
+                  plan={illustrationPlan}
+                  images={pageImages}
+                  paragraph={currentPage?.paragraph ?? 0}
+                  frame={currentPageIndex}
+                />
+              ) : cover ? (
                 <div
                   className="story-art"
                   style={

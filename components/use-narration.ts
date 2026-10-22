@@ -1,8 +1,10 @@
 "use client";
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { NarrationInput } from "@/lib/narration";
+import { isNarrationVoice, type NarrationVoice } from "@/lib/narration-voices";
 
 export function useNarration() {
+  const [voice, setVoice] = useState<NarrationVoice>("george");
   const [speaking, setSpeaking] = useState(false);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
@@ -26,6 +28,25 @@ export function useNarration() {
     setSpeaking(false);
     setLoading(false);
   }, []);
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem("lee-contigo-voice");
+      if (isNarrationVoice(saved)) setVoice(saved);
+    } catch {
+      /* Reading stays available when storage is blocked. */
+    }
+  }, []);
+  function changeVoice(next: NarrationVoice) {
+    stop();
+    setVoice(next);
+    setProvider(null);
+    setMessage("Voz elegida. Toca Escuchar para oírla.");
+    try {
+      localStorage.setItem("lee-contigo-voice", next);
+    } catch {
+      /* Optional preference. */
+    }
+  }
   useEffect(
     () => () => {
       stop();
@@ -83,7 +104,7 @@ export function useNarration() {
       device();
       return;
     }
-    const key = JSON.stringify(input);
+    const key = JSON.stringify({ ...input, voice });
     let url = cached.current.get(key);
     if (!url) {
       setLoading(true);
@@ -145,5 +166,14 @@ export function useNarration() {
         );
     }
   }
-  return { speaking, loading, message, provider, speak, stop };
+  return {
+    speaking,
+    loading,
+    message,
+    provider,
+    voice,
+    changeVoice,
+    speak,
+    stop,
+  };
 }

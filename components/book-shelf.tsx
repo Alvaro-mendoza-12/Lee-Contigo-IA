@@ -3,6 +3,7 @@ import { BookOpen, ArrowRight, Trash2 } from "lucide-react";
 import { useState, type CSSProperties } from "react";
 import type { SavedBook } from "@/lib/book-shelf";
 import { levels } from "@/lib/stories";
+import { GeneratedScene } from "./generated-scene";
 
 export function BookShelf({
   books,
@@ -74,7 +75,12 @@ export function BookShelf({
                 aria-label={`Abrir ${book.story.title}`}
               >
                 <div className="saved-book-art">
-                  {book.cover ? (
+                  {book.illustrationPlan ? (
+                    <GeneratedScene
+                      plan={book.illustrationPlan}
+                      images={book.pageImages}
+                    />
+                  ) : book.cover ? (
                     <div
                       className="story-art"
                       style={

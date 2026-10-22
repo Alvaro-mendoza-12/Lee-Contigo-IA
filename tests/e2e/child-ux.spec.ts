@@ -100,6 +100,18 @@ test("la voz reproduce audio, detiene al cambiar de página y reutiliza la pági
     page.getByRole("button", { name: "Detener lectura" }),
   ).toBeVisible();
   expect(requests).toHaveLength(1);
+  await page.getByLabel("¿Quién te lee?").selectOption("sarah");
+  await expect(
+    page.getByRole("button", { name: "Escuchar", exact: true }),
+  ).toBeVisible();
+  await page.getByRole("button", { name: "Escuchar", exact: true }).click();
+  await expect(
+    page.getByRole("button", { name: "Detener lectura" }),
+  ).toBeVisible();
+  expect(requests).toHaveLength(2);
+  expect(requests[1]).toMatchObject({ voice: "sarah" });
+  await page.reload();
+  await expect(page.getByLabel("¿Quién te lee?")).toHaveValue("sarah");
 });
 
 test("si la voz externa falla se lee el texto visible con la voz española del dispositivo", async ({

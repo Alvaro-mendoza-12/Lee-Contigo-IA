@@ -131,6 +131,7 @@ export async function POST(request: Request) {
               : {}),
           }),
           schema: generatedStorySchema,
+          signal: request.signal,
           feature: "generated-story",
           maxOutputTokens: 3600,
           timeoutMs: Math.max(1000, creationDeadline - Date.now()),

@@ -56,7 +56,12 @@ export async function POST(request: Request) {
   if (!secret) return failure(503);
   const text = resolveNarration(input.data, secret);
   if (!text) return failure(400);
-  const voice = process.env.ELEVENLABS_VOICE_ID || "JBFqnCBsd6RMkjVDRZzb";
+  const voices = {
+    george: process.env.ELEVENLABS_VOICE_ID || "JBFqnCBsd6RMkjVDRZzb",
+    sarah: "EXAVITQu4vr4xnSDxMaL",
+    daniel: "onwK4e9ZLuTAKqWW03F9",
+  };
+  const voice = voices[input.data.voice ?? "george"];
   const model = "eleven_flash_v2_5";
   const now = Date.now();
   for (const [id, item] of cache) if (item.until < now) cache.delete(id);

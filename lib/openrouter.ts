@@ -9,12 +9,15 @@ const defaultModels = [
 export function getOpenRouterKeys() {
   return [
     ...new Set(
-      [
-        process.env.OPENROUTER_API_KEY,
-        process.env.OPENROUTER_API_KEY_2,
-        process.env.OPENROUTER_API_KEY_3,
-        process.env.OPENROUTER_API_KEY_4,
-      ]
+      Array.from(
+        { length: 9 },
+        (_, index) =>
+          process.env[
+            index === 0
+              ? "OPENROUTER_API_KEY"
+              : `OPENROUTER_API_KEY_${index + 1}`
+          ],
+      )
         .map((key) => key?.trim())
         .filter((key): key is string => Boolean(key)),
     ),
@@ -97,6 +100,7 @@ export async function generateOpenRouterObject<T>({
             { role: "user", content: prompt },
           ],
           max_tokens: maxOutputTokens,
+          reasoning: { enabled: false, exclude: true },
           provider: {
             require_parameters: true,
             data_collection: "deny",

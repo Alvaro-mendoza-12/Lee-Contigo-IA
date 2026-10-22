@@ -1,8 +1,10 @@
 import { createHmac, timingSafeEqual } from "node:crypto";
 import { z } from "zod";
 import { getStory, storyIds } from "./stories.ts";
+import { narrationVoiceIds } from "./narration-voices.ts";
 
 const range = {
+  voice: z.enum(narrationVoiceIds).optional(),
   start: z.number().int().min(0),
   end: z.number().int().min(1).max(1000),
 };
@@ -20,7 +22,10 @@ export const narrationInput = z.discriminatedUnion("source", [
     .object({
       source: z.literal("generated"),
       paragraphText: z.string().min(1).max(700),
-      authorization: z.string().max(200).regex(/^\d{13}\.[a-f0-9]{64}$/),
+      authorization: z
+        .string()
+        .max(200)
+        .regex(/^\d{13}\.[a-f0-9]{64}$/),
       ...range,
     })
     .strict(),
