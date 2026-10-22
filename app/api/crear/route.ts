@@ -180,6 +180,7 @@ export async function POST(request: Request) {
   } catch (error) {
     const modelCouldNotFormatStory = NoObjectGeneratedError.isInstance(error);
     const gatewayFailure = getGatewayFailureDetails(error);
+    const gatewayAccessUnavailable = gatewayFailure?.statusCode === 403;
     console.warn("story_creation_fallback", {
       name: error instanceof Error ? error.name : "unknown",
       model,
@@ -193,13 +194,19 @@ export async function POST(request: Request) {
           }
         : {}),
     });
+    const errorMessage = modelCouldNotFormatStory
+      ? "La IA no pudo terminar el cuento esta vez. Tu idea sigue en el formulario; inténtalo de nuevo en un momento."
+      : gatewayAccessUnavailable
+        ? "Ahora no podemos crear el cuento. Tu idea sigue aquí; puedes leer una historia de la biblioteca mientras se restablece el servicio."
+        : "El servicio de cuentos tuvo un problema. Tu idea sigue en el formulario; inténtalo de nuevo en un momento.";
     return reply(
       {
-        error: modelCouldNotFormatStory
-          ? "La IA no pudo terminar el cuento esta vez. Tu idea sigue en el formulario; inténtalo de nuevo en un momento."
-          : "El servicio de cuentos tuvo un problema. Tu idea sigue en el formulario; inténtalo de nuevo en un momento.",
+        ...(gatewayAccessUnavailable
+          ? { code: "AI_SERVICE_ACCESS_UNAVAILABLE" }
+          : {}),
+        error: errorMessage,
       },
-      502,
+      gatewayAccessUnavailable ? 503 : 502,
     );
   }
 }

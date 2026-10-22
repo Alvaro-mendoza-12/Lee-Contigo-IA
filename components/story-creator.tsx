@@ -45,6 +45,7 @@ export function StoryCreator() {
   const [coverState, setCoverState] = useState<CoverState>("idle");
   const [adultCoverReviewed, setAdultCoverReviewed] = useState(false);
   const [error, setError] = useState("");
+  const [gatewayUnavailable, setGatewayUnavailable] = useState(false);
   const [creating, setCreating] = useState(false);
   const [fontSize, setFontSize] = useState(5);
   const [pageIndex, setPageIndex] = useState(0);
@@ -160,6 +161,7 @@ export function StoryCreator() {
   async function submitIdea(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError("");
+    setGatewayUnavailable(false);
     setCreating(true);
     try {
       const response = await fetch("/api/crear", {
@@ -174,9 +176,12 @@ export function StoryCreator() {
       const data = (await response.json()) as {
         story?: GeneratedStory;
         error?: string;
+        code?: string;
       };
-      if (!response.ok || !data.story)
+      if (!response.ok || !data.story) {
+        setGatewayUnavailable(data.code === "AI_SERVICE_ACCESS_UNAVAILABLE");
         throw new Error(data.error ?? "No pudimos crear el cuento.");
+      }
 
       setStory(data.story);
       setIdea("");
@@ -208,6 +213,8 @@ export function StoryCreator() {
     setCover(null);
     setCoverState("idle");
     setIdea("");
+    setError("");
+    setGatewayUnavailable(false);
     setLevel("paso");
     setAdultReviewed(false);
     setAdultCoverReviewed(false);
@@ -384,9 +391,16 @@ export function StoryCreator() {
             </label>
 
             {error ? (
-              <p className="creator-error" role="alert">
-                {error}
-              </p>
+              <div className="creator-error-group">
+                <p className="creator-error" role="alert">
+                  {error}
+                </p>
+                {gatewayUnavailable ? (
+                  <Link className="creator-error-link" href="/biblioteca">
+                    Leer un cuento de la biblioteca <ArrowRight size={16} />
+                  </Link>
+                ) : null}
+              </div>
             ) : null}
 
             <button

@@ -3283,13 +3283,28 @@ svg {
   }
 }
 .creator-error {
-  margin: 0 0 14px;
+  margin: 0;
   padding: 12px 14px;
   border: 1px solid #c68c79;
   border-radius: 10px;
   color: #773923;
   background: #fff5ef;
   font-size: 14px;
+}
+.creator-error-group {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+.creator-error-link {
+  justify-self: start;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--forest);
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 .library-create-card {
   display: flex;
