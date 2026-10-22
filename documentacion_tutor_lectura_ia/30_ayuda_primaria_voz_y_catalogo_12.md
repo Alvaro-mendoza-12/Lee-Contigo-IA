@@ -66,3 +66,11 @@ Prueba real local: explicación de IA en 4,5 s y audio ElevenLabs/Daniel válido
 Abrir Un nuevo reto → Una luz en el bosque. Marcar «diminuta» y pedir ayuda; en móvil también existe «No entendí». Leer la explicación corta, desplegar el ejemplo y escucharla. Pedir otra pista, volver al pasaje y explicar su sentido con palabras propias. En la práctica, mostrar el aviso de error, buscar evidencia y reintentar. El cierre muestra habilidades practicadas sin atribuir dominio por completar preguntas.
 
 Las pruebas técnicas y la demostración no sustituyen validación pedagógica con estudiantes.
+
+### Cierre de verificación
+
+- Compilación y TypeScript correctos; 35 unitarias y 60 recorridos completos de navegador aprobados tras corregir el encabezado móvil.
+- 12 comprobaciones adicionales aprobadas en la URL pública: ayuda, voz, selección, portadas completas y ambos cuentos nuevos, en escritorio y móvil.
+- En producción se recibieron dos ayudas reales de IA en 2,35 s y 1,13 s, y audio ElevenLabs/Daniel válido en 1,17 s. Son observaciones puntuales, no garantías de latencia.
+- La revisión de esas respuestas motivó una validación adicional: una sola pregunta por reflexión y rechazo de preguntas que terminen dando la respuesta con «verdad». Se añadieron instrucciones para evitar exageraciones imprecisas. Tras el ajuste pasaron nuevamente las 35 unitarias y ocho recorridos específicos de ayuda, además de compilación y TypeScript.
+- Se inspeccionaron capturas de escritorio y móvil y se buscaron las 62 credenciales configuradas en fuentes y archivos de JavaScript públicos, sin encontrarlas. Las capturas, audio de prueba y reportes temporales quedan en `output/playwright`, excluido de Git y del despliegue.

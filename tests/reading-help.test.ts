@@ -139,6 +139,14 @@ test("la ayuda de primaria limita el texto y ofrece tres pasos breves", () => {
     }
   const first = preparedReadingHelp("diminuta", 0);
   assert.equal(
+    safeReadingHelp({ ...first, reflection: "¿Cómo es? ¿Qué hace?" }),
+    false,
+  );
+  assert.equal(
+    safeReadingHelp({ ...first, reflection: "¿La luz es pequeña, verdad?" }),
+    false,
+  );
+  assert.equal(
     safeReadingHelp({
       ...first,
       explanation: Array(25).fill("palabra").join(" "),

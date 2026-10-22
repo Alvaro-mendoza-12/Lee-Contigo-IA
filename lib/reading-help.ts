@@ -38,7 +38,7 @@ export const readingHelpOutput = z
       .trim()
       .min(12)
       .max(90)
-      .regex(/^¿.+\?$/),
+      .regex(/^¿[^¿?]+\?$/),
   })
   .strict();
 export type ReadingHelpOutput = z.infer<typeof readingHelpOutput>;
@@ -98,9 +98,11 @@ export function resolveReadingHelp(input: ReadingHelpInput, secret: string) {
 export function safeReadingHelp(value: ReadingHelpOutput) {
   const text = Object.values(value).join(" ");
   return (
+    readingHelpOutput.safeParse(value).success &&
     value.explanation.split(/\s+/).length <= 24 &&
     value.example.split(/\s+/).length <= 14 &&
     value.reflection.split(/\s+/).length <= 12 &&
+    !/\bverdad\s*\?/i.test(value.reflection) &&
     !containsPersonalDetails(text) &&
     !/<[^>]+>|https?:|www\.|@|respuesta correcta|opci[oó]n [abc123]/i.test(text)
   );
