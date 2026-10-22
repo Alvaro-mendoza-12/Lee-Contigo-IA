@@ -149,6 +149,12 @@
 .help-actions > p {
   font-size: 14px;
 }
+.reading-help-dialog .voice-credit {
+  display: inline-block;
+  margin-inline-start: 10px;
+  color: var(--muted);
+  font-size: 11px;
+}
 @media (max-width: 600px) {
   .selection-help-button {
     bottom: calc(14px + env(safe-area-inset-bottom));
