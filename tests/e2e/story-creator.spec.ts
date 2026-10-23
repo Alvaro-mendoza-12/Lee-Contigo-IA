@@ -285,7 +285,10 @@ test("el cuento creado conecta la respuesta con una cita del texto sin reenviar 
     .fill("Una tortuga busca un faro");
   await page.getByLabel(/Un adulto revisó mi idea/).check();
   await page.getByRole("button", { name: "Crear mi cuento" }).click();
-  await expect(page.getByText("Dibujos de la biblioteca.")).toBeVisible();
+  await expect(page.locator(".paper-art img").first()).toHaveAttribute(
+    "src",
+    "/images/lectura-paisajes.png",
+  );
   await expect(page.getByLabel("Animar páginas")).toBeChecked();
   expect(illustrationRequests).toHaveLength(1);
   await expect(page.getByText("¿Quieres ilustrar la portada?")).toHaveCount(0);

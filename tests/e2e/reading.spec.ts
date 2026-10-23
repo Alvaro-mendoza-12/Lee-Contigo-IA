@@ -141,8 +141,10 @@ test("el libro cambia nivel, conserva tamaño y responde al pasar páginas", asy
       "paper-turn-next",
     );
   }
+  await page.locator(".reading-settings > summary").click();
   await animation.uncheck();
   await page.reload();
+  await page.locator(".reading-settings > summary").click();
   await expect(page.getByLabel("Animar páginas")).toBeChecked();
 });
 test("la guía permite preparar y comenzar una lectura acompañada", async ({
@@ -174,6 +176,11 @@ test("accesibilidad automática y ausencia de desbordamiento", async ({
     "/privacidad",
   ]) {
     await page.goto(route);
+    if (route === "/biblioteca")
+      await page.waitForURL("**/?nivel=paso");
+    await expect(page.locator("#contenido h1")).toBeVisible();
+    if (route.startsWith("/leer/"))
+      await expect(page.locator(".paper-spread .story-art")).toBeVisible();
     const results = await new AxeBuilder({ page })
       .withTags(["wcag2a", "wcag2aa", "wcag21aa", "wcag22aa"])
       .analyze();

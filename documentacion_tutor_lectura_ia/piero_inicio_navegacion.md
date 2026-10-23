@@ -21,7 +21,7 @@ Rama: `Piero`. Alcance: los tres bloques asignados a Piero en el plan del 22 de 
 
 `StoryShelfRow` recibe el mismo mapa. Una tarjeta bloqueada muestra el candado y el mensaje, carece de enlace y no entra en el recorrido de tabulación. Cada portada tiene `data-story-id` y `data-locked` para facilitar la integración. La lógica de XP, los requisitos de nivel y la persistencia corresponden a Iván y no se implementan aquí.
 
-## Verificación
+## Verificación inicial de e158ba7
 
 - Compilación de producción y comprobación de TypeScript.
 - Pruebas de navegación, foco, historial, nivel predeterminado y compatibilidad de enlaces.
@@ -34,3 +34,11 @@ Resultado: compilación y TypeScript correctos; las 28 pruebas de inicio, navega
 Antes de los cambios, la suite unitaria ya fallaba en `tests/story-creator.test.ts`, caso «el filtro previo reconoce riesgos aunque cambien tildes o mayúsculas», para la frase «Un personaje que bebe lejía para hacer un reto». Se deja registrado sin modificar el filtro del creador.
 
 No se modifican los componentes del lector, el creador, las rutas API, los proveedores de IA, la lógica de progreso ni los archivos asignados a Fabio e Iván. No se realizan cambios en `main`.
+
+## Corrección posterior de CI
+
+El check `verify` de GitHub Actions se detuvo en `npm test`: el filtro no reconocía la ingestión de lejía. Vercel sí desplegó el commit correctamente. Se añade una regla específica para ingerir productos de limpieza y una prueba que comprueba tanto el bloqueo como los usos domésticos permitidos. Este ajuste acotado de `lib/story-creator.ts` resuelve el fallo que estaba pendiente en la verificación inicial.
+
+La ejecución completa también detectó tres problemas de las pruebas de navegador: usar un control con Ajustes cerrado, iniciar axe antes de finalizar la redirección de `/biblioteca` y buscar un mensaje de ilustraciones retirado. Ahora las pruebas abren Ajustes, esperan la página final y comprueban la imagen de colección recibida. Se conservan las comprobaciones de animación, accesibilidad, ilustraciones guardadas y comprensión.
+
+Verificación posterior: 39 pruebas unitarias y las 68 pruebas E2E pasan, junto con TypeScript y la compilación de producción. Los componentes del lector y del creador, las APIs y las otras ramas permanecen sin cambios.

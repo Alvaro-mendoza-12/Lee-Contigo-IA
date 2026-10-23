@@ -147,6 +147,11 @@ const unsafeStoryRules: Array<{
       /\b(?:cocaina|heroina|metanfetamina|fentanilo|drogas? ilegales|vender drogas?|secuestro|secuestr\w*|trata de personas|robar\w*|allanamiento|bomba casera|bomba atomica|bomba molotov|fabricar explosivos|mezclar productos de limpieza|jugar con fuego|encender fuego|saltar desde el techo|cruzar la calle sin mirar|reto viral peligroso)\b/u,
   },
   {
+    category: "dangerous_activity",
+    pattern:
+      /\b(?:beb(?:er|e|en|iendo|io)|tom(?:ar|a|an|ando|o)|ing(?:erir|iere|ieren|irio|iriendo))\s+(?:(?:un|una)\s+(?:vaso|poco|botella|taza)\s+de\s+)?(?:lejia|cloro|detergente|productos? de limpieza)\b/u,
+  },
+  {
     category: "profanity",
     pattern:
       /\b(?:mierd\w*|put[oa]s?|jod\w*|cabr[oó]n\w*|pendej\w*|verg\w*|chingad\w*|caraj\w*|gonorre\w*|malparid\w*|cojone\w*|maric[oó]n\w*|imb[eé]cil\w*|est[uú]pid\w*|idiot\w*)\b/u,
