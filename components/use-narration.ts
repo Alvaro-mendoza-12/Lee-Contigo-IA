@@ -145,7 +145,9 @@ export function useNarration() {
     if (generation.current !== id) return;
     setLoading(false);
     const player = new Audio(url);
-    player.title = "Narración de elevenlabs.io";
+    // Keep provider attribution in audio metadata without showing a brand badge
+    // beside the child-facing listening controls.
+    player.title = "Narración del cuento — elevenlabs.io";
     audio.current = player;
     player.onended = () => {
       if (generation.current === id) setSpeaking(false);

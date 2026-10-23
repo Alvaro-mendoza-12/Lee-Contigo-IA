@@ -71,7 +71,7 @@ export function ReadFeedback({
   text: string;
   authorization?: string;
 }) {
-  const { speaking, loading, speak, stop, message, provider } = useNarration();
+  const { speaking, loading, speak, stop, message } = useNarration();
   return (
     <>
       <button
@@ -106,9 +106,6 @@ export function ReadFeedback({
             ? "Detener ayuda"
             : "Escuchar ayuda"}
       </button>
-      {provider === "elevenlabs" ? (
-        <small className="voice-credit">Voz: elevenlabs.io</small>
-      ) : null}
       {message ? (
         <p role="status" className="voice-status">
           {message}

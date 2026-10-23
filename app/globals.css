@@ -3307,6 +3307,20 @@ svg {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
+.creator-form .creator-safety-warning {
+  margin: 8px 0 0;
+  padding: 10px 12px;
+  border: 1px solid #c98268;
+  border-radius: 10px;
+  color: #713c2a;
+  background: #fff4ee;
+  font-size: 14px;
+  line-height: 1.5;
+}
+.creator-form textarea[aria-invalid="true"] {
+  border-color: #ad5c43;
+  box-shadow: 0 0 0 2px #ad5c4322;
+}
 .creator-levels {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));

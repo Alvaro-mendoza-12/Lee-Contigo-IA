@@ -5,13 +5,14 @@ import { NoObjectGeneratedError } from "ai";
 import { z } from "zod";
 import { getGatewayFailureDetails } from "@/lib/ai-diagnostics";
 import { getTextAiModel } from "@/lib/ai-models";
+import { reviewStorySafety } from "@/lib/story-safety-review";
 import {
-  containsPersonalDetails,
   createStoryInput,
   generatedStorySchema,
+  getStoryIdeaSafetyIssue,
   groundStoryEvidence,
-  hasUnsafeStoryContent,
   isAppropriateStory,
+  storySafetyMessage,
   storyQualityIssues,
 } from "@/lib/story-creator";
 
@@ -82,21 +83,14 @@ export async function POST(request: Request) {
       400,
     );
   const { idea, level } = parsed.data;
-  if (containsPersonalDetails(idea))
+  const localSafetyIssue = getStoryIdeaSafetyIssue(idea);
+  if (localSafetyIssue)
     return reply(
       {
-        error:
-          "Esa idea parece incluir datos personales. Quítalos y escribe solo una idea de cuento.",
+        error: storySafetyMessage(localSafetyIssue),
+        safetyBlocked: true,
       },
-      400,
-    );
-  if (hasUnsafeStoryContent(idea))
-    return reply(
-      {
-        error:
-          "Probemos con una aventura tranquila y segura. Cambia la idea y vuelve a intentar.",
-      },
-      400,
+      422,
     );
   if (tooManyRequests(request))
     return reply(
@@ -118,6 +112,32 @@ export async function POST(request: Request) {
 
   const model = getTextAiModel();
   const creationDeadline = Date.now() + 50_000;
+  let ideaReview: Awaited<ReturnType<typeof reviewStorySafety>>;
+  try {
+    ideaReview = await reviewStorySafety(idea, {
+      signal: request.signal,
+      timeoutMs: Math.min(8_000, creationDeadline - Date.now()),
+    });
+  } catch {
+    console.warn("story_safety_review_unavailable");
+    return reply(
+      {
+        error:
+          "No pudimos comprobar que la idea sea segura ahora. Inténtalo más tarde o elige un cuento de la biblioteca.",
+        code: "STORY_SAFETY_REVIEW_UNAVAILABLE",
+      },
+      503,
+    );
+  }
+  if (!ideaReview.safe || ideaReview.category !== "safe") {
+    const issue =
+      ideaReview.category === "safe" ? "uncertain" : ideaReview.category;
+    return reply(
+      { error: storySafetyMessage(issue), safetyBlocked: true },
+      422,
+    );
+  }
+
   let repairNotes: string[] = [];
   try {
     let story: z.infer<typeof generatedStorySchema> | undefined;
@@ -178,6 +198,46 @@ export async function POST(request: Request) {
             {
               error:
                 "La historia no quedó lista para compartir. Prueba con otra idea sencilla y segura.",
+            },
+            502,
+          );
+        }
+
+        let generatedReview: Awaited<ReturnType<typeof reviewStorySafety>>;
+        try {
+          generatedReview = await reviewStorySafety(
+            JSON.stringify(validated.data),
+            {
+              signal: request.signal,
+              timeoutMs: Math.max(
+                1_000,
+                Math.min(7_000, creationDeadline - Date.now()),
+              ),
+            },
+          );
+        } catch {
+          console.warn("generated_story_safety_review_unavailable");
+          return reply(
+            {
+              error:
+                "No pudimos comprobar la seguridad del cuento terminado. Tu idea sigue aquí; inténtalo más tarde.",
+              code: "STORY_SAFETY_REVIEW_UNAVAILABLE",
+            },
+            503,
+          );
+        }
+        if (!generatedReview.safe || generatedReview.category !== "safe") {
+          if (attempt === 0) {
+            repairNotes = [
+              "el cuento debe ser amable y seguro para niños, sin contenido dañino ni instrucciones peligrosas",
+            ];
+            continue;
+          }
+          return reply(
+            {
+              error:
+                "El cuento no pasó la revisión de seguridad. Prueba con otra idea sencilla y amable.",
+              safetyBlocked: true,
             },
             502,
           );

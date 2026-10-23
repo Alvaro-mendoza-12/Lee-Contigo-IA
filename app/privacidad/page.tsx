@@ -56,11 +56,17 @@ export default function Privacy() {
         OpenAI o Azure pueden servir el respaldo. Las políticas y condiciones de
         cada proveedor pueden variar. Si AI Gateway falla, puede intentarse
         mediante OpenRouter con modelos gratuitos y las mismas validaciones.
-        Cloudflare Workers AI puede actuar como último respaldo para escribir el
-        cuento, preparar sus escenas o explicar un pasaje. En ese caso recibe la
-        idea ficticia o el texto necesario para esa función, el nivel y las
-        instrucciones pedagógicas. No se envían respuestas elegidas ni un perfil
-        del estudiante. Consulta la{" "}
+        Antes de crear el cuento, OpenRouter también revisa la idea para
+        detectar contenido infantil inadecuado expresado de forma directa o
+        indirecta; después revisa el cuento completo. Estas revisiones usan
+        modelos configurados con precio máximo cero y recopilación de datos
+        denegada. Si no están disponibles, no generamos el cuento. OpenRouter
+        procesa esos textos según sus propias condiciones. Cloudflare Workers AI
+        puede actuar como último respaldo para escribir el cuento, preparar sus
+        escenas o explicar un pasaje. En ese caso recibe la idea ficticia o el
+        texto necesario para esa función, el nivel y las instrucciones
+        pedagógicas. No se envían respuestas elegidas ni un perfil del
+        estudiante. Consulta la{" "}
         <a
           href="https://cloud.google.com/privacy"
           target="_blank"
@@ -119,13 +125,14 @@ export default function Privacy() {
         puede ayudar. Las respuestas y los intentos no se guardan.
       </p>
       <p>
-        Esta función intenta bloquear correos, teléfonos, enlaces y algunas
-        frases que parecen datos personales, pero no puede reconocer todos los
-        nombres ni todos los datos sensibles. No escribas información real:
-        inventa personajes y lugares. Una persona adulta debe revisar la idea y
-        leer el resultado junto contigo. Las ilustraciones acompañan el relato;
-        las respuestas de comprensión se comprueban con el texto. Si el cuento
-        incluye algo extraño, cierra la página y crea otro.
+        La creación combina avisos locales mientras escribes, validación del
+        servidor, revisión semántica de la idea y revisión del cuento generado.
+        Intenta bloquear datos personales, malas palabras, contenido adulto,
+        violencia y solicitudes que intenten disfrazarlos. Puede equivocarse o
+        no reconocer todos los nombres, datos ni formas de expresión. No
+        escribas información real: inventa personajes y lugares. Una persona
+        adulta debe revisar la idea y leer el resultado junto contigo. Si el
+        cuento incluye algo extraño, cierra la página y crea otro.
       </p>
       <h2>Ayuda para una palabra, frase o párrafo</h2>
       <p>

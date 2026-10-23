@@ -58,7 +58,6 @@ export function Reader({
     speaking,
     loading: voiceLoading,
     message: voiceMessage,
-    provider: voiceProvider,
     voice,
     changeVoice,
     speak,
@@ -335,7 +334,6 @@ export function Reader({
             </div>
             <p className="voice-status" role="status">
               {voiceMessage}
-              {voiceProvider === "elevenlabs" ? " Voz: elevenlabs.io" : ""}
             </p>
             <ReadingHelp
               onOpen={stopVoice}

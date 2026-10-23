@@ -54,6 +54,8 @@ import {
 import {
   comprehensionSkillLabels,
   getIllustrationScene,
+  getStoryIdeaSafetyIssue,
+  storySafetyMessage,
   type GeneratedStory,
 } from "@/lib/story-creator";
 
@@ -85,6 +87,7 @@ export function StoryCreator() {
     "idle" | "saving" | "saved" | "unavailable"
   >("idle");
   const [idea, setIdea] = useState("");
+  const ideaSafetyIssue = getStoryIdeaSafetyIssue(idea);
   const [level, setLevel] = useState<Level>("paso");
   const [adultReviewed, setAdultReviewed] = useState(false);
   const [story, setStory] = useState<GeneratedStory | null>(null);
@@ -107,7 +110,6 @@ export function StoryCreator() {
     speaking,
     loading: voiceLoading,
     message: voiceMessage,
-    provider: voiceProvider,
     voice,
     changeVoice,
     speak,
@@ -360,6 +362,12 @@ export function StoryCreator() {
 
   async function submitIdea(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    const safetyIssue = getStoryIdeaSafetyIssue(idea);
+    if (safetyIssue) {
+      setError("");
+      ideaField.current?.focus();
+      return;
+    }
     setError("");
     setGatewayUnavailable(false);
     setCreating(true);
@@ -590,17 +598,32 @@ export function StoryCreator() {
                 ref={ideaField}
                 name="idea"
                 value={idea}
-                onChange={(event) => setIdea(event.target.value.slice(0, 220))}
+                onChange={(event) => {
+                  setIdea(event.target.value.slice(0, 220));
+                  if (error) setError("");
+                }}
                 maxLength={220}
                 minLength={12}
                 rows={3}
-                aria-describedby="idea-help idea-count"
+                aria-describedby={`idea-help idea-count${ideaSafetyIssue ? " idea-safety" : ""}`}
+                aria-invalid={Boolean(ideaSafetyIssue)}
                 placeholder="Un personaje, un lugar, una aventura…"
                 required
               />
               <div className="creator-count" id="idea-count" aria-live="polite">
                 {idea.length} de 220 caracteres
               </div>
+              {ideaSafetyIssue ? (
+                <p
+                  className="creator-safety-warning"
+                  id="idea-safety"
+                  role="status"
+                  aria-live="polite"
+                  aria-atomic="true"
+                >
+                  {storySafetyMessage(ideaSafetyIssue)}
+                </p>
+              ) : null}
               <details className="creator-ideas">
                 <summary>Necesito una idea</summary>
                 <div
@@ -720,7 +743,7 @@ export function StoryCreator() {
               <button
                 className="button creator-submit"
                 type="submit"
-                disabled={creating}
+                disabled={creating || Boolean(ideaSafetyIssue)}
               >
                 {creating ? (
                   <>
@@ -882,7 +905,6 @@ export function StoryCreator() {
 
           <p className="voice-status" role="status">
             {voiceMessage}
-            {voiceProvider === "elevenlabs" ? " Voz: elevenlabs.io" : ""}
           </p>
           <ReadingHelp
             onOpen={stopNarration}
