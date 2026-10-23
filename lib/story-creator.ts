@@ -119,7 +119,7 @@ const unsafeStoryRules: Array<{
   {
     category: "violence",
     pattern:
-      /\b(?:matar|disparar|golpear|atacar)\w*\b.{0,45}\b(?:a|al|contra|con)\s+(?:una persona|alguien|un nino|una nina|un companero|una companera|su amigo|su amiga|su hermano|su hermana|el vecino|la vecina|un animal|un perro|un gato|su mascota)\b/u,
+      /\b(?:matar|disparar|golpear|atacar)\w*\b.{0,45}\b(?:a|al|contra|con)\s+(?:(?:un|una|unos|unas|su|sus|el|la|los|las)\s+)?(?:persona|alguien|nino|nina|companero|companera|amigo|amiga|hermano|hermana|vecino|vecina|animal|perro|gato|mascota)\b/u,
   },
   {
     category: "extremist_violence",
