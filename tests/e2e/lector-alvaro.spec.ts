@@ -34,6 +34,19 @@ for (const width of [320, 390, 768, 1024, 1366, 1920]) {
       .getByRole("button", { name: "Ya lo pensé", exact: true })
       .click();
     await expect(pause.locator("summary")).toHaveText("Ya lo pensé");
+    await expect(pause).not.toHaveAttribute("open");
+    await expect(pause.locator("summary")).toBeFocused();
+    await pause.locator("summary").click();
+    await expect(
+      pause.getByText("¿Qué quiere hacer el personaje?", { exact: true }),
+    ).toBeVisible();
+    await expect(pause.getByText("Ya lo pensé", { exact: true })).toHaveCount(
+      1,
+    );
+    await expect(
+      pause.getByRole("button", { name: "Ya lo pensé", exact: true }),
+    ).toHaveCount(0);
+    await pause.locator("summary").click();
     await page.getByRole("button", { name: "Ajustes", exact: true }).click();
     const settings = page.getByRole("dialog", { name: "Ajustes de lectura" });
     await expect(settings).toBeVisible();
