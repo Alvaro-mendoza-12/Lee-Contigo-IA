@@ -58,23 +58,18 @@ test("recorrido completo, reintento y pista de respaldo", async ({ page }) => {
 test("nuevo reto y otra historia preservan el nivel en las rutas", async ({
   page,
 }) => {
-  await page.goto("/biblioteca");
-  await page.getByRole("radio", { name: /Un nuevo reto/ }).check();
-  await expect(
-    page.getByRole("status").filter({ hasText: "Reto listo." }),
-  ).toBeVisible();
+  await page.goto("/biblioteca?nivel=reto");
+  await expect(page.getByRole("radio")).toHaveCount(0);
   await expect(page.locator(".story-level-ribbon")).toHaveCount(19);
   for (const href of await page
     .locator(".story-card-direct[href^='/leer/']")
     .evaluateAll((links) => links.map((link) => link.getAttribute("href"))))
     expect(href).toContain("nivel=reto");
   await page.reload();
-  await expect(
-    page.getByRole("radio", { name: "Un nuevo reto", exact: true }),
-  ).toBeChecked();
-  await page.getByRole("radio", { name: "Paso a paso", exact: true }).check();
+  await expect(page.locator(".story-level-ribbon")).toHaveCount(19);
+  await page.goto("/biblioteca");
   await expect(page.locator(".story-level-ribbon")).toHaveCount(0);
-  await page.getByRole("radio", { name: "Un nuevo reto", exact: true }).check();
+  await page.goto("/biblioteca?nivel=reto");
   await page
     .getByRole("link", { name: "Leer La semilla viajera", exact: true })
     .click();
@@ -190,6 +185,8 @@ test("accesibilidad automática y ausencia de desbordamiento", async ({
     await page.waitForLoadState("load");
     await expect(page.locator("main h1").first()).toBeVisible();
     await page.evaluate(() => document.fonts.ready);
+    if (route.startsWith("/leer/"))
+      await expect(page.locator(".paper-spread .story-art")).toBeVisible();
     const results = await new AxeBuilder({ page })
       .withTags(["wcag2a", "wcag2aa", "wcag21aa", "wcag22aa"])
       .analyze();

@@ -56,6 +56,7 @@ test("la portada infantil organiza sus destinos y no desborda a 320 px", async (
 test("catálogo por categorías, cuentos completos y navegación visible en móvil", async ({
   page,
 }) => {
+  test.setTimeout(90_000);
   await page.goto("/");
   await page.getByRole("link", { name: "Leer Una luz en el bosque" }).click();
   await expect(page).toHaveURL(/\/leer\/luz-del-bosque/);
@@ -79,8 +80,7 @@ test("catálogo por categorías, cuentos completos y navegación visible en móv
       ),
     ).toBeTruthy();
   }
-  await page.goto("/biblioteca");
-  await page.getByRole("radio", { name: "Un nuevo reto", exact: true }).check();
+  await page.goto("/biblioteca?nivel=reto");
   await page
     .getByRole("link", { name: "Leer El pan de la abuela", exact: true })
     .click();

@@ -285,7 +285,7 @@ test("el cuento creado conecta la respuesta con una cita del texto sin reenviar 
     .fill("Una tortuga busca un faro");
   await page.getByLabel(/Un adulto revisó mi idea/).check();
   await page.getByRole("button", { name: "Crear mi cuento" }).click();
-  await expect(page.getByRole("heading", {name:story.title})).toBeVisible();
+  await expect(page.getByRole("heading", { name: story.title })).toBeVisible();
   await page.getByRole("button", { name: "Ajustes", exact: true }).click();
   await expect(page.getByLabel("Animar páginas")).toBeChecked();
   await page.getByRole("button", { name: "Cerrar ajustes", exact: true }).click();

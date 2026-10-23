@@ -7,10 +7,15 @@ import {
   ArrowRight,
   BookOpen,
   Clock3,
+  LockKeyhole,
   Sparkles,
 } from "lucide-react";
 import type { Level, Story } from "@/lib/stories";
 import { StoryArt } from "./art";
+
+// Iván supplies the lock message per story after connecting progression.
+// Missing entries stay available; this component does not calculate XP.
+export type StoryLocks = Readonly<Partial<Record<string, string>>>;
 
 export function StoryShelfRow({
   id,
@@ -20,6 +25,7 @@ export function StoryShelfRow({
   level,
   priority = false,
   includeCreateCard = false,
+  lockedStories,
 }: {
   id: string;
   title: string;
@@ -28,6 +34,7 @@ export function StoryShelfRow({
   level: Level;
   priority?: boolean;
   includeCreateCard?: boolean;
+  lockedStories?: StoryLocks;
 }) {
   const rail = useRef<HTMLUListElement>(null);
   const [bounds, setBounds] = useState({
@@ -125,38 +132,70 @@ export function StoryShelfRow({
           }
         }}
       >
-        {books.map((story, index) => (
-          <li key={story.id}>
-            <Link
-              className="story-card story-card-direct"
-              data-card-color={index % 6}
-              href={`/leer/${story.id}?nivel=${level}`}
-              aria-label={`Leer ${story.title}`}
-              aria-describedby="library-level-feedback"
-            >
+        {books.map((story, index) => {
+          const lockMessage = lockedStories?.[story.id];
+          const content = (
+            <>
               <div className="story-cover-link">
                 <StoryArt
                   variant={story.art}
                   priority={priority && index < 2}
                 />
-                {level === "reto" ? (
+                {lockMessage ? (
+                  <span className="story-lock-badge" aria-hidden="true">
+                    <LockKeyhole size={18} />
+                  </span>
+                ) : level === "reto" ? (
                   <span className="story-level-ribbon" aria-hidden="true">
                     <Sparkles size={13} /> Reto
                   </span>
                 ) : null}
-                <span className="story-cover-open" aria-hidden="true">
-                  <ArrowRight size={22} />
-                </span>
+                {!lockMessage ? (
+                  <span className="story-cover-open" aria-hidden="true">
+                    <ArrowRight size={22} />
+                  </span>
+                ) : null}
               </div>
               <div className="story-card-body">
                 <h3>{story.title}</h3>
                 <span className="story-card-time">
                   <Clock3 size={14} aria-hidden="true" /> {story.minutes} min
                 </span>
+                {lockMessage ? (
+                  <p className="story-lock-message">{lockMessage}</p>
+                ) : null}
               </div>
-            </Link>
-          </li>
-        ))}
+            </>
+          );
+          return (
+            <li
+              key={story.id}
+              data-story-id={story.id}
+              data-locked={Boolean(lockMessage)}
+            >
+              {lockMessage ? (
+                <div
+                  className="story-card story-card-locked"
+                  role="group"
+                  aria-label={`${story.title}. ${lockMessage}`}
+                  data-card-color={index % 6}
+                >
+                  {content}
+                </div>
+              ) : (
+                <Link
+                  className="story-card story-card-direct"
+                  data-card-color={index % 6}
+                  href={`/leer/${story.id}?nivel=${level}`}
+                  aria-label={`Leer ${story.title}`}
+                  aria-describedby="library-level-feedback"
+                >
+                  {content}
+                </Link>
+              )}
+            </li>
+          );
+        })}
         {includeCreateCard ? (
           <li>
             <Link

@@ -43,6 +43,12 @@ test("el menú móvil ocupa una fila con iconos, nombres y estado actual", async
   await expect(
     nav.getByRole("link", { name: "Cuentos", exact: true }),
   ).toHaveAttribute("href", "/");
+  await expect(
+    nav.getByRole("link", { name: "Cuentos", exact: true }),
+  ).toHaveAttribute("aria-current", "page");
+  await expect(
+    nav.getByRole("link", { name: "Acompañar", exact: true }),
+  ).toBeVisible();
   await nav.getByRole("link", { name: "Crear", exact: true }).tap();
   await expect(
     page.getByRole("heading", { name: "Crea tu cuento" }),
@@ -100,7 +106,9 @@ test("las tres categorías muestran cuentos y se deslizan con dedo, botones y te
   await expect
     .poll(() => rail.evaluate((el) => el.scrollLeft))
     .toBeGreaterThan(0);
-  await page.getByRole("radio", { name: "Un nuevo reto", exact: true }).check();
+  await expect(page.getByRole("radio")).toHaveCount(0);
+  await page.goto("/biblioteca?nivel=reto");
+  await page.locator(".story-card-direct[href^='/leer/']").first().waitFor();
   await expect(page.locator(".story-card-direct[href^='/leer/']").first()).toHaveAttribute(
     "href",
     /nivel=reto/,

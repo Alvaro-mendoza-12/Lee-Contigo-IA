@@ -10,6 +10,7 @@ import {
   coverInput,
   createStoryInput,
   generatedStorySchema,
+  getStoryIdeaSafetyIssue,
   groundStoryEvidence,
   hasUnsafeStoryContent,
   isAppropriateStory,
@@ -279,4 +280,24 @@ test("el filtro previo reconoce riesgos aunque cambien tildes o mayúsculas", ()
     "Una luciérnaga ayuda a un grillo a cruzar el río",
   ])
     assert.equal(hasUnsafeStoryContent(idea), false, idea);
+});
+
+test("el filtro bloquea ingerir limpiadores sin bloquear su uso doméstico", () => {
+  for (const idea of [
+    "Un personaje que bebe lejía para hacer un reto",
+    "Un personaje quiere beber un vaso de L3JÍA",
+    "Una aventura en la que alguien toma cloro",
+    "Un personaje intenta ingerir productos de limpieza",
+  ]) {
+    assert.equal(getStoryIdeaSafetyIssue(idea), "dangerous_activity", idea);
+    assert.equal(hasUnsafeStoryContent(idea), true, idea);
+  }
+  for (const idea of [
+    "Una tortuga bebe agua después de caminar",
+    "Una persona adulta limpia el suelo con lejía",
+    "Una botella de detergente está guardada en el estante",
+  ]) {
+    assert.equal(getStoryIdeaSafetyIssue(idea), null, idea);
+    assert.equal(hasUnsafeStoryContent(idea), false, idea);
+  }
 });

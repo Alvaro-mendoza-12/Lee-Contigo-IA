@@ -158,6 +158,11 @@ const unsafeStoryRules: Array<{
       /\b(?:beber|bebe|tomar|toma|ingerir|ingiere)\b.{0,20}\b(?:lejia|veneno|detergente|cloro)\b|\b(?:droga|consumir|consume|vender|vende|inyectar|inyecta)\b.{0,20}\bheroina\b/u,
   },
   {
+    category: "dangerous_activity",
+    pattern:
+      /\b(?:beb(?:er|e|en|iendo|io)|tom(?:ar|a|an|ando|o)|ing(?:erir|iere|ieren|irio|iriendo))\s+(?:(?:un|una)\s+(?:vaso|poco|botella|taza)\s+de\s+)?(?:lejia|cloro|detergente|productos? de limpieza)\b/u,
+  },
+  {
     category: "profanity",
     pattern:
       /\b(?:mierdas?|put[oa]s?|jod(?:er|ido|ida|idos|idas|ete|anse)|cabron(?:es|a|as)?|pendej[oa]s?|vergas?|chingad[oa]s?|carajos?|gonorrea|malparid[oa]s?|cojones|maricon(?:es|a|as)?|imbecil(?:es)?|estupid[oa]s?|idiotas?|sons[oa]s?|zonz[oa]s?|tont[oa]s?)\b/u,

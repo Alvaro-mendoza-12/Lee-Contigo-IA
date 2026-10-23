@@ -10,12 +10,14 @@ import {
   Check,
   Leaf,
 } from "lucide-react";
-export const metadata = { title: "Guía para acompañar" };
+export const metadata = { title: "Acompañar" };
 export default function Guide() {
   return (
     <div className="container guide-page">
       <header className="page-heading">
-        <span className="small-label">PARA FAMILIAS Y DOCENTES</span>
+        <span className="small-label">
+          ACOMPAÑAR · PARA FAMILIAS Y DOCENTES
+        </span>
         <h1>
           Un pequeño rato.
           <br />

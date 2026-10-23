@@ -2,7 +2,7 @@ import { test, expect } from "@playwright/test";
 import { getStory } from "../../lib/stories";
 import { paginateStory } from "../../lib/reading";
 
-test("Aventuras avanza por portadas completas en móvil, tablet y escritorio", async ({
+test("Aventuras desliza portadas completas en móvil y usa una grilla en tablet y escritorio", async ({
   page,
 }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
@@ -28,37 +28,48 @@ test("Aventuras avanza por portadas completas en móvil, tablet y escritorio", a
       continue;
     }
     await rail.evaluate((el) => el.scrollTo({ left: 0, behavior: "instant" }));
-    await expect(previous).toBeDisabled();
-    let turns = 0;
-    while (!(await next.isDisabled()) && turns++ < 6) {
-      const before = await rail.evaluate((el) => el.scrollLeft);
-      await next.click();
-      await expect
-        .poll(() => rail.evaluate((el) => el.scrollLeft))
-        .toBeGreaterThan(before);
-      const alignment = await rail.evaluate((el) => {
-        const items = Array.from(el.children) as HTMLElement[];
-        const step = items[1].offsetLeft - items[0].offsetLeft;
-        const index = Math.round(el.scrollLeft / step);
-        const box = el.getBoundingClientRect();
-        const columns = Number(
-          getComputedStyle(el).getPropertyValue("--rail-columns"),
-        );
-        return {
-          error: Math.abs(el.scrollLeft - index * step),
-          full: items.slice(index, index + columns).every((item) => {
-            const card = item.getBoundingClientRect();
-            return card.left >= box.left - 1 && card.right <= box.right + 1;
-          }),
-        };
-      });
-      expect(alignment.error).toBeLessThan(2);
-      expect(alignment.full).toBe(true);
+    if (width >= 761) {
+      await expect(next).toHaveCount(0);
+      await expect(previous).toHaveCount(0);
+      expect(
+        await rail.evaluate((el) => el.scrollWidth <= el.clientWidth),
+      ).toBe(true);
+      for (const card of await rail.getByRole("link").all())
+        await expect(card).toBeVisible();
+    } else {
+      await expect(previous).toBeDisabled();
+      let turns = 0;
+      const count = await rail.locator(":scope > li").count();
+      while (!(await next.isDisabled()) && turns++ < count) {
+        const before = await rail.evaluate((el) => el.scrollLeft);
+        await next.click();
+        await expect
+          .poll(() => rail.evaluate((el) => el.scrollLeft))
+          .toBeGreaterThan(before);
+        const alignment = await rail.evaluate((el) => {
+          const items = Array.from(el.children) as HTMLElement[];
+          const step = items[1].offsetLeft - items[0].offsetLeft;
+          const index = Math.round(el.scrollLeft / step);
+          const box = el.getBoundingClientRect();
+          const columns = Number(
+            getComputedStyle(el).getPropertyValue("--rail-columns"),
+          );
+          return {
+            error: Math.abs(el.scrollLeft - index * step),
+            full: items.slice(index, index + columns).every((item) => {
+              const card = item.getBoundingClientRect();
+              return card.left >= box.left - 1 && card.right <= box.right + 1;
+            }),
+          };
+        });
+        expect(alignment.error).toBeLessThan(2);
+        expect(alignment.full).toBe(true);
+      }
+      expect(turns).toBeGreaterThan(0);
+      await expect(next).toBeDisabled();
+      await previous.click();
+      await expect(next).toBeEnabled();
     }
-    expect(turns).toBeGreaterThan(0);
-    await expect(next).toBeDisabled();
-    await previous.click();
-    await expect(next).toBeEnabled();
     expect(
       await page.evaluate(
         () => document.documentElement.scrollWidth <= innerWidth,
