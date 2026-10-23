@@ -68,7 +68,7 @@ test("la ayuda usa ElevenLabs con la voz elegida y se detiene al cerrarse", asyn
   });
   await expect(
     help.getByText("Voz: elevenlabs.io", { exact: true }),
-  ).toBeVisible();
+  ).not.toBeVisible();
   await help
     .getByRole("button", { name: "Cerrar ayuda y volver al libro" })
     .click();

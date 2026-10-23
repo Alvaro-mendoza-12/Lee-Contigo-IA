@@ -137,6 +137,11 @@ const unsafeStoryRules: Array<{
       /\b(?:humill\w*|acos\w*|hostig\w*|amenaz\w*|insult\w*|odiar\w*|golpear\w*)\b.{0,45}\b(?:companer\w*|persona\w*|nino\w*|nina\w*|grupo\w*|raza\w*|religion\w*|discapacidad|origen)\b/u,
   },
   {
+    category: "hate_or_bullying",
+    pattern:
+      /\b(?:(?:burl\w*|acos\w*|insult\w*|humill\w*|llam\w*)\b.{0,45}\b(?:gay|lesbiana|bisexual|trans|cabro)\b|\b(?:gay|lesbiana|bisexual|trans|cabro)\b.{0,45}\b(?:como insulto|para burlarse|de mierda|maric[oó]n|put[oa]|idiot\w*|est[uú]pid\w*)\b)/u,
+  },
+  {
     category: "dangerous_activity",
     pattern:
       /\b(?:cocaina|heroina|metanfetamina|fentanilo|drogas? ilegales|vender drogas?|secuestro|secuestr\w*|trata de personas|robar\w*|allanamiento|bomba casera|bomba atomica|bomba molotov|fabricar explosivos|mezclar productos de limpieza|jugar con fuego|encender fuego|saltar desde el techo|cruzar la calle sin mirar|reto viral peligroso)\b/u,
@@ -227,6 +232,14 @@ const profanityTerms = [
   "estupido",
   "estupida",
   "idiota",
+  "sonso",
+  "sonsa",
+  "sonsito",
+  "sonsita",
+  "zonzo",
+  "zonza",
+  "zonzito",
+  "zonzita",
   "cagar",
   "cagada",
   "hijueputa",

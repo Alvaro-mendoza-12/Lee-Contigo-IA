@@ -145,8 +145,8 @@ export function useNarration() {
     if (generation.current !== id) return;
     setLoading(false);
     const player = new Audio(url);
-    // Keep provider attribution in audio metadata without showing a brand badge
-    // beside the child-facing listening controls.
+    // Keep attribution with generated audio metadata; the child-facing controls
+    // do not render a provider badge.
     player.title = "Narración del cuento — elevenlabs.io";
     audio.current = player;
     player.onended = () => {

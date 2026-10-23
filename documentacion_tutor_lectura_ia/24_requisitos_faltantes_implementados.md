@@ -40,7 +40,7 @@ Los textos nuevos de Paso a paso y Un nuevo reto son distintos. Las preguntas se
 - Presupuestos de voz: proveedor 12 s, cliente 14 s, función 20 s. El cliente puede cancelar; cambiar de página detiene la reproducción y descarta respuestas tardías. En el tutor de preguntas el cliente ahora espera 14 s frente al presupuesto de servidor de 12,5 s.
 - Se limita la voz por instancia a 24 solicitudes nuevas y 8.000 caracteres por conexión/ventana de diez minutos. Estos límites son de demostración, no una cuota global distribuida. La cuota de la clave en ElevenLabs es el límite adicional que controla la cuenta.
 - Audio editorial reutilizado temporalmente en servidor: máximo 24 entradas y 30 minutos. Audio de libros creados no se guarda en la caché del servidor. El navegador reutiliza hasta seis páginas de audio durante la sesión y revoca las URL al salir.
-- Hay atribución visible «Voz: elevenlabs.io» y documentación en Privacidad. El plan gratuito no implica retención cero ni licencia comercial. No se cambiaron planes, facturación ni permisos de administración.
+- La interfaz del niño no muestra una etiqueta técnica «Voz: elevenlabs.io» junto a los controles. La atribución del audio y la divulgación del proveedor se conservan en sus metadatos y en Privacidad. El plan gratuito no implica retención cero ni licencia comercial. No se cambiaron planes, facturación ni permisos de administración.
 - Las pruebas de interfaz usan una señal WAV sintética o una voz simulada para ser repetibles y evitar consumo de créditos. La prueba real a ElevenLabs se registra separadamente; no se confunden ambas evidencias.
 
 ## Heurísticas de Nielsen aplicadas

@@ -937,7 +937,7 @@ export function StoryCreator() {
                   images={pageImages}
                   paragraph={currentPage?.paragraph ?? 0}
                   frame={currentPageIndex}
-                  showFallback={false}
+                  showFallback={true}
                   status={coverState === "idle" ? "unavailable" : coverState}
                 />
               ) : cover ? (
@@ -1039,8 +1039,8 @@ export function StoryCreator() {
               </p>
             ) : coverState === "unavailable" ? (
               <p role="status">
-                Faltan algunos dibujos. Tu cuento está listo; puedes intentarlo
-                otra vez.{" "}
+                Algunas imágenes no llegaron. Ya hay dibujos en cada página; puedes
+                intentarlo otra vez.{" "}
                 <button
                   className="text-button"
                   type="button"

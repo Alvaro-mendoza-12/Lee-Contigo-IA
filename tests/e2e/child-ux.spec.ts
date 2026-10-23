@@ -109,7 +109,7 @@ test("la voz reproduce audio, detiene al cambiar de página y reutiliza la pági
   ).toBeVisible();
   await expect(
     page.getByText("Voz: elevenlabs.io", { exact: false }),
-  ).toBeVisible();
+  ).not.toBeVisible();
   expect(requests[0]).toMatchObject({
     source: "catalogue",
     storyId: "luz-del-bosque",
