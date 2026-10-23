@@ -18,7 +18,8 @@ import {
 } from "lucide-react";
 import type { Story, Level } from "@/lib/stories";
 import { Journey } from "./journey";
-import { useAnswerSound, SoundControl, ReadFeedback } from "./answer-audio";
+import { ReadFeedback } from "./answer-audio";
+import { reproducir, reproducirRespuesta } from "@/lib/sonidos";
 type Hint = {
   hint: string;
   action?: string;
@@ -49,7 +50,6 @@ export function Practice({ story, level }: { story: Story; level: Level }) {
   const abort = useRef<AbortController | null>(null);
   const hintRequest = useRef(0);
   const question = version.questions[index];
-  const answerSound = useAnswerSound();
   useEffect(
     () => () => {
       hintRequest.current++;
@@ -82,6 +82,7 @@ export function Practice({ story, level }: { story: Story; level: Level }) {
   }
   async function askHint() {
     if (loading || hintCount >= 2) return;
+    reproducir("pista");
     const requestId = ++hintRequest.current;
     setLoading(true);
     setReported(false);
@@ -182,10 +183,6 @@ export function Practice({ story, level }: { story: Story; level: Level }) {
           <ArrowLeft size={16} />
           Volver a leer
         </Link>
-        <SoundControl
-          enabled={answerSound.sound}
-          onChange={answerSound.setSound}
-        />
       </div>
       <div className="practice-layout">
         <section className="question-card">
@@ -303,7 +300,7 @@ export function Practice({ story, level }: { story: Story; level: Level }) {
                 className="button"
                 disabled={selected === null || feedback === "retry"}
                 onClick={() => {
-                  answerSound.play(selected === question.correct);
+                  reproducirRespuesta(selected === question.correct);
                   if (selected === question.correct) {
                     setFeedback("correct");
                     return;

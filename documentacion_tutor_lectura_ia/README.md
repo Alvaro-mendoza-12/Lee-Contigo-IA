@@ -30,6 +30,7 @@ La puntuación comparativa es una estimación de trabajo, no una calificación d
 14. [Implementación real, UX y operación](14_implementacion_y_ux.md)
 15. [Recursos visuales y procedencia](15_recursos_visuales.md)
 16. [Ayuda breve, voz y catálogo de doce cuentos](30_ayuda_primaria_voz_y_catalogo_12.md)
+17. [Integración de audio, guía y revisión del filtro — Alvaro](INTEGRACION_AUDIO_GUIA_ALVARO.md)
 
 ## Supuesto geográfico
 

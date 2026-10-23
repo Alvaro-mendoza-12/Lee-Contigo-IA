@@ -1,8 +1,64 @@
 import { expect, test } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 
-// En Crear el tutorial está montado de forma temporal: solo se abre con «?».
-test("en Crear no se abre solo ni guarda «tutorial-visto»", async ({ page }) => {
+// Exercise first visits here; the other suites start with the guide already seen.
+test.use({ storageState: { cookies: [], origins: [] } });
+
+test("solo el inicio abre la guía en la primera visita y no la repite", async ({
+  page,
+}) => {
+  await page.goto("/");
+  const guide = page.getByRole("dialog");
+  await expect(guide).toBeVisible();
+  await guide.getByRole("button", { name: "Saltar" }).click();
+  await expect(guide).toHaveCount(0);
+  await page.reload();
+  await page.waitForTimeout(700);
+  await expect(guide).toHaveCount(0);
+  await page.getByRole("button", { name: "Ver la guía" }).click();
+  await expect(guide).toBeVisible();
+  await guide.getByRole("button", { name: "Siguiente" }).click();
+  const target = page.locator('[data-tutorial="cuentos"]');
+  await expect(target).toHaveClass(/home-destination/);
+  // The highlight animates to the card after the smooth scroll settles.
+  await expect
+    .poll(async () => {
+      const focus = await page.locator(".tutorial-foco").boundingBox();
+      const card = await target.boundingBox();
+      return Math.max(
+        Math.abs(focus!.x + 8 - card!.x),
+        Math.abs(focus!.width - 16 - card!.width),
+      );
+    })
+    .toBeLessThan(2);
+});
+
+test("Ajustes cierra el diálogo antes de abrir una sola guía", async ({
+  page,
+}) => {
+  await page.goto("/leer/luz-del-bosque?nivel=paso");
+  await page.waitForTimeout(700);
+  await expect(page.getByRole("dialog")).toHaveCount(0);
+  await page.getByRole("button", { name: "Ajustes", exact: true }).click();
+  const settings = page.getByRole("dialog", { name: "Ajustes de lectura" });
+  await expect(
+    settings.getByRole("switch", { name: /Sonidos/ }),
+  ).toHaveAttribute("aria-checked", "false");
+  await settings.getByRole("button", { name: "Ver la guía" }).click();
+  await expect(settings).not.toBeVisible();
+  await expect(page.getByRole("dialog")).toHaveCount(1);
+  await expect(
+    page.getByRole("heading", { name: /Soy tu luciérnaga lectora/ }),
+  ).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(
+    page.getByRole("button", { name: "Ajustes", exact: true }),
+  ).toBeFocused();
+});
+
+test("en Crear no se abre solo ni guarda «tutorial-visto»", async ({
+  page,
+}) => {
   await page.goto("/crear");
   await page.waitForTimeout(800);
   await expect(page.getByRole("dialog")).toHaveCount(0);
@@ -58,7 +114,7 @@ test("el botón «?» abre el tutorial, recorre los pasos y devuelve el foco", a
   await expect(ayuda).toBeFocused();
   expect(
     await page.evaluate(() => localStorage.getItem("tutorial-visto")),
-  ).toBeNull();
+  ).toBe("true");
 });
 
 test("Esc y «Saltar» cierran el tutorial", async ({ page }) => {

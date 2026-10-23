@@ -1,5 +1,6 @@
 import { test, expect } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
+import { fontPreferenceKey } from "../../lib/reading";
 test("recorrido completo, reintento y pista de respaldo", async ({ page }) => {
   await page.route("**/api/tutor", (route) =>
     route.fulfill({ status: 503, contentType: "application/json", body: "{}" }),
@@ -49,10 +50,13 @@ test("recorrido completo, reintento y pista de respaldo", async ({ page }) => {
   ).toBeVisible();
   expect(
     await page.evaluate(() => ({
-      local: localStorage.length,
-      session: sessionStorage.length,
+      local: Object.keys(localStorage).sort(),
+      session: Object.keys(sessionStorage),
     })),
-  ).toEqual({ local: 1, session: 0 });
+  ).toEqual({
+    local: [fontPreferenceKey, "tutorial-visto"].sort(),
+    session: [],
+  });
   expect(errors).toEqual([]);
 });
 test("nuevo reto y otra historia preservan el nivel en las rutas", async ({

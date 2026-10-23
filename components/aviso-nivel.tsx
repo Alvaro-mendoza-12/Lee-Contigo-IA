@@ -3,6 +3,7 @@ import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { EVENTO_XP, type DetalleXP, type NivelLector } from "@/lib/progreso";
 import { InsigniaXP, premiosDeNivel } from "./barra-xp";
 import { ReadingFriend } from "./reading-friend";
+import { reproducir } from "@/lib/sonidos";
 import "@/app/xp.css";
 
 const DURACION = 7000;
@@ -33,7 +34,10 @@ export function AvisoNivel() {
   useEffect(() => {
     function escuchar(evento: Event) {
       const detalle = (evento as CustomEvent<DetalleXP>).detail;
-      if (detalle.subioDeNivel) setNivel(detalle.nivel);
+      if (detalle.subioDeNivel) {
+        setNivel(detalle.nivel);
+        reproducir("nivel");
+      }
     }
     window.addEventListener(EVENTO_XP, escuchar);
     return () => window.removeEventListener(EVENTO_XP, escuchar);

@@ -10,6 +10,7 @@ import {
   type KeyboardEvent,
 } from "react";
 import { createPortal } from "react-dom";
+import { usePathname } from "next/navigation";
 import { ReadingFriend } from "./reading-friend";
 import {
   EVENTO_ABRIR,
@@ -74,6 +75,7 @@ export function Tutorial({
   automatico?: boolean;
   recordar?: boolean;
 }) {
+  const pathname = usePathname();
   const [pasosActivos, setPasosActivos] = useState<Paso[] | null>(null);
   const [indice, setIndice] = useState(0);
   const [posicion, setPosicion] = useState<Posicion>({
@@ -99,33 +101,59 @@ export function Tutorial({
   const cerrar = useCallback(() => {
     if (recordar) marcarVisto();
     setPasosActivos(null);
-    focoPrevio.current?.focus({ preventScroll: true });
+    requestAnimationFrame(() =>
+      focoPrevio.current?.focus({ preventScroll: true }),
+    );
   }, [recordar]);
 
   useEffect(() => {
     window.addEventListener(EVENTO_ABRIR, abrir);
-    let espera: number | undefined;
-    if (automatico && debeMostrarse())
-      espera = window.setTimeout(abrir, 400); // deja terminar de cargar la página
-    return () => {
-      window.removeEventListener(EVENTO_ABRIR, abrir);
-      window.clearTimeout(espera);
-    };
-  }, [abrir, automatico]);
+    return () => window.removeEventListener(EVENTO_ABRIR, abrir);
+  }, [abrir]);
+
+  useEffect(() => {
+    // The layout persists between routes. A first visit to the reader or
+    // creator must not interrupt the child with an automatic introduction.
+    setPasosActivos(null);
+    if (!automatico || pathname !== "/" || !debeMostrarse()) return;
+    const espera = window.setTimeout(abrir, 400);
+    return () => window.clearTimeout(espera);
+  }, [abrir, automatico, pathname]);
 
   const paso = pasosActivos?.[indice];
   const ultimo = pasosActivos ? indice === pasosActivos.length - 1 : false;
 
+  useLayoutEffect(() => {
+    if (!pasosActivos) return;
+    const outside = Array.from(document.body.children).filter(
+      (node): node is HTMLElement =>
+        node instanceof HTMLElement &&
+        !node.classList.contains("tutorial-capa"),
+    );
+    const before = outside.map((node) => node.inert);
+    outside.forEach((node) => {
+      node.inert = true;
+    });
+    return () => {
+      outside.forEach((node, index) => {
+        node.inert = before[index];
+      });
+    };
+  }, [pasosActivos]);
+
   const recalcular = useCallback(() => {
     if (!paso) return;
-    setPosicion(calcularPosicion(buscarObjetivo(paso, document), globo.current));
+    setPosicion(
+      calcularPosicion(buscarObjetivo(paso, document), globo.current),
+    );
   }, [paso]);
 
   // Al cambiar de paso: llevar el elemento a la vista y poner el foco.
   useLayoutEffect(() => {
     if (!paso) return;
     const objetivo = buscarObjetivo(paso, document);
-    const suave = !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const suave = !window.matchMedia("(prefers-reduced-motion: reduce)")
+      .matches;
     objetivo?.scrollIntoView?.({
       block: "center",
       behavior: suave ? "smooth" : "auto",
@@ -144,7 +172,9 @@ export function Tutorial({
     window.addEventListener("resize", programar);
     window.addEventListener("scroll", programar, true);
     // El desplazamiento suave termina después: se recalcula unas veces más.
-    const repasos = [150, 400, 700].map((ms) => window.setTimeout(programar, ms));
+    const repasos = [150, 400, 700].map((ms) =>
+      window.setTimeout(programar, ms),
+    );
     return () => {
       cancelAnimationFrame(cuadro);
       window.removeEventListener("resize", programar);
@@ -188,7 +218,11 @@ export function Tutorial({
   return createPortal(
     <div className="tutorial-capa">
       {posicion.foco ? (
-        <div className="tutorial-foco" style={posicion.foco} aria-hidden="true" />
+        <div
+          className="tutorial-foco"
+          style={posicion.foco}
+          aria-hidden="true"
+        />
       ) : (
         <div className="tutorial-fondo" aria-hidden="true" />
       )}
@@ -219,23 +253,23 @@ export function Tutorial({
           </div>
         </div>
         <div className="tutorial-botones">
-            {!ultimo ? (
-              <button
-                type="button"
-                className="tutorial-boton tutorial-boton--saltar"
-                onClick={cerrar}
-              >
-                Saltar
-              </button>
-            ) : null}
+          {!ultimo ? (
             <button
-              ref={siguiente}
               type="button"
-              className="tutorial-boton tutorial-boton--siguiente"
-              onClick={avanzar}
+              className="tutorial-boton tutorial-boton--saltar"
+              onClick={cerrar}
             >
-              {ultimo ? "¡A leer!" : "Siguiente"}
+              Saltar
             </button>
+          ) : null}
+          <button
+            ref={siguiente}
+            type="button"
+            className="tutorial-boton tutorial-boton--siguiente"
+            onClick={avanzar}
+          >
+            {ultimo ? "¡A leer!" : "Siguiente"}
+          </button>
         </div>
       </div>
     </div>,

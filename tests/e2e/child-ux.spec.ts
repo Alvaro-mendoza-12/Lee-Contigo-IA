@@ -30,10 +30,9 @@ test("la portada infantil organiza sus destinos y no desborda a 320 px", async (
   await expect(page.locator(".story-card-direct[href^='/leer/']")).toHaveCount(
     18,
   );
-  await expect(page.getByRole("link", { name: /Inventar mi cuento/ })).toHaveAttribute(
-    "href",
-    "/crear",
-  );
+  await expect(
+    page.getByRole("link", { name: /Inventar mi cuento/ }),
+  ).toHaveAttribute("href", "/crear");
   const axe = await new AxeBuilder({ page })
     .withTags(["wcag2a", "wcag2aa", "wcag21aa", "wcag22aa"])
     .analyze();
@@ -130,7 +129,9 @@ test("la voz reproduce audio, detiene al cambiar de página y reutiliza la pági
   expect(requests).toHaveLength(1);
   await page.getByRole("button", { name: "Ajustes", exact: true }).click();
   await page.getByLabel("¿Quién te lee?").selectOption("sarah");
-  await page.getByRole("button", { name: "Cerrar ajustes", exact: true }).click();
+  await page
+    .getByRole("button", { name: "Cerrar ajustes", exact: true })
+    .click();
   await expect(
     page.getByRole("button", { name: "Escuchar", exact: true }),
   ).toBeVisible();
@@ -215,15 +216,9 @@ test("un error tiene texto, color, ayuda audible y no se revela por repetir el c
   page,
 }) => {
   await page.goto("/practicar/puente-de-ardillas?nivel=paso");
-  const sound = page.getByRole("button", {
-    name: "Sonido activado",
-    exact: true,
-  });
-  await expect(sound).toHaveAttribute("aria-pressed", "true");
-  await sound.click();
   await expect(
-    page.getByRole("button", { name: "Sonido desactivado" }),
-  ).toHaveAttribute("aria-pressed", "false");
+    page.getByRole("button", { name: /^Sonido (activado|desactivado)$/ }),
+  ).toHaveCount(0);
   await page.getByRole("radio", { name: "Hojas encima del agua." }).check();
   await page.getByRole("button", { name: "Comprobar respuesta" }).click();
   await expect(

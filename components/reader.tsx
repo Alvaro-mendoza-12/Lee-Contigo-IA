@@ -30,6 +30,7 @@ import { getIllustrationScene } from "@/lib/story-creator";
 import { useNarration } from "./use-narration";
 import { ReadingHelp } from "./reading-help";
 import { ReadingSettings } from "./reading-settings";
+import { reproducir } from "@/lib/sonidos";
 
 export function Reader({
   story,
@@ -166,7 +167,9 @@ export function Reader({
   }
   function turnPage(next: number) {
     stopVoice();
-    const target = pages[Math.max(0, Math.min(next, pages.length - 1))];
+    const targetIndex = Math.max(0, Math.min(next, pages.length - 1));
+    const target = pages[targetIndex];
+    if (targetIndex !== index) reproducir("pagina");
     setPosition({ paragraph: target.paragraph, word: target.start });
   }
   function resize(next: number) {

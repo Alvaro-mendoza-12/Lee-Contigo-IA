@@ -106,14 +106,16 @@ async function openQuestions(page: Page) {
   await expect(page.getByRole("heading", { name: story.title })).toBeVisible();
   const nextPage = page.getByRole("button", { name: "Página siguiente" });
   const startQuestions = page.getByRole("button", { name: /Leer y explorar/ });
-  for (let turns = 0; turns < 16 && !(await startQuestions.isVisible()); turns++) {
+  for (
+    let turns = 0;
+    turns < 16 && !(await startQuestions.isVisible());
+    turns++
+  ) {
     await nextPage.scrollIntoViewIfNeeded();
     await nextPage.click();
   }
   await startQuestions.click();
-  await expect(
-    page.getByRole("button", { name: /Una campana/ }),
-  ).toBeVisible();
+  await expect(page.getByRole("button", { name: /Una campana/ })).toBeVisible();
 }
 
 test("con Sonidos apagado, responder en Crear no suena nada", async ({
@@ -146,4 +148,69 @@ test("con Sonidos encendido, responder en Crear sí suena", async ({ page }) => 
   const afterToggle = await sounds();
   await page.getByRole("button", { name: /Una campana/ }).click();
   await expect.poll(sounds).toBeGreaterThan(afterToggle);
+});
+
+test("Practicar permanece en silencio por defecto ante error, acierto y pista", async ({
+  page,
+}) => {
+  const sounds = await countSounds(page);
+  await page.route("**/api/tutor", (route) =>
+    route.fulfill({
+      contentType: "application/json",
+      body: JSON.stringify({
+        hint: "Busca lo que no podía ver Tomás.",
+        quote: "No veía las piedras.",
+        source: "prepared",
+      }),
+    }),
+  );
+  await page.goto("/practicar/luz-del-bosque?nivel=paso");
+  await expect(
+    page.getByRole("button", { name: /^Sonido (activado|desactivado)$/ }),
+  ).toHaveCount(0);
+  await page
+    .getByRole("radio", { name: "Porque quería buscar a la luna." })
+    .check();
+  await page.getByRole("button", { name: "Comprobar respuesta" }).click();
+  await page
+    .getByRole("button", { name: "Dame una pista", exact: true })
+    .click();
+  await expect(
+    page.getByText("Busca lo que no podía ver Tomás."),
+  ).toBeVisible();
+  await page
+    .getByRole("radio", { name: "Porque no veía las piedras." })
+    .check();
+  await page.getByRole("button", { name: "Comprobar respuesta" }).click();
+  await page.waitForTimeout(800);
+  expect(await sounds()).toBe(0);
+});
+
+test("la preferencia de Ajustes activa y silencia los sonidos de Practicar", async ({
+  page,
+}) => {
+  const sounds = await countSounds(page);
+  await page.goto("/leer/luz-del-bosque?nivel=paso");
+  await page.getByRole("button", { name: "Ajustes", exact: true }).click();
+  const toggle = page.getByRole("switch", { name: /Sonidos/ });
+  await expect(toggle).toHaveAttribute("aria-checked", "false");
+  await toggle.click();
+  await expect(toggle).toHaveAttribute("aria-checked", "true");
+  await page.goto("/practicar/luz-del-bosque?nivel=paso");
+  await page
+    .getByRole("radio", { name: "Porque no veía las piedras." })
+    .check();
+  await page.getByRole("button", { name: "Comprobar respuesta" }).click();
+  await expect.poll(sounds).toBeGreaterThan(0);
+  await page.goto("/leer/luz-del-bosque?nivel=paso");
+  await page.getByRole("button", { name: "Ajustes", exact: true }).click();
+  await expect(toggle).toHaveAttribute("aria-checked", "true");
+  await toggle.click();
+  await page.goto("/practicar/luz-del-bosque?nivel=paso");
+  await page
+    .getByRole("radio", { name: "Porque quería buscar a la luna." })
+    .check();
+  await page.getByRole("button", { name: "Comprobar respuesta" }).click();
+  await page.waitForTimeout(800);
+  expect(await sounds()).toBe(0);
 });

@@ -147,7 +147,11 @@ const estrellas = [
   { dx: 0, dy: -72, tam: 18 },
 ];
 
-function EfectoGanancia({ ganancia }: { ganancia: { id: number; xp: number } }) {
+function EfectoGanancia({
+  ganancia,
+}: {
+  ganancia: { id: number; xp: number };
+}) {
   return (
     <span className="xp-efecto" aria-hidden="true">
       {estrellas.map((estrella, i) => (
@@ -286,13 +290,12 @@ export function BarraXP({
   const { listo, ganancia, ...progreso } = useProgresoXP();
 
   if (variante === "compacta")
-    return (
-      <PastillaXP listo={listo} ganancia={ganancia} progreso={progreso} />
-    );
+    return <PastillaXP listo={listo} ganancia={ganancia} progreso={progreso} />;
 
   return (
     <section
       className="xp-barra xp-barra-grande"
+      data-tutorial="barra-xp"
       aria-label="Mi experiencia de lectura"
       data-listo={listo}
     >
