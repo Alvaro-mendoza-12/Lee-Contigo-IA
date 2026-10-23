@@ -18,7 +18,7 @@ La vista ampliada permite desplazamiento interno, mantiene el foco dentro del di
 
 ### Movimiento
 
-La preferencia de movimiento reducido comienza con animación desactivada. El lector puede activar expresamente «Animar páginas». No hay movimiento continuo de acercamiento o respiración de las imágenes dentro del libro. La animación puede desactivarse durante la lectura. Un nuevo clic puede sustituir la transición en curso; no se acumula una cola de giros.
+Actualización solicitada el 22 de octubre: «Animar páginas» comienza activado en los libros de biblioteca y los cuentos creados, también al recargar. La preferencia del sistema ya no desmarca el control; el lector puede desactivarlo durante la lectura. No hay movimiento continuo de acercamiento o respiración de las imágenes dentro del libro. Un nuevo clic puede sustituir la transición en curso; no se acumula una cola de giros. La preferencia de movimiento reducido sigue desactivando los bucles decorativos de la portada.
 
 ## Ilustraciones
 

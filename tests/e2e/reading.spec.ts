@@ -146,6 +146,9 @@ test("el libro cambia nivel, conserva tamaño y responde al pasar páginas", asy
       "paper-turn-next",
     );
   }
+  await animation.uncheck();
+  await page.reload();
+  await expect(page.getByLabel("Animar páginas")).toBeChecked();
 });
 test("la guía permite preparar y comenzar una lectura acompañada", async ({
   page,
