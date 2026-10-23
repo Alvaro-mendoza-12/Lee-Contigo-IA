@@ -28,6 +28,7 @@ import { fontSteps, paginateStory } from "@/lib/reading";
 import { levels, type Level, type StoryArtVariant } from "@/lib/stories";
 import { StoryArt } from "./art";
 import { ReadingFriend } from "./reading-friend";
+import { BotonTutorial, Tutorial } from "./tutorial";
 import { BookSpread } from "./book-spread";
 import { ReadingPause } from "./reading-pause";
 import { useNarration } from "./use-narration";
@@ -565,6 +566,10 @@ export function StoryCreator() {
             <h1 ref={activeHeading} tabIndex={-1}>
               Crea tu cuento
             </h1>
+            {/* Temporal: para probar el tutorial aquí hasta que viva en el
+                inicio. No se abre solo ni guarda «tutorial-visto». */}
+            <BotonTutorial />
+            <Tutorial automatico={false} recordar={false} />
           </header>
           <div
             className="creator-workspace-tabs"
