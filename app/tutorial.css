@@ -1,0 +1,185 @@
+/* Tutorial guiado por la luciérnaga lectora. */
+.tutorial-capa {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+}
+.tutorial-fondo {
+  position: fixed;
+  inset: 0;
+  background: rgba(35, 32, 74, 0.55);
+}
+/* Recorte: el elemento queda iluminado y el resto se oscurece. */
+.tutorial-foco {
+  position: fixed;
+  border-radius: 18px;
+  box-shadow: 0 0 0 9999px rgba(35, 32, 74, 0.55);
+  outline: 4px solid #ffd23f;
+  outline-offset: 0;
+  pointer-events: none;
+  transition:
+    top 0.25s ease,
+    left 0.25s ease,
+    width 0.25s ease,
+    height 0.25s ease;
+}
+
+.tutorial-globo {
+  position: fixed;
+  width: min(380px, calc(100vw - 24px));
+  padding: 16px 18px;
+  border-radius: 24px;
+  border: 4px solid #ffd23f;
+  background: #ffffff;
+  color: #23204a;
+  box-shadow: 0 16px 40px rgba(35, 32, 74, 0.3);
+}
+.tutorial-globo--centro {
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+.tutorial-globo:focus-visible {
+  outline: none;
+}
+
+.tutorial-fila {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+.tutorial-luciernaga {
+  flex-shrink: 0;
+  width: 84px;
+  animation: tutorial-vuelo 3.2s ease-in-out infinite;
+}
+.tutorial-luciernaga svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  animation: tutorial-brillo 2.2s ease-in-out infinite;
+}
+
+.tutorial-contenido {
+  flex: 1;
+  min-width: 0;
+}
+.tutorial-progreso {
+  margin: 0 0 2px;
+  font-size: 13px;
+  font-weight: 800;
+  color: #55517a;
+}
+.tutorial-globo h2 {
+  margin: 0 0 4px;
+  font-size: 22px;
+  line-height: 1.2;
+  font-weight: 900;
+}
+.tutorial-globo p {
+  margin: 0;
+  font-size: 17px;
+  line-height: 1.45;
+  font-weight: 650;
+}
+.tutorial-botones {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 14px;
+}
+.tutorial-boton {
+  min-height: 48px;
+  min-width: 48px;
+  padding: 10px 20px;
+  border-radius: 999px;
+  font: inherit;
+  font-size: 18px;
+  font-weight: 900;
+  cursor: pointer;
+}
+.tutorial-boton--siguiente {
+  border: 0;
+  background: #6a3fd6;
+  color: #ffffff;
+  box-shadow: 0 4px 0 #5228b8;
+}
+.tutorial-boton--saltar {
+  border: 3px solid #e4dcf5;
+  background: #ffffff;
+  color: #23204a;
+}
+.tutorial-boton:focus-visible,
+.tutorial-boton-ayuda:focus-visible {
+  outline: 4px solid #38bdf8;
+  outline-offset: 3px;
+}
+
+/* Botón «?» para volver a abrir el tutorial. */
+.tutorial-boton-ayuda {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: 3px solid #e4dcf5;
+  background: #ffffff;
+  color: #6a3fd6;
+  font: inherit;
+  font-size: 24px;
+  font-weight: 900;
+  line-height: 1;
+  cursor: pointer;
+}
+
+/* Celular: el globo va fijo abajo y a todo el ancho. */
+@media (max-width: 639px) {
+  .tutorial-globo,
+  .tutorial-globo--abajo {
+    top: auto;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: auto;
+    transform: none;
+    border-width: 4px 0 0;
+    border-radius: 24px 24px 0 0;
+    padding: 14px 16px calc(14px + env(safe-area-inset-bottom));
+  }
+  .tutorial-luciernaga {
+    width: 60px;
+  }
+  .tutorial-globo h2 {
+    font-size: 20px;
+  }
+  .tutorial-globo p {
+    font-size: 16px;
+  }
+  .tutorial-botones .tutorial-boton {
+    flex: 1 1 0;
+    min-width: 0;
+    padding-inline: 12px;
+  }
+}
+
+@keyframes tutorial-brillo {
+  50% {
+    filter: drop-shadow(0 0 10px #ffd66b) brightness(1.08);
+  }
+}
+@keyframes tutorial-vuelo {
+  25% {
+    transform: translate(3px, -6px) rotate(-3deg);
+  }
+  75% {
+    transform: translate(-3px, -3px) rotate(3deg);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .tutorial-luciernaga,
+  .tutorial-luciernaga svg {
+    animation: none;
+  }
+  .tutorial-foco {
+    transition: none;
+  }
+}
