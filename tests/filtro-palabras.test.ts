@@ -48,6 +48,22 @@ test("detecta letras repetidas y letras separadas", () => {
   assert.equal(buscarPalabraProhibida("p u t a"), "p u t a");
 });
 
+test("las frases con palabras de una letra no se leen como letras separadas", () => {
+  for (const texto of [
+    "Juan y Ana o Pepe",
+    "fue a e i o u",
+    "y a la casa",
+    "Fue a y o a la escuela",
+    "Las vocales son a, e, i, o, u",
+    "Ana y Eva y yo",
+    "Tengo 1 o 2 gatos y 3 perros",
+    "El abecedario empieza con a b c d e",
+    "Una niña y un niño o una abuela",
+    "Iba a ir y a volver",
+  ])
+    assert.equal(buscarPalabraProhibida(texto), null, texto);
+});
+
 test("los signos al final de la palabra no se leen como letras", () => {
   assert.equal(buscarPalabraProhibida("¡tonto!"), "tonto");
   assert.equal(buscarPalabraProhibida("¡Qué lindo!"), null);
