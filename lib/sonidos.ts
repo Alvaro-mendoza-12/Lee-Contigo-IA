@@ -21,10 +21,56 @@ export type Sonido =
   | "nivel"
   | "boton";
 
+/**
+ * Todos los volúmenes y duraciones en un solo lugar, para afinarlos
+ * después de escucharlos. Volumen: 0 = silencio, 1 = máximo del navegador.
+ * Duración: segundos, de principio a fin del efecto (todas < 0,4 s).
+ */
+export const configuracion = {
+  musica: {
+    /** Volumen normal del archivo musica.ogg/.mp3. */
+    volumen: 0.15,
+    /** Volumen mientras habla la narración (eventos voz:inicio/voz:fin). */
+    volumenConVoz: 0.03,
+    /** Tiempo de la rampa al bajar o subir el volumen. */
+    rampa: 0.4,
+    /**
+     * La caja musical generada suena más bajo que un archivo; este factor
+     * la iguala. Su pico real es notas.bajo × refuerzo × volumen ≈ 0,03.
+     */
+    refuerzoCajaMusical: 3,
+    /** Pulsos por minuto de la caja musical (más bajo = más tranquila). */
+    tempo: 76,
+    /** Volumen de cada nota de la caja musical, antes del refuerzo. */
+    notas: { bajo: 0.07, acorde: 0.035, melodia: 0.05 },
+  },
+  /**
+   * Los efectos quedan como mucho al doble del pico de la caja musical:
+   * lo justo para oírse por encima de la música, sin sobresaltar.
+   */
+  efectos: {
+    /** «Fiu» suave al pasar página: sube de 520 a 1400 Hz. */
+    pagina: { volumen: 0.045, duracion: 0.22 },
+    /** Dos notas alegres que suben (Sol y Re agudo). */
+    correcta: { volumen: 0.06, duracion: 0.36 },
+    /**
+     * Respuesta incorrecta: una sola nota grave que baja un poco (de 294 a
+     * 220 Hz), corta y suave. Avisa «esa no», sin sonar a castigo.
+     */
+    incorrecta: { volumen: 0.045, duracion: 0.24 },
+    /** Nota suave que anuncia la pista. */
+    pista: { volumen: 0.035, duracion: 0.3 },
+    /** Arpegio corto de celebración (Do-Mi-Sol-Do). */
+    nivel: { volumen: 0.055, duracion: 0.38 },
+    /** Clic muy suave al tocar los interruptores. */
+    boton: { volumen: 0.03, duracion: 0.05 },
+  },
+  /** Espera entre el sonido de «incorrecta» y la nota de la pista. */
+  esperaAntesDePista: 0.42,
+} as const;
+
 const claveEfectos = "audio-activo";
 const claveMusica = "musica-activa";
-const volumenMusica = 0.15;
-const volumenConVoz = 0.03;
 const archivosMusica = [
   { src: "/sonidos/musica.ogg", tipo: "audio/ogg" },
   { src: "/sonidos/musica.mp3", tipo: "audio/mpeg" },
@@ -207,27 +253,31 @@ export function reproducir(nombre: Sonido) {
     void audio.resume?.().catch(() => undefined);
     const t = audio.currentTime + 0.01;
     const salida = salidaEfectos;
+    const { volumen: v, duracion: d } = configuracion.efectos[nombre];
     switch (nombre) {
-      case "pagina": // «fiu» suave
-        nota(salida, 520, t, 0.22, 0.06, "sine", 1400);
+      case "pagina":
+        nota(salida, 520, t, d, v, "sine", 1400);
         break;
-      case "correcta": // dos notas alegres que suben
-        nota(salida, 784, t, 0.16, 0.08, "triangle");
-        nota(salida, 1175, t + 0.12, 0.24, 0.08, "triangle");
+      case "correcta": // la segunda nota empieza a un tercio del efecto
+        nota(salida, 784, t, d * 0.45, v, "triangle");
+        nota(salida, 1175, t + d * 0.33, d * 0.67, v, "triangle");
         break;
-      case "incorrecta": // «boing» que baja: claro, pero no asusta
-        nota(salida, 392, t, 0.34, 0.08, "triangle", 196);
+      case "incorrecta": // seno grave: más suave que el triángulo
+        nota(salida, 294, t, d, v, "sine", 220);
         break;
-      case "pista": // una nota suave
-        nota(salida, 880, t, 0.3, 0.05);
+      case "pista":
+        nota(salida, 880, t, d, v);
         break;
-      case "nivel": // arpegio corto de celebración
+      case "nivel": {
+        const largo = d * 0.45;
+        const separacion = (d - largo) / 3;
         [523, 659, 784, 1047].forEach((frecuencia, i) =>
-          nota(salida, frecuencia, t + i * 0.07, 0.18, 0.07, "triangle"),
+          nota(salida, frecuencia, t + i * separacion, largo, v, "triangle"),
         );
         break;
-      case "boton": // clic suave
-        nota(salida, 1200, t, 0.05, 0.04, "sine", 800);
+      }
+      case "boton":
+        nota(salida, 1200, t, d, v, "sine", 800);
         break;
     }
   } catch {
@@ -235,32 +285,51 @@ export function reproducir(nombre: Sonido) {
   }
 }
 
+/**
+ * Sonido al responder: «correcta» o «incorrecta» y, tras un error, la nota
+ * de «pista» cuando aparece la ayuda. Apagado no suena nada.
+ */
+export function reproducirRespuesta(acerto: boolean) {
+  reproducir(acerto ? "correcta" : "incorrecta");
+  if (!acerto && efectosActivos)
+    setTimeout(
+      () => reproducir("pista"),
+      configuracion.esperaAntesDePista * 1000,
+    );
+}
+
 // ── Música ──────────────────────────────────────────────────────────────
 function volumenObjetivo() {
-  return conVoz ? volumenConVoz : volumenMusica;
+  const { volumen, volumenConVoz } = configuracion.musica;
+  return conVoz ? volumenConVoz : volumen;
 }
 
 function ajustarVolumen() {
   const objetivo = volumenObjetivo();
+  const { rampa, refuerzoCajaMusical } = configuracion.musica;
   try {
     if (salidaMusica && contexto) {
       const ahora = contexto.currentTime;
       salidaMusica.gain.cancelScheduledValues(ahora);
       salidaMusica.gain.setValueAtTime(salidaMusica.gain.value, ahora);
-      // La caja musical suena más bajo que un archivo: se compensa ×3.
-      salidaMusica.gain.linearRampToValueAtTime(objetivo * 3, ahora + 0.4);
+      salidaMusica.gain.linearRampToValueAtTime(
+        objetivo * refuerzoCajaMusical,
+        ahora + rampa,
+      );
     }
     if (pista) {
-      // Rampa suave en ~400 ms para que no se note el cambio.
+      // Rampa lineal para que el cambio no se note.
       if (temporizadorVolumen) clearInterval(temporizadorVolumen);
       const elemento = pista;
+      const desde = elemento.volume;
+      const inicio = Date.now();
       temporizadorVolumen = setInterval(() => {
-        const diferencia = objetivo - elemento.volume;
-        if (Math.abs(diferencia) < 0.006) {
-          elemento.volume = objetivo;
+        const avance = Math.min(1, (Date.now() - inicio) / (rampa * 1000));
+        elemento.volume = desde + (objetivo - desde) * avance;
+        if (avance === 1) {
           clearInterval(temporizadorVolumen);
           temporizadorVolumen = undefined;
-        } else elemento.volume += diferencia * 0.35;
+        }
       }, 40);
     }
   } catch {
@@ -375,19 +444,22 @@ function programarCuna() {
 
 function programarCompases() {
   if (!contexto) return;
-  const corchea = 60 / 76 / 2;
+  const { tempo, notas } = configuracion.musica;
+  const corchea = 60 / tempo / 2;
   while (siguiente < contexto.currentTime + 0.4) {
     const acorde = acordes[Math.floor(paso / 8) % acordes.length];
     const enCompas = paso % 8;
     if (enCompas === 0) {
-      campana(frecuenciaDe(acorde[0]), siguiente, 0.07);
-      campana(frecuenciaDe(acorde[1] + 12), siguiente + corchea * 2, 0.035);
-      campana(frecuenciaDe(acorde[2] + 12), siguiente + corchea * 4, 0.035);
+      campana(frecuenciaDe(acorde[0]), siguiente, notas.bajo);
+      const segunda = siguiente + corchea * 2;
+      campana(frecuenciaDe(acorde[1] + 12), segunda, notas.acorde);
+      const tercera = siguiente + corchea * 4;
+      campana(frecuenciaDe(acorde[2] + 12), tercera, notas.acorde);
     }
     if (Math.random() > (enCompas % 2 ? 0.75 : 0.35)) {
       const salto = [-1, -1, 0, 1, 1, 2, -2][Math.floor(Math.random() * 7)];
       posicion = Math.max(0, Math.min(melodia.length - 1, posicion + salto));
-      campana(frecuenciaDe(melodia[posicion]), siguiente, 0.05);
+      campana(frecuenciaDe(melodia[posicion]), siguiente, notas.melodia);
     }
     paso++;
     siguiente += corchea;

@@ -266,3 +266,49 @@ test("no lanza errores si localStorage falla", async () => {
   });
   assert.equal(modulo.estaActivo(), true, "funciona durante la visita");
 });
+
+test("responder en Crear no suena nada con Sonidos apagado", async () => {
+  const { modulo, ventana } = await cargar();
+  tocar(ventana);
+  modulo.reproducirRespuesta(true);
+  modulo.reproducirRespuesta(false);
+  await esperar(modulo.configuracion.esperaAntesDePista * 1000 + 150);
+  assert.equal(registro.inicios.length, 0);
+  assert.equal(registro.contextos, 0);
+});
+
+test("con Sonidos encendido, fallar suena y luego anuncia la pista", async () => {
+  const { modulo } = await cargar();
+  modulo.setActivo(true);
+  modulo.reproducirRespuesta(false);
+  const despuesDelError = registro.inicios.length;
+  assert.ok(despuesDelError > 0, "suena «incorrecta»");
+  await esperar(modulo.configuracion.esperaAntesDePista * 1000 + 150);
+  assert.ok(registro.inicios.length > despuesDelError, "suena «pista»");
+});
+
+test("Crear usa solo lib/sonidos.ts, sin los tonos anteriores", async () => {
+  const { readFile } = await import("node:fs/promises");
+  const creador = await readFile(
+    new URL("../components/story-creator.tsx", import.meta.url),
+    "utf8",
+  );
+  for (const anterior of ["useAnswerSound", "SoundControl", "answerSound"])
+    assert.equal(creador.includes(anterior), false, anterior);
+  assert.ok(creador.includes("reproducirRespuesta("));
+});
+
+test("la configuración mantiene los efectos cortos y suaves", async () => {
+  const { modulo } = await cargar();
+  const { efectos, musica } = modulo.configuracion;
+  const picoMusica = musica.notas.bajo * musica.refuerzoCajaMusical * musica.volumen;
+  for (const [nombre, efecto] of Object.entries(efectos)) {
+    assert.ok(efecto.duracion < 0.4, `${nombre} dura menos de 0,4 s`);
+    assert.ok(
+      efecto.volumen <= picoMusica * 2,
+      `${nombre} no pasa del doble de la música`,
+    );
+  }
+  assert.ok(efectos.incorrecta.volumen < efectos.correcta.volumen);
+  assert.ok(efectos.incorrecta.duracion <= 0.25, "«incorrecta» es corta");
+});
