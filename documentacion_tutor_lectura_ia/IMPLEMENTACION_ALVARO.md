@@ -48,6 +48,8 @@ La orientación sexual mencionada con respeto no se clasifica como una mala pala
 
 Prueba real con la configuración local: se detectan **60 claves OpenRouter** sin imprimirlas. Una idea con armadillo/armar superó la revisión semántica; la generación posterior falló por disponibilidad del proveedor. Una petición explícitamente violenta fue rechazada con HTTP 422. También se observaron HTTP 429 en OpenRouter y Cloudflare, y HTTP 404 de disponibilidad en generación. No se cambian las restricciones de privacidad, no se rota ante un límite compartido y no se habilitan modelos de pago para superar estas respuestas. Por ello, las pruebas con respuestas simuladas verifican el flujo y la integración, pero no certifican disponibilidad continua de las APIs gratuitas.
 
+**Comprobación posterior en Vercel:** en la vista previa de esta rama, `Un armadillo arma un cohete de cartón con sus amigos` devolvió HTTP 200 y un cuento de seis párrafos. `Un t0nt0 se burla de su amigo` devolvió HTTP 422 con la advertencia de palabras amables. El lector y el creador son accesibles sin iniciar sesión (HTTP 200). Vista previa: https://lee-contigo-ia-git-lvaro-alvaro-s-projects1.vercel.app/ . Estos resultados confirman la creación real con la configuración desplegada; los fallos de cuota descritos arriba se observaron en la configuración local durante el diagnóstico.
+
 ## Repositorio y coordinación
 
 - Se activó la protección de `main`: Pull Request obligatorio, comprobación `verify` requerida y rama actualizada antes de unir; se aplica también al administrador. No exige una aprobación adicional distinta de pasar las comprobaciones. Se impiden force push y eliminación de `main`.
