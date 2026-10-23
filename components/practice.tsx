@@ -7,13 +7,18 @@ import {
   BookOpen,
   Check,
   Lightbulb,
+  Sparkles,
+  ChevronDown,
+  ChevronUp,
   RotateCcw,
-  Volume2,
+  Sprout,
+  Flag,
   X,
   LoaderCircle,
 } from "lucide-react";
 import type { Story, Level } from "@/lib/stories";
-import { canSpeak, playCorrect, playWrong, speak, stopSpeaking } from "./voice";
+import { Journey } from "./journey";
+import { useAnswerSound, SoundControl, ReadFeedback } from "./answer-audio";
 type Hint = {
   hint: string;
   action?: string;
@@ -23,91 +28,68 @@ type Hint = {
   reason?: string;
   support?: "explore" | "retry";
 };
-const wrongMessages = [
-  "¡Uy! Esa no es. ¡Intenta otra vez!",
-  "Casi… ¡Prueba con otra!",
-];
-const rightMessages = ["¡Muy bien!", "¡Excelente!", "¡Lo encontraste!"];
 export function Practice({ story, level }: { story: Story; level: Level }) {
   const version = story.versions[level];
-  const [index, setIndex] = useState(0);
-  const [wrong, setWrong] = useState<number[]>([]);
-  const [solved, setSolved] = useState(false);
-  const [shake, setShake] = useState(0);
+  const [index, setIndex] = useState(0),
+    [selected, setSelected] = useState<number | null>(null);
+  const [feedback, setFeedback] = useState<
+    "correct" | "retry" | "revealed" | null
+  >(null);
+  const [incorrectAttempts, setIncorrectAttempts] = useState(0);
   const [hints, setHints] = useState<Hint | null>(null),
     [hintCount, setHintCount] = useState(0);
   const [loading, setLoading] = useState(false),
     [showStory, setShowStory] = useState(false);
-  const [complete, setComplete] = useState(false);
-  const [voice, setVoice] = useState(false);
+  const [complete, setComplete] = useState(false),
+    [reported, setReported] = useState(false);
+  const [reportOpen, setReportOpen] = useState(false);
+  const [needsSupport, setNeedsSupport] = useState(false);
   const heading = useRef<HTMLHeadingElement>(null);
-  const nextButton = useRef<HTMLButtonElement>(null);
-  const hintPanel = useRef<HTMLDivElement>(null);
+  const hintPanel = useRef<HTMLElement>(null);
   const abort = useRef<AbortController | null>(null);
   const hintRequest = useRef(0);
   const question = version.questions[index];
-  const lastQuestion = index === version.questions.length - 1;
-  useEffect(() => {
-    setVoice(canSpeak());
-    return () => {
+  const answerSound = useAnswerSound();
+  useEffect(
+    () => () => {
       hintRequest.current++;
       abort.current?.abort();
-      stopSpeaking();
-    };
-  }, []);
+    },
+    [],
+  );
   function resetQuestion() {
-    setWrong([]);
-    setSolved(false);
+    setSelected(null);
+    setFeedback(null);
+    setIncorrectAttempts(0);
     setHints(null);
     setHintCount(0);
     setLoading(false);
     setShowStory(false);
+    setReported(false);
+    setReportOpen(false);
+    setNeedsSupport(false);
   }
   function next() {
     hintRequest.current++;
     abort.current?.abort();
-    stopSpeaking();
-    if (lastQuestion) {
+    if (index === version.questions.length - 1) {
       setComplete(true);
-      playCorrect();
     } else {
       setIndex((i) => i + 1);
       resetQuestion();
     }
     requestAnimationFrame(() => heading.current?.focus());
   }
-  function choose(option: number) {
-    if (solved || wrong.includes(option)) return;
-    if (option === question.correct) {
-      setSolved(true);
-      playCorrect();
-      if (voice) speak(rightMessages[index % rightMessages.length]);
-      requestAnimationFrame(() => nextButton.current?.focus());
-      return;
-    }
-    setWrong((list) => [...list, option]);
-    setShake((n) => n + 1);
-    playWrong();
-    if (voice) speak(wrongMessages[wrong.length % wrongMessages.length]);
-  }
-  function readQuestion() {
-    speak(
-      question.prompt +
-        " " +
-        question.options
-          .map((option, i) => String.fromCharCode(65 + i) + ": " + option)
-          .join(" "),
-    );
-  }
   async function askHint() {
+    if (loading || hintCount >= 2) return;
     const requestId = ++hintRequest.current;
     setLoading(true);
+    setReported(false);
     const tier = Math.min(hintCount, 1);
-    const support = wrong.length ? "retry" : "explore";
     abort.current?.abort();
     const controller = new AbortController();
     abort.current = controller;
-    const timer = setTimeout(() => controller.abort(), 9000);
+    const timer = setTimeout(() => controller.abort(), 14000);
     try {
       const response = await fetch("/api/tutor", {
         method: "POST",
@@ -117,7 +99,7 @@ export function Practice({ story, level }: { story: Story; level: Level }) {
           level,
           questionId: question.id,
           tier,
-          support,
+          support: needsSupport ? "retry" : "explore",
         }),
         signal: controller.signal,
       });
@@ -133,37 +115,45 @@ export function Practice({ story, level }: { story: Story; level: Level }) {
           quote: version.paragraphs[question.paragraph],
           source: "prepared",
           reason: "unavailable",
-          support,
+          support: needsSupport ? "retry" : "explore",
         });
     } finally {
       clearTimeout(timer);
       if (requestId === hintRequest.current) {
         setLoading(false);
         setHintCount((n) => n + 1);
-        requestAnimationFrame(() =>
-          hintPanel.current?.focus({ preventScroll: true }),
-        );
       }
     }
   }
   if (complete)
     return (
-      <div className="container practice-page kid-practice">
-        <section className="kid-complete">
-          <div className="kid-complete-art" aria-hidden="true">
-            🏆
-          </div>
-          <div className="kid-stars" aria-hidden="true">
-            ⭐⭐⭐
+      <div className="container practice-page">
+        <Journey current={3} />
+        <section className="completion">
+          <div className="completion-art" aria-hidden="true">
+            <Sprout size={58} strokeWidth={1.4} />
+            <span>✦</span>
+            <span>✧</span>
           </div>
           <h1 ref={heading} tabIndex={-1}>
-            ¡Lo lograste!
+            ¡Mira todo lo que exploraste!
           </h1>
           <p>
-            Terminaste <strong>{story.title}</strong>.
+            Leíste <strong>{story.title}</strong>.
           </p>
-          <Link className="kid-big-button" href={`/?nivel=${level}`}>
-            <span aria-hidden="true">📚</span> Leer otro cuento
+          <div className="skills-earned">
+            {version.questions.map((q) => (
+              <span key={q.id}>
+                <Sprout size={16} aria-hidden="true" />
+                {q.skill}
+              </span>
+            ))}
+          </div>
+          <div className="completion-note">
+            <HeartMessage />
+          </div>
+          <Link className="button" href="/biblioteca">
+            Elegir otra historia <ArrowRight size={18} />
           </Link>
           <button
             className="text-button"
@@ -173,190 +163,306 @@ export function Practice({ story, level }: { story: Story; level: Level }) {
               resetQuestion();
             }}
           >
-            <RotateCcw size={18} /> Repetir las preguntas
+            <RotateCcw size={16} /> Volver a explorar esta historia
           </button>
+          <p className="small muted">
+            Este recorrido es una práctica, no una evaluación escolar.
+          </p>
         </section>
       </div>
     );
-  const feedback = solved ? "correct" : wrong.length ? "retry" : null;
   return (
-    <div className="container practice-page kid-practice">
-      <div className="kid-reader-top">
-        <Link className="kid-back" href={`/leer/${story.id}?nivel=${level}`}>
-          <ArrowLeft size={20} aria-hidden="true" />
-          Cuento
-        </Link>
-        <div
-          className="kid-dots"
-          role="progressbar"
-          aria-label="Preguntas"
-          aria-valuemin={0}
-          aria-valuemax={version.questions.length}
-          aria-valuenow={index + 1}
-          aria-valuetext={`Pregunta ${index + 1} de ${version.questions.length}`}
+    <div className="container practice-page">
+      <Journey current={3} />
+      <div className="practice-top">
+        <Link
+          className="back-link"
+          href={"/leer/" + story.id + "?nivel=" + level}
         >
-          {version.questions.map((q, i) => (
-            <span
-              className={i < index ? "done" : i === index ? "current" : ""}
-              key={q.id}
-            />
-          ))}
-        </div>
+          <ArrowLeft size={16} />
+          Volver a leer
+        </Link>
+        <SoundControl
+          enabled={answerSound.sound}
+          onChange={answerSound.setSound}
+        />
       </div>
-      <section className={"kid-question" + (feedback ? " " + feedback : "")}>
-        <div className="kid-question-head">
+      <div className="practice-layout">
+        <section className="question-card">
+          <div className="question-progress">
+            <span className="small-label">
+              PREGUNTA {index + 1} DE {version.questions.length}
+            </span>
+          </div>
+          <div
+            className="question-track"
+            role="progressbar"
+            aria-label="Preguntas exploradas"
+            aria-valuemin={0}
+            aria-valuemax={3}
+            aria-valuenow={index}
+          >
+            {version.questions.map((q, i) => (
+              <span className={i <= index ? "filled" : ""} key={q.id} />
+            ))}
+          </div>
           <h1 ref={heading} tabIndex={-1}>
             {question.prompt}
           </h1>
-          {voice ? (
-            <button
-              type="button"
-              className="kid-round-button"
-              onClick={readQuestion}
-              aria-label="Escuchar la pregunta"
-            >
-              <Volume2 size={24} aria-hidden="true" />
-            </button>
-          ) : null}
-        </div>
-        <fieldset className="kid-answers">
-          <legend className="sr-only">Opciones de respuesta</legend>
-          {question.options.map((option, i) => {
-            const isWrong = wrong.includes(i);
-            const isRight = solved && i === question.correct;
-            return (
+          <p className="question-instruction">Elige una respuesta.</p>
+          <fieldset className="answers">
+            <legend className="sr-only">Opciones de respuesta</legend>
+            {question.options.map((option, i) => (
               <label
                 key={i}
                 className={
-                  "kid-answer" +
-                  (isWrong ? " wrong" : "") +
-                  (isWrong && i === wrong[wrong.length - 1] ? " shake" : "") +
-                  (isRight ? " right" : "")
+                  "answer " +
+                  (selected === i ? "selected " : "") +
+                  (feedback === "correct" && i === selected ? "correct" : "") +
+                  (feedback === "retry" && i === selected ? " incorrect" : "")
                 }
               >
                 <input
                   type="radio"
                   name={"respuesta-" + question.id}
                   value={i}
-                  checked={solved ? isRight : i === wrong[wrong.length - 1]}
-                  disabled={solved || isWrong}
-                  onChange={() => choose(i)}
+                  checked={selected === i}
+                  disabled={feedback === "correct" || feedback === "revealed"}
+                  onChange={() => {
+                    setSelected(i);
+                    setFeedback(null);
+                  }}
                 />
-                <span className="kid-answer-letter" aria-hidden="true">
-                  {isRight ? (
-                    <Check size={22} />
-                  ) : isWrong ? (
-                    <X size={22} />
+                <span className="answer-letter">
+                  {feedback === "correct" && i === selected ? (
+                    <Check size={18} />
                   ) : (
                     String.fromCharCode(65 + i)
                   )}
                 </span>
                 <span>{option}</span>
+                <span className="answer-radio">
+                  {selected === i ? <span /> : null}
+                </span>
               </label>
-            );
-          })}
-        </fieldset>
-        <div role="status" aria-live="assertive">
-          {feedback === "correct" ? (
-            <div className="kid-feedback correct">
-              <span className="kid-feedback-emoji" aria-hidden="true">
-                🎉
-              </span>
-              <div>
-                <strong>{rightMessages[index % rightMessages.length]}</strong>
-                <p>{question.explanation}</p>
-              </div>
-            </div>
-          ) : feedback === "retry" ? (
-            <div className="kid-feedback retry" key={shake}>
-              <span className="kid-feedback-emoji" aria-hidden="true">
-                ❌
-              </span>
-              <div>
-                <strong>
-                  {wrongMessages[(wrong.length - 1) % wrongMessages.length]}
-                </strong>
-                <p>Esa respuesta no es correcta.</p>
-              </div>
+            ))}
+          </fieldset>
+          {feedback ? (
+            <div
+              className={
+                "answer-feedback " +
+                feedback +
+                (feedback === "retry" ? " feedback-incorrect" : "")
+              }
+              role="status"
+            >
+              <strong>
+                {feedback === "correct"
+                  ? "¡Encontraste una buena pista en el texto!"
+                  : feedback === "revealed"
+                    ? "Leamos juntos la parte clave."
+                    : "Aún no es la respuesta. Busquemos una pista."}
+              </strong>
+              <p>
+                {feedback === "correct"
+                  ? question.explanation
+                  : feedback === "revealed"
+                    ? question.explanation
+                    : question.hints[
+                        Math.min(Math.max(incorrectAttempts - 1, 0), 1)
+                      ]}
+              </p>
+              {feedback === "retry" ? (
+                <ReadFeedback
+                  text={`Aún no es la respuesta. ${question.hints[Math.min(Math.max(incorrectAttempts - 1, 0), 1)]}`}
+                />
+              ) : null}
+              {feedback === "correct" || feedback === "revealed" ? (
+                <blockquote className="answer-evidence">
+                  {version.paragraphs[question.paragraph]}
+                </blockquote>
+              ) : null}
+              {feedback === "revealed" && level === "reto" ? (
+                <Link
+                  className="text-button answer-level-link"
+                  href={`/leer/${story.id}?nivel=paso`}
+                >
+                  ¿Te ayudaría leerlo con frases más cortas? Prueba Paso a paso
+                </Link>
+              ) : null}
             </div>
           ) : null}
-        </div>
-        {solved ? (
-          <button ref={nextButton} className="kid-big-button" onClick={next}>
-            {lastQuestion ? "¡Terminar!" : "Siguiente"}
-            <ArrowRight size={22} />
-          </button>
-        ) : (
-          <div className="kid-helpers">
-            <button
-              className="kid-helper hint"
-              onClick={askHint}
-              disabled={loading || hintCount >= 2}
-              aria-busy={loading}
-              aria-controls="tutor-pistas"
-            >
-              {loading ? (
-                <LoaderCircle size={20} className="spin" aria-hidden="true" />
-              ) : (
-                <Lightbulb size={20} aria-hidden="true" />
-              )}
-              {loading ? "Buscando…" : "Pista"}
-            </button>
-            <button
-              className="kid-helper"
-              aria-expanded={showStory}
-              aria-controls="relato-de-apoyo"
-              onClick={() => setShowStory((s) => !s)}
-            >
-              <BookOpen size={20} aria-hidden="true" />
-              {showStory ? "Cerrar cuento" : "Ver cuento"}
-            </button>
+          <div className="question-actions">
+            {feedback === "correct" || feedback === "revealed" ? (
+              <button className="button" onClick={next}>
+                {index === 2 ? "Ver mis descubrimientos" : "Siguiente pregunta"}
+                <ArrowRight size={18} />
+              </button>
+            ) : (
+              <button
+                className="button"
+                disabled={selected === null || feedback === "retry"}
+                onClick={() => {
+                  answerSound.play(selected === question.correct);
+                  if (selected === question.correct) {
+                    setFeedback("correct");
+                    return;
+                  }
+                  const attempts = incorrectAttempts + 1;
+                  setIncorrectAttempts(attempts);
+                  setNeedsSupport(true);
+                  setFeedback("retry");
+                }}
+              >
+                Comprobar respuesta <ArrowRight size={18} />
+              </button>
+            )}
           </div>
-        )}
-        <div
+          <button
+            className="text-button story-toggle"
+            aria-expanded={showStory}
+            aria-controls="relato-de-apoyo"
+            onClick={() => setShowStory((s) => !s)}
+          >
+            <BookOpen size={18} />
+            {showStory ? "Cerrar el relato" : "Volver al relato sin salir"}
+            {showStory ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+          </button>
+          {showStory ? (
+            <div id="relato-de-apoyo" className="inline-story">
+              <h2>{story.title}</h2>
+              {version.paragraphs.map((p, i) => (
+                <p key={i}>{p}</p>
+              ))}
+            </div>
+          ) : null}
+        </section>
+        <aside
+          className="hint-card"
           id="tutor-pistas"
           ref={hintPanel}
           tabIndex={-1}
-          role="region"
-          aria-label="Pista"
-          aria-live="polite"
+          aria-label="Ayuda para comprender el relato"
         >
-          {hints && !solved ? (
-            <div className="kid-hint">
-              <span className="kid-hint-emoji" aria-hidden="true">
-                💡
-              </span>
-              <div>
-                <p>
-                  {hints.action && hints.reflection
-                    ? `${hints.action} ${hints.reflection}`
-                    : hints.hint}
-                </p>
-                <small>
-                  {hints.source === "ai"
-                    ? "Pista con IA · puede equivocarse"
-                    : "Pista preparada"}
-                </small>
-              </div>
+          <div className="hint-top">
+            <span className="hint-icon">
+              <Lightbulb size={25} />
+            </span>
+          </div>
+          <h2>¿Una pista?</h2>
+          <button
+            className="button button-outline full-width"
+            onClick={askHint}
+            disabled={hintCount >= 2 || feedback === "revealed"}
+            aria-disabled={loading}
+            aria-busy={loading}
+          >
+            {loading ? (
+              <LoaderCircle size={18} className="spin" />
+            ) : (
+              <Sparkles size={18} />
+            )}{" "}
+            {loading
+              ? "Buscando una pista…"
+              : hintCount >= 2
+                ? "Ya tienes las dos pistas"
+                : hintCount
+                  ? "Dame otra pista"
+                  : "Dame una pista"}
+          </button>
+          <div className="hint-result" aria-live="polite">
+            {hints ? (
+              <>
+                <span className="hint-source">
+                  <Sparkles size={13} aria-hidden="true" />
+                  {hints.source === "ai" ? "Pista con IA" : "Pista preparada"}
+                </span>
+                {hints.action && hints.reflection ? (
+                  <div className="hint-scaffold">
+                    <p>
+                      <strong>Prueba esto:</strong> {hints.action}
+                    </p>
+                    <p>
+                      <strong>Piensa:</strong> {hints.reflection}
+                    </p>
+                  </div>
+                ) : (
+                  <p>{hints.hint}</p>
+                )}
+                <details>
+                  <summary>Ver el texto</summary>
+                  <blockquote>{hints.quote}</blockquote>
+                </details>
+                <details className="hint-information">
+                  <summary>Sobre esta pista</summary>
+                  {hints.source === "prepared" ? (
+                    <p className="hint-footnote">
+                      Usamos una pista preparada para que puedas seguir leyendo.
+                    </p>
+                  ) : (
+                    <p className="hint-footnote">
+                      La IA puede equivocarse. Comprueba la pista con el relato.
+                    </p>
+                  )}
+                  <button
+                    className="text-button report-button"
+                    onClick={() => setReportOpen(true)}
+                  >
+                    <Flag size={13} />
+                    Esta pista necesita revisión
+                  </button>
+                </details>
+              </>
+            ) : null}
+          </div>
+          {reportOpen ? (
+            <div className="report-box" role="status">
+              <button
+                className="report-close"
+                onClick={() => setReportOpen(false)}
+                aria-label="Cerrar aviso"
+              >
+                <X size={15} />
+              </button>
+              <strong>
+                {reported
+                  ? "Pista descartada en esta sesión"
+                  : "¿La pista no te ayudó?"}
+              </strong>
+              <p>
+                Coméntalo con una persona adulta. Puedes descartarla y usar la
+                pista preparada.
+              </p>
+              <button
+                className="text-button"
+                onClick={() => {
+                  setHints({
+                    hint: question.hints[0],
+                    quote: version.paragraphs[question.paragraph],
+                    source: "prepared",
+                  });
+                  setReported(true);
+                }}
+              >
+                Usar la pista preparada
+              </button>
+              <small>Este prototipo no envía ni guarda reportes.</small>
             </div>
           ) : null}
-        </div>
-        {showStory && !solved ? (
-          <div id="relato-de-apoyo" className="inline-story">
-            <h2>{story.title}</h2>
-            {version.paragraphs.map((p, i) => (
-              <p
-                key={i}
-                className={
-                  hints && i === question.paragraph ? "story-highlight" : ""
-                }
-              >
-                {p}
-              </p>
-            ))}
-          </div>
-        ) : null}
-      </section>
+        </aside>
+      </div>
     </div>
+  );
+}
+function HeartMessage() {
+  return (
+    <>
+      <Sprout size={23} />
+      <p>
+        Lo importante no es acertar a la primera.
+        <br />
+        <strong>Es animarte a seguir descubriendo.</strong>
+      </p>
+    </>
   );
 }

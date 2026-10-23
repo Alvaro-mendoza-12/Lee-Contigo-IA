@@ -5,6 +5,7 @@ import { question } from "./extra-stories.ts";
 export const longStories: Story[] = [
   {
     id: "barco-de-papel",
+    category: "aventuras",
     title: "El gran viaje del barco de papel",
     subtitle: "Un mensaje pequeño puede llegar muy lejos.",
     theme: "Amistad y valentía",

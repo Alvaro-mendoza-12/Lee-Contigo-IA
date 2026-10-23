@@ -13,6 +13,8 @@ export type BookPage = {
   book: string;
   number: number;
   text: string;
+  paragraph?: number;
+  startWord?: number;
   chapter: string;
   illustration: ReactNode;
 };
@@ -83,6 +85,8 @@ export function BookSpread({
         <p
           className={copy ? "paper-copy-paragraph" : "book-page-text"}
           id={copy ? undefined : "lectura"}
+          data-help-paragraph={copy ? undefined : item.paragraph}
+          data-help-start={copy ? undefined : item.startWord}
         >
           {item.text}
         </p>

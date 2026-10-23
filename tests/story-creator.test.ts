@@ -1,11 +1,19 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import {
+  BOOK_LIFETIME,
+  makeSavedBook,
+  readSavedBook,
+} from "../lib/book-shelf.ts";
+import {
   containsPersonalDetails,
   coverInput,
   createStoryInput,
   generatedStorySchema,
+  groundStoryEvidence,
+  hasUnsafeStoryContent,
   isAppropriateStory,
+  storyQualityIssues,
 } from "../lib/story-creator.ts";
 
 const validStory = {
@@ -76,6 +84,37 @@ const validStory = {
   ],
 };
 
+test("los libros temporales vencen a los siete días y omiten la idea y las respuestas", () => {
+  const book = makeSavedBook(generatedStorySchema.parse(validStory), "reto");
+  assert.equal(book.expiresAt - book.createdAt, BOOK_LIFETIME);
+  assert.equal(readSavedBook(book, book.expiresAt - 1)?.level, "reto");
+  assert.equal(readSavedBook(book, book.expiresAt), null);
+  assert.equal("idea" in book, false);
+  assert.equal("answers" in book, false);
+  assert.equal(readSavedBook({ ...book, expiresAt: book.expiresAt + 1 }), null);
+});
+
+test("el guardado descarta datos alterados y portadas ejecutables o externas", () => {
+  const book = makeSavedBook(generatedStorySchema.parse(validStory), "paso");
+  assert.equal(
+    readSavedBook({ ...book, cover: "/images/lectura-paisajes.png" })?.id,
+    book.id,
+  );
+  for (const cover of [
+    "javascript:alert(1)",
+    "https://example.com/image.png",
+    "data:image/svg+xml;base64,PHN2Zz4=",
+    "/images/../../secret.png",
+  ]) {
+    assert.equal(readSavedBook({ ...book, cover }), null);
+  }
+  assert.equal(
+    readSavedBook({ ...book, story: { ...book.story, paragraphs: [] } }),
+    null,
+  );
+  assert.equal(readSavedBook({ ...book, answers: [1] }), null);
+});
+
 test("el creador acepta solo ideas cortas con revisión adulta", () => {
   assert.equal(
     createStoryInput.safeParse({
@@ -144,6 +183,12 @@ test("valida cuentos con estructura de lectura y bloquea datos o contenido inade
     ),
   };
   assert.equal(isAppropriateStory(quoteFromWrongParagraph), false);
+  assert.deepEqual(storyQualityIssues(quoteFromWrongParagraph), ["ungrounded_quote"]);
+  const groundedQuote = groundStoryEvidence(quoteFromWrongParagraph);
+  assert.equal(isAppropriateStory(groundedQuote), true);
+  assert.ok(
+    parsed.data.paragraphs[0].includes(groundedQuote.questions[0].evidenceQuote),
+  );
 
   const repeatedSkill = {
     ...parsed.data,
@@ -152,6 +197,7 @@ test("valida cuentos con estructura de lectura y bloquea datos o contenido inade
     ),
   };
   assert.equal(isAppropriateStory(repeatedSkill), false);
+  assert.deepEqual(storyQualityIssues(repeatedSkill), ["distinct_skills"]);
 
   const withEmail = {
     ...parsed.data,
@@ -206,4 +252,31 @@ test("valida cuentos con estructura de lectura y bloquea datos o contenido inade
     generatedStorySchema.safeParse({ ...parsed.data, questions: [] }).success,
     false,
   );
+  assert.equal(
+    generatedStorySchema.safeParse({
+      ...parsed.data,
+      paragraphs: [
+        "Esperar.",
+        ...parsed.data.paragraphs.slice(1),
+      ],
+    }).success,
+    false,
+  );
+});
+
+test("el filtro previo reconoce riesgos aunque cambien tildes o mayúsculas", () => {
+  for (const idea of [
+    "Un cuento sobre una pistola y alguien que dispara",
+    "Una aventura donde un niño quiere hacerse daño",
+    "Una historia con una persona que intenta secuestrar a otra",
+    "Un personaje que bebe lejía para hacer un reto",
+    "Una aventura con un plan de gRooMing",
+  ])
+    assert.equal(hasUnsafeStoryContent(idea), true, idea);
+
+  for (const idea of [
+    "Una tortuga curiosa busca un faro junto al mar",
+    "Una luciérnaga ayuda a un grillo a cruzar el río",
+  ])
+    assert.equal(hasUnsafeStoryContent(idea), false, idea);
 });

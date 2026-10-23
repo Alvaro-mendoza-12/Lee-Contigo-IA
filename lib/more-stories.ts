@@ -4,6 +4,7 @@ import { question } from "./extra-stories.ts";
 export const moreStories: Story[] = [
   {
     id: "dragon-de-flores",
+    category: "aventuras",
     title: "El dragón que estornudaba flores",
     subtitle: "Lo diferente también puede ser un regalo.",
     theme: "Ser uno mismo",
@@ -129,6 +130,7 @@ export const moreStories: Story[] = [
   },
   {
     id: "estrella-de-mar",
+    category: "naturaleza",
     title: "Estela y el pez perdido",
     subtitle: "Ayudar también es escuchar.",
     theme: "Ayudar a otros",
@@ -258,6 +260,7 @@ export const moreStories: Story[] = [
   },
   {
     id: "cohete-de-carton",
+    category: "aventuras",
     title: "El cohete de cartón",
     subtitle: "La imaginación nos lleva lejos.",
     theme: "Imaginación",
@@ -387,6 +390,7 @@ export const moreStories: Story[] = [
   },
   {
     id: "gallina-cuenta",
+    category: "naturaleza",
     title: "La gallina que contaba pollitos",
     subtitle: "Con calma, todo se encuentra.",
     theme: "Calma y ayuda",
@@ -512,6 +516,7 @@ export const moreStories: Story[] = [
   },
   {
     id: "paraguas-de-colores",
+    category: "amigos",
     title: "El paraguas de colores",
     subtitle: "Compartir hace crecer la alegría.",
     theme: "Compartir",
@@ -641,6 +646,7 @@ export const moreStories: Story[] = [
   },
   {
     id: "orquesta-del-bosque",
+    category: "amigos",
     title: "La orquesta del bosque",
     subtitle: "Cada voz es importante.",
     theme: "Trabajo en equipo",

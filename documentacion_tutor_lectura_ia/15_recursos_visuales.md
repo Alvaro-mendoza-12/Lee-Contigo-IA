@@ -79,3 +79,18 @@ Cada prompt final se forma concatenando la base común y su variante, tal como s
 > Story: Teo a friendly cream rabbit wearing a muted sage vest and Ada a small russet squirrel wearing a soft ochre scarf build a BLUE diamond kite together. Panels: 1 rabbit carefully joins blue kite on a simple wooden table outdoors, 2 squirrel arrives carrying long soft fabric ribbons, 3 rabbit tries to launch kite which tilts toward grass safely, 4 both stop to examine the little short kite tail, 5 rabbit holds kite while squirrel observes the wind and tail, 6 both attach a longer ribbon tail, 7 rabbit takes a few steps as squirrel helps blue kite rise, 8 friends admire the blue kite steady high over a quiet meadow. Keep kite blue in every scene, clear distinct actions.
 
 En el lector se intercambian los paneles quinto y sexto de cometa para mantener el orden «añadir cola, probar el vuelo» que muestran las imágenes finales. Los recortes de las láminas se hacen en la interfaz, manteniendo proporción y sin editar los archivos originales.
+
+## Dos relatos añadidos el 22 de octubre de 2026
+
+Modo: generación original de ilustración con la herramienta integrada `image_gen`. No se descargaron imágenes de otros sitios. Se conservaron las láminas originales y el lector muestra cada cuadrante mediante CSS.
+
+| Relato | Archivo incorporado | Escenas |
+| --- | --- | --- |
+| El sendero de las huellas | `public/images/sendero-libro-4.png` | Bifurcación; huellas en el barro; pluma bajo las hojas; encuentro junto al estanque |
+| El buzón del bosque | `public/images/buzon-libro-4.png` | Preparar el buzón; viento y sobres; añadir una tapa con abertura; leer juntos la invitación |
+
+Brief de generación para Sendero: lámina infantil 2 × 2 sin títulos, letras ni marcas, estilo de cuento ilustrado, mismos personajes en las cuatro escenas. Nina es una coneja de bufanda verde y bolso; Beto, un erizo de gorra amarilla. Solo en el encuentro final aparece Teo, un pato dorado. Las acciones deben distinguirse y coincidir con las cuatro partes del relato.
+
+Brief para Buzón: lámina infantil 2 × 2 sin texto ni marcas, colores luminosos y acciones claras. Fito es un zorro naranja con overol azul y Alma una nutria de bufanda verde. Mantener el mismo buzón azul, mostrar cartas que vuelan, la solución de la tapa con ranura y el encuentro final. Evitar herramientas peligrosas.
+
+Los textos y preguntas se escribieron para este catálogo. La correspondencia entre escena y pasaje se revisó visualmente; queda pendiente una revisión editorial y docente externa.

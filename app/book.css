@@ -27,15 +27,22 @@ body:has(.book-reader) #contenido {
 }
 .reader-book-heading {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
   gap: 20px;
+}
+.reader-book-heading > div:first-child {
+  min-width: 0;
+  flex: 1 1 auto;
 }
 .book-reader .reader-book-heading h1 {
   margin-top: 5px;
   font-size: clamp(26px, 3vw, 38px);
   line-height: 1.15;
   letter-spacing: -1px;
+  overflow-wrap: anywhere;
+  hyphens: auto;
 }
 .reader-book-heading .small-label {
   font-size: 10px;
@@ -661,7 +668,7 @@ body:has(.book-reader) #contenido {
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  /* Only an explicit reader opt-in enables a page turn; no idle animation. */
+  /* Page turns follow the reader control; no idle animation. */
   .user-motion-on .sheet-next {
     animation: paper-turn-next 800ms cubic-bezier(0.45, 0.08, 0.24, 1) both !important;
   }

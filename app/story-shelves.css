@@ -1,0 +1,344 @@
+.kid-levels {
+  display: block;
+  width: min(760px, 100%);
+  margin: 22px auto 28px;
+  padding: 0;
+  border: 0;
+}
+
+.kid-levels legend {
+  margin: 0 auto 10px;
+  color: var(--ink);
+  font-size: 16px;
+  font-weight: 850;
+  text-align: center;
+}
+
+.kid-level-options {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.kid-level-options .kid-level {
+  min-width: 0;
+  justify-content: flex-start;
+  border-radius: 22px;
+}
+
+.kid-level-options .kid-level small {
+  overflow-wrap: anywhere;
+}
+
+.library-level-feedback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-height: 34px;
+  margin-top: 8px;
+  color: var(--forest-dark);
+  font-size: 14px;
+  font-weight: 800;
+  text-align: center;
+}
+
+.story-shelves {
+  display: grid;
+  gap: 20px;
+}
+
+.story-shelf-row {
+  min-width: 0;
+  padding: 14px 14px 6px;
+  border: 1px solid #e3e4d8;
+  border-radius: 26px;
+  background: #fffefaed;
+  box-shadow: 0 4px 0 #334c3210;
+}
+
+.story-shelf-row[aria-labelledby="cuentos-amigos-title"] {
+  --shelf-accent: #67b2bd;
+  --shelf-paper: #e8f7f8;
+}
+
+.story-shelf-row[aria-labelledby="cuentos-naturaleza-title"] {
+  --shelf-accent: #77a05d;
+  --shelf-paper: #eef5e7;
+}
+
+.story-shelf-row[aria-labelledby="cuentos-descubrimientos-title"] {
+  --shelf-accent: #d3a83e;
+  --shelf-paper: #fff5d9;
+}
+
+.story-shelf-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  min-height: 46px;
+  margin-bottom: 8px;
+}
+
+.story-shelf-heading h2 {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  color: var(--ink);
+  font-size: 21px;
+  font-weight: 900;
+}
+
+.shelf-category-icon {
+  display: grid;
+  width: 38px;
+  height: 38px;
+  place-items: center;
+  border-radius: 13px 13px 13px 4px;
+  background: var(--shelf-paper);
+  color: var(--forest-dark);
+}
+
+.story-shelf-arrows {
+  display: flex;
+  gap: 7px;
+}
+
+.story-shelf-arrows button {
+  display: grid;
+  width: 42px;
+  height: 42px;
+  place-items: center;
+  border: 1px solid #82937d;
+  border-radius: 50%;
+  background: #fffefa;
+  color: var(--forest-dark);
+}
+
+.story-shelf-arrows button:disabled {
+  opacity: 0.4;
+}
+
+.story-rail {
+  --rail-columns: 4;
+  display: grid;
+  grid-auto-columns: calc((100% - 45px) / 4);
+  grid-auto-flow: column;
+  gap: 15px;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scroll-padding-inline: 4px;
+  scroll-snap-type: x mandatory;
+  scrollbar-color: #82977c #eef1e8;
+  list-style: none;
+  margin: 0 -4px;
+  padding: 4px 4px 13px;
+  touch-action: pan-x pan-y;
+}
+
+.story-rail > li {
+  display: flex;
+  min-width: 0;
+  scroll-snap-align: start;
+}
+
+.story-card-direct {
+  display: flex;
+  width: 100%;
+  min-width: 0;
+  flex-direction: column;
+  overflow: hidden;
+  border: 2px solid #d9dfd2;
+  border-left: 5px solid var(--shelf-accent);
+  border-radius: 9px 18px 18px 9px;
+  background: #fffefa;
+  box-shadow: 2px 4px 0 #263e3314;
+}
+
+.story-card-direct:focus-visible,
+.story-shelf-arrows button:focus-visible {
+  outline: 3px solid #247a65;
+  outline-offset: 3px;
+}
+
+.story-cover-link {
+  position: relative;
+  display: block;
+  overflow: hidden;
+  aspect-ratio: 4 / 3;
+  background: var(--shelf-paper);
+}
+
+.story-cover-link > .story-art {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.story-level-ribbon {
+  position: absolute;
+  z-index: 2;
+  top: 8px;
+  left: 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  border: 1px solid #a18136;
+  border-radius: 10px 10px 10px 2px;
+  background: #ffe28c;
+  color: #493a12;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.story-cover-open {
+  position: absolute;
+  right: 8px;
+  bottom: 8px;
+  display: grid;
+  width: 38px;
+  height: 38px;
+  place-items: center;
+  border-radius: 50%;
+  background: #ffda72;
+  color: #263e33;
+}
+
+.story-card-body {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  align-items: center;
+  padding: 11px 12px;
+}
+
+.story-card-body h3 {
+  margin: 0;
+  color: var(--ink);
+  font-size: 17px;
+  font-weight: 900;
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+}
+
+.kid-create-link {
+  display: flex;
+  min-height: 78px;
+  align-items: center;
+  gap: 13px;
+  margin-top: 20px;
+  padding: 13px 18px;
+  border: 2px solid #d4a936;
+  border-radius: 22px;
+  background: #ffe38a;
+  color: #293c30;
+  box-shadow: 0 4px 0 #6f59251a;
+}
+
+.kid-create-icon {
+  display: grid;
+  width: 48px;
+  height: 48px;
+  flex: none;
+  place-items: center;
+  border-radius: 16px;
+  background: #fff8e3;
+}
+
+.kid-create-link > span:nth-child(2) {
+  display: grid;
+  flex: 1;
+  min-width: 0;
+  gap: 2px;
+}
+
+.kid-create-link strong {
+  font-size: 19px;
+  font-weight: 900;
+}
+
+.kid-create-link small {
+  color: #4d5642;
+  font-size: 13px;
+}
+
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .story-card-direct {
+    transition:
+      transform 150ms ease,
+      box-shadow 150ms ease;
+  }
+
+  .story-card-direct:hover {
+    transform: translateY(-2px);
+    box-shadow: 2px 6px 0 #263e3318;
+  }
+}
+
+@media (min-width: 601px) and (max-width: 1000px) {
+  .story-rail {
+    --rail-columns: 3;
+    grid-auto-columns: calc((100% - 30px) / 3);
+  }
+}
+
+@media (max-width: 600px) {
+  .kid-levels {
+    margin-block: 16px 20px;
+  }
+
+  .kid-level-options {
+    gap: 8px;
+  }
+
+  .kid-level-options .kid-level {
+    padding: 10px 7px;
+    border-width: 3px;
+  }
+
+  .story-shelves {
+    gap: 15px;
+  }
+
+  .story-shelf-row {
+    padding: 10px 10px 5px;
+    border-radius: 21px;
+  }
+
+  .story-shelf-heading h2 {
+    font-size: 19px;
+  }
+
+  .story-rail {
+    --rail-columns: 2;
+    grid-auto-columns: calc((100% - 12px) / 2);
+    gap: 12px;
+  }
+
+  .story-card-body {
+    padding: 9px;
+  }
+
+  .story-card-body h3 {
+    font-size: 15px;
+  }
+
+  .kid-create-link {
+    min-height: 68px;
+    padding: 10px 13px;
+  }
+
+  .kid-create-link small {
+    font-size: 12px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .story-card-direct {
+    scroll-behavior: auto;
+    transition: none;
+  }
+}
