@@ -1,15 +1,21 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { fontSteps, paginateStory } from "../lib/reading.ts";
+import {
+  fontSteps,
+  paginateStory,
+  migrateFontSize,
+  nearestFontSize,
+} from "../lib/reading.ts";
 import { stories } from "../lib/stories.ts";
 
-test("la paginación conserva el relato y reduce texto por página en móvil", () => {
+test("la paginación conserva cada escena entera en móvil y escritorio", () => {
   const paragraphs = [
     "Una luciérnaga pequeña encendió su luz junto al río.",
     "Su amigo buscó con cuidado las piedras para cruzar.",
     "Ada observó el hilo y se detuvo para pensar. La cometa se había inclinado varias veces hacia el jardín. En vez de tirar más fuerte, propuso mirar la cola y comparar lo que ocurría con cada cambio. Teo escuchó su idea y ambos volvieron a probar con paciencia.",
   ];
-  for (const size of [0, 3, 5, 8, 10]) {
+  assert.equal(fontSteps.length, 3);
+  for (const size of [0, 1, 2]) {
     const desktopPages = paginateStory(paragraphs, size);
     const mobilePages = paginateStory(paragraphs, size, true);
     const reconstruct = (pages: ReturnType<typeof paginateStory>) =>
@@ -24,15 +30,20 @@ test("la paginación conserva el relato y reduce texto por página en móvil", (
 
     assert.equal(reconstruct(desktopPages), paragraphs.join("|"));
     assert.equal(reconstruct(mobilePages), paragraphs.join("|"));
-    assert.ok(
-      desktopPages.every(
-        (page) =>
-          page.text.split(/\s+/).length <=
-          Math.max(fontSteps[size].words + 4, 23),
-      ),
-    );
-    assert.ok(mobilePages.length >= desktopPages.length);
+    assert.equal(desktopPages.length, paragraphs.length);
+    assert.deepEqual(mobilePages, desktopPages);
   }
+});
+
+test("migra los once índices antiguos al tamaño nuevo más cercano", () => {
+  assert.deepEqual(
+    Array.from({ length: 11 }, (_, index) => migrateFontSize(index)),
+    [0, 0, 0, 0, 0, 1, 2, 2, 2, 2, 2],
+  );
+  assert.equal(migrateFontSize(-1), 1);
+  assert.equal(migrateFontSize(NaN), 1);
+  assert.equal(nearestFontSize(23), 1);
+  assert.equal(nearestFontSize(44), 2);
 });
 test("las palabras largas no deforman páginas ni cambian los rangos de voz", () => {
   const text = Array(50).fill("extraordinariamente").join(" ");
@@ -59,6 +70,7 @@ test("ninguna página del catálogo queda reducida a un fragmento", () => {
       for (let size = 0; size < fontSteps.length; size++)
         for (const compact of [false, true]) {
           const pages = paginateStory(version.paragraphs, size, compact);
+          assert.equal(pages.length, version.paragraphs.length, story.id);
           assert.ok(
             pages.every((page) => page.text.trim().split(/\s+/).length >= 12),
           );

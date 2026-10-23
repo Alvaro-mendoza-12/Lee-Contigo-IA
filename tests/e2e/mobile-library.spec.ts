@@ -72,9 +72,9 @@ test("las tres categorías muestran cuentos y se deslizan con dedo, botones y te
     page
       .getByRole("region", { name: "Aventuras", exact: true })
       .getByRole("link"),
-  ).toHaveCount(8);
+  ).toHaveCount(9);
   const hrefs = await page
-    .locator(".story-card-direct")
+    .locator(".story-card-direct[href^='/leer/']")
     .evaluateAll((elements) => elements.map((el) => el.getAttribute("href")));
   expect(new Set(hrefs).size).toBe(18);
   const previous = friends.getByRole("button", {
@@ -101,7 +101,7 @@ test("las tres categorías muestran cuentos y se deslizan con dedo, botones y te
     .poll(() => rail.evaluate((el) => el.scrollLeft))
     .toBeGreaterThan(0);
   await page.getByRole("radio", { name: "Un nuevo reto", exact: true }).check();
-  await expect(page.locator(".story-card-direct").first()).toHaveAttribute(
+  await expect(page.locator(".story-card-direct[href^='/leer/']").first()).toHaveAttribute(
     "href",
     /nivel=reto/,
   );
@@ -131,7 +131,7 @@ test("la tablet horizontal muestra dos caras y deslizar la imagen pasa hojas sin
   await page.goto("/leer/luz-del-bosque?nivel=paso");
   await page.getByRole("button", { name: "Aumentar tamaño de letra" }).click();
   await page.setViewportSize({ width: 1024, height: 768 });
-  await expect(page.locator(".book-page-text")).toHaveCSS("font-size", "28px");
+  await expect(page.locator(".book-page-text")).toHaveCSS("font-size", "26px");
   const book = page.locator(".paper-book");
   const art = page.locator(".paper-spread > .paper-art");
   const text = page.locator(".paper-spread > .paper-text");
@@ -152,7 +152,8 @@ test("la tablet horizontal muestra dos caras y deslizar la imagen pasa hojas sin
   });
   await expect(
     page.getByRole("button", { name: "Ayúdame con esta parte" }),
-  ).toBeVisible();
+  ).not.toBeVisible();
+  await expect(page.getByRole("button", { name: "No entendí" })).toBeVisible();
   expect(
     await page.evaluate(
       () => document.documentElement.scrollWidth <= innerWidth,
