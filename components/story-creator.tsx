@@ -555,9 +555,12 @@ export function StoryCreator() {
 
   return (
     <div className="container creator-page">
-      <Link href="/biblioteca" className="back-link">
-        <ArrowLeft size={16} aria-hidden="true" /> Volver a las historias
-      </Link>
+      <div className="creator-toolbar">
+        <Link href="/biblioteca" className="back-link">
+          <ArrowLeft size={16} aria-hidden="true" /> Volver a las historias
+        </Link>
+        <InterruptorAudio compacto />
+      </div>
 
       {screen === "form" ? (
         <>
@@ -1265,10 +1268,6 @@ export function StoryCreator() {
           </Link>
         </section>
       ) : null}
-      {/* Temporal: para probar el audio aquí hasta que esté en Ajustes. */}
-      <div style={{ maxWidth: 320, margin: "32px auto 0" }}>
-        <InterruptorAudio />
-      </div>
     </div>
   );
 }
