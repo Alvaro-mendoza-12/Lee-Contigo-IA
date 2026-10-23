@@ -183,6 +183,13 @@ test("accesibilidad automática y ausencia de desbordamiento", async ({
     "/privacidad",
   ]) {
     await page.goto(route);
+    // /biblioteca uses a streamed Next.js redirect to the home library.
+    // Wait for that navigation before axe injects/evaluates its scripts.
+    if (route === "/biblioteca")
+      await page.waitForURL((url) => url.pathname === "/");
+    await page.waitForLoadState("load");
+    await expect(page.locator("main h1").first()).toBeVisible();
+    await page.evaluate(() => document.fonts.ready);
     const results = await new AxeBuilder({ page })
       .withTags(["wcag2a", "wcag2aa", "wcag21aa", "wcag22aa"])
       .analyze();
