@@ -17,6 +17,16 @@ test("Aventuras desliza portadas completas en móvil y usa una grilla en tablet 
   });
   for (const width of [320, 390, 768, 1440]) {
     await page.setViewportSize({ width, height: 900 });
+    if (width > 760) {
+      // The current desktop design presents the complete category as a grid.
+      await expect(next).not.toBeVisible();
+      await expect(previous).not.toBeVisible();
+      expect(
+        await rail.evaluate((el) => el.scrollWidth <= el.clientWidth),
+      ).toBe(true);
+      await expect(shelf.getByRole("link")).toHaveCount(9);
+      continue;
+    }
     await rail.evaluate((el) => el.scrollTo({ left: 0, behavior: "instant" }));
     if (width >= 761) {
       await expect(next).toHaveCount(0);

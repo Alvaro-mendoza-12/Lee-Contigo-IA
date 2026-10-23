@@ -44,9 +44,9 @@ test("la ayuda usa ElevenLabs con la voz elegida y se detiene al cerrarse", asyn
     return route.fulfill({ contentType: "audio/wav", body: sampleAudio() });
   });
   await page.goto("/leer/luz-del-bosque?nivel=reto");
-  await page.locator(".reading-settings > summary").click();
+  await page.getByRole("button", { name: "Ajustes", exact: true }).click();
   await page.getByLabel("¿Quién te lee?").selectOption("daniel");
-  await page.locator(".reading-settings > summary").click();
+  await page.getByRole("button", { name: "Cerrar ajustes", exact: true }).click();
   await page.getByRole("button", { name: "Escuchar", exact: true }).click();
   await expect(
     page.getByRole("button", { name: "Detener lectura" }),
@@ -104,9 +104,9 @@ test("seleccionar una palabra da explicación, ejemplo y pistas progresivas sin 
     });
   });
   await page.goto("/leer/luz-del-bosque?nivel=reto");
-  await page.locator(".reading-settings > summary").click();
+  await page.getByRole("button", { name: "Ajustes", exact: true }).click();
   await page.getByLabel("¿Quién te lee?").selectOption("sarah");
-  await page.locator(".reading-settings > summary").click();
+  await page.getByRole("button", { name: "Cerrar ajustes", exact: true }).click();
   await expect(page.getByText("Voz elegida.", { exact: true })).toBeVisible();
   await page.locator(".book-page-text").evaluate((node) => {
     const text = node.firstChild!;
@@ -120,8 +120,10 @@ test("seleccionar una palabra da explicación, ejemplo y pistas progresivas sin 
   const selectionHelp = page.getByRole("button", {
     name: /Ayúdame con esta parte/,
   });
-  if (isMobile) await selectionHelp.tap();
-  else await selectionHelp.click();
+  if (isMobile) {
+    await expect(selectionHelp).not.toBeVisible();
+    await page.getByRole("button", { name: "No entendí" }).click();
+  } else await selectionHelp.click();
   const help = page.getByRole("dialog", { name: "Lo pensamos juntos" });
   await expect(
     help.getByText(
@@ -141,7 +143,7 @@ test("seleccionar una palabra da explicación, ejemplo y pistas progresivas sin 
   expect(calls[0]).toMatchObject({
     source: "catalogue",
     storyId: "luz-del-bosque",
-    mode: "selection",
+    mode: isMobile ? "paragraph" : "selection",
     stage: 0,
   });
   expect(calls[0]).not.toHaveProperty("text");

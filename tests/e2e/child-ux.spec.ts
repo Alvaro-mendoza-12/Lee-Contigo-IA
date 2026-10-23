@@ -127,9 +127,9 @@ test("la voz reproduce audio, detiene al cambiar de página y reutiliza la pági
     page.getByRole("button", { name: "Detener lectura" }),
   ).toBeVisible();
   expect(requests).toHaveLength(1);
-  await page.locator(".reading-settings > summary").click();
+  await page.getByRole("button", { name: "Ajustes", exact: true }).click();
   await page.getByLabel("¿Quién te lee?").selectOption("sarah");
-  await page.locator(".reading-settings > summary").click();
+  await page.getByRole("button", { name: "Cerrar ajustes", exact: true }).click();
   await expect(
     page.getByRole("button", { name: "Escuchar", exact: true }),
   ).toBeVisible();
@@ -140,7 +140,7 @@ test("la voz reproduce audio, detiene al cambiar de página y reutiliza la pági
   expect(requests).toHaveLength(2);
   expect(requests[1]).toMatchObject({ voice: "sarah" });
   await page.reload();
-  await page.locator(".reading-settings > summary").click();
+  await page.getByRole("button", { name: "Ajustes", exact: true }).click();
   await expect(page.getByLabel("¿Quién te lee?")).toHaveValue("sarah");
 });
 
@@ -204,9 +204,7 @@ test("si la voz externa falla se lee el texto visible con la voz española del d
   );
   expect(calls.texts).toEqual([text]);
   expect(calls.languages).toEqual(["es"]);
-  await page
-    .getByRole("button", { name: "Un nuevo reto", exact: true })
-    .click();
+  await page.getByRole("button", { name: "Página siguiente" }).click();
   await expect(
     page.getByRole("button", { name: "Escuchar", exact: true }),
   ).toBeVisible();

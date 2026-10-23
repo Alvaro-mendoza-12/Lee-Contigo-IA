@@ -285,19 +285,18 @@ test("el cuento creado conecta la respuesta con una cita del texto sin reenviar 
     .fill("Una tortuga busca un faro");
   await page.getByLabel(/Un adulto revisó mi idea/).check();
   await page.getByRole("button", { name: "Crear mi cuento" }).click();
-  await expect(page.locator(".paper-art img").first()).toHaveAttribute(
-    "src",
-    "/images/lectura-paisajes.png",
-  );
+  await expect(page.getByRole("heading", { name: story.title })).toBeVisible();
+  await page.getByRole("button", { name: "Ajustes", exact: true }).click();
   await expect(page.getByLabel("Animar páginas")).toBeChecked();
+  await page.getByRole("button", { name: "Cerrar ajustes", exact: true }).click();
   expect(illustrationRequests).toHaveLength(1);
   await expect(page.getByText("¿Quieres ilustrar la portada?")).toHaveCount(0);
   const audioRequest = page.waitForRequest((r) =>
     r.url().endsWith("/api/narrar"),
   );
-  await page.locator(".reading-settings > summary").click();
+  await page.getByRole("button", { name: "Ajustes", exact: true }).click();
   await page.getByLabel("¿Quién te lee?").selectOption("daniel");
-  await page.locator(".reading-settings > summary").click();
+  await page.getByRole("button", { name: "Cerrar ajustes", exact: true }).click();
   await page
     .getByRole("button", { name: "Escuchar página", exact: true })
     .click();

@@ -11,6 +11,7 @@ import "./kids.css";
 import "./section-backgrounds.css";
 import "./story-shelves.css";
 import "./inicio.css";
+import "./lector.css";
 const nunito = Nunito_Sans({
   subsets: ["latin"],
   variable: "--font-nunito",

@@ -114,7 +114,13 @@ const unsafeStoryRules: Array<{
   {
     category: "violence",
     pattern:
-      /\b(?:asesin\w*|apunal\w*|pistola\w*|rifle\w*|arma\w*|bomba\w*|explosiv\w*|detonar\w*|tortur\w*|decapit\w*|sangrient\w*|bombard\w*)\b/u,
+      /\b(?:asesin\w*|apunal\w*|pistolas?|rifles?|armas|armamento|bombas?|explosiv\w*|detonar\w*|tortur\w*|decapit\w*|sangrient\w*|bombard\w*)\b/u,
+  },
+  {
+    category: "violence",
+    // "arma" is also the ordinary verb in "arma un cohete de cartón".
+    pattern:
+      /\b(?:un|una|el|la|con|usar|usa|lleva|comprar|disparar|fabricar|apunta)\s+arma\b/u,
   },
   {
     category: "violence",
@@ -139,12 +145,17 @@ const unsafeStoryRules: Array<{
   {
     category: "hate_or_bullying",
     pattern:
-      /\b(?:(?:burl\w*|acos\w*|insult\w*|humill\w*|llam\w*)\b.{0,45}\b(?:gay|lesbiana|bisexual|trans|cabro)\b|\b(?:gay|lesbiana|bisexual|trans|cabro)\b.{0,45}\b(?:como insulto|para burlarse|de mierda|maric[oó]n|put[oa]|idiot\w*|est[uú]pid\w*)\b)/u,
+      /\b(?:(?:burl\w*|acos\w*|insult\w*|humill\w*)\b.{0,45}\b(?:gay|lesbiana|bisexual|trans|cabro)\b|\b(?:gay|lesbiana|bisexual|trans|cabro)\b.{0,45}\b(?:como insulto|para burlarse|de mierda|maric[oó]n|put[oa]|idiot\w*|est[uú]pid\w*)\b)/u,
   },
   {
     category: "dangerous_activity",
     pattern:
-      /\b(?:cocaina|heroina|metanfetamina|fentanilo|drogas? ilegales|vender drogas?|secuestro|secuestr\w*|trata de personas|robar\w*|allanamiento|bomba casera|bomba atomica|bomba molotov|fabricar explosivos|mezclar productos de limpieza|jugar con fuego|encender fuego|saltar desde el techo|cruzar la calle sin mirar|reto viral peligroso)\b/u,
+      /\b(?:cocaina|metanfetamina|fentanilo|drogas? ilegales|vender drogas?|secuestro|secuestr\w*|trata de personas|robar\w*|allanamiento|bomba casera|bomba atomica|bomba molotov|fabricar explosivos|mezclar productos de limpieza|jugar con fuego|encender fuego|saltar desde el techo|cruzar la calle sin mirar|reto viral peligroso)\b/u,
+  },
+  {
+    category: "dangerous_activity",
+    pattern:
+      /\b(?:beber|bebe|tomar|toma|ingerir|ingiere)\b.{0,20}\b(?:lejia|veneno|detergente|cloro)\b|\b(?:droga|consumir|consume|vender|vende|inyectar|inyecta)\b.{0,20}\bheroina\b/u,
   },
   {
     category: "dangerous_activity",
@@ -154,7 +165,7 @@ const unsafeStoryRules: Array<{
   {
     category: "profanity",
     pattern:
-      /\b(?:mierd\w*|put[oa]s?|jod\w*|cabr[oó]n\w*|pendej\w*|verg\w*|chingad\w*|caraj\w*|gonorre\w*|malparid\w*|cojone\w*|maric[oó]n\w*|imb[eé]cil\w*|est[uú]pid\w*|idiot\w*)\b/u,
+      /\b(?:mierdas?|put[oa]s?|jod(?:er|ido|ida|idos|idas|ete|anse)|cabron(?:es|a|as)?|pendej[oa]s?|vergas?|chingad[oa]s?|carajos?|gonorrea|malparid[oa]s?|cojones|maricon(?:es|a|as)?|imbecil(?:es)?|estupid[oa]s?|idiotas?|sons[oa]s?|zonz[oa]s?|tont[oa]s?)\b/u,
   },
 ];
 
@@ -245,6 +256,8 @@ const profanityTerms = [
   "zonza",
   "zonzito",
   "zonzita",
+  "tonto",
+  "tonta",
   "cagar",
   "cagada",
   "hijueputa",
@@ -287,7 +300,6 @@ const violenceTerms = [
   "apunalar",
   "pistola",
   "rifle",
-  "arma",
   "bomba",
   "explosivo",
   "detonar",
@@ -307,7 +319,6 @@ const crimeTerms = [
   "robar",
   "allanamiento",
   "cocaina",
-  "heroina",
   "metanfetamina",
   "fentanilo",
 ];

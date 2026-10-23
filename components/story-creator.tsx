@@ -32,6 +32,7 @@ import { BookSpread } from "./book-spread";
 import { ReadingPause } from "./reading-pause";
 import { useNarration } from "./use-narration";
 import { ReadingSettings } from "./reading-settings";
+import { useReadingFont } from "./use-reading-font";
 import { ReadingHelp } from "./reading-help";
 import { GeneratedScene } from "./generated-scene";
 import {
@@ -102,7 +103,7 @@ export function StoryCreator() {
   const [error, setError] = useState("");
   const [gatewayUnavailable, setGatewayUnavailable] = useState(false);
   const [creating, setCreating] = useState(false);
-  const [fontSize, setFontSize] = useState(5);
+  const [fontSize, setFontSize] = useReadingFont();
   const [position, setPosition] = useState({ paragraph: 0, word: 0 });
   const [animate, setAnimate] = useState(true);
   const [compact, setCompact] = useState(false);
@@ -254,7 +255,6 @@ export function StoryCreator() {
     setCoverFromCollection(book.collection);
     setCoverState(book.cover ? "ready" : "unavailable");
     setPosition({ paragraph: 0, word: 0 });
-    setFontSize(5);
     setQuestionIndex(0);
     setWrongAttempts(0);
     setSelectedAnswer(null);
@@ -409,7 +409,6 @@ export function StoryCreator() {
       setAudioTokens(data.audioTokens ?? []);
       setIdea("");
       setPosition({ paragraph: 0, word: 0 });
-      setFontSize(5);
       setQuestionIndex(0);
       setWrongAttempts(0);
       setSelectedAnswer(null);
@@ -913,8 +912,17 @@ export function StoryCreator() {
             pageKey={`${story.title}-${currentPageIndex}-${fontSize}`}
             level={level}
             authorizations={audioTokens}
-          />
+          >
+            <ReadingPause
+              key={`${story.title}-${currentPageIndex}`}
+              scene={getIllustrationScene(
+                currentPage?.paragraph ?? 0,
+                story.paragraphs.length,
+              )}
+            />
+          </ReadingHelp>
           <BookSpread
+            paragraphs={story.paragraphs}
             animated={animate}
             fontSize={fontSteps[fontSize].pixels}
             onNavigate={(offset) => turnPage(currentPageIndex + offset)}
@@ -1019,14 +1027,6 @@ export function StoryCreator() {
             )}
           </div>
 
-          <ReadingPause
-            key={currentPage?.paragraph ?? 0}
-            scene={getIllustrationScene(
-              currentPage?.paragraph ?? 0,
-              story.paragraphs.length,
-            )}
-          />
-
           <div className="creator-cover-status">
             {coverState === "loading" ? (
               <p role="status" aria-live="polite">
@@ -1039,8 +1039,8 @@ export function StoryCreator() {
               </p>
             ) : coverState === "unavailable" ? (
               <p role="status">
-                Algunas imágenes no llegaron. Ya hay dibujos en cada página; puedes
-                intentarlo otra vez.{" "}
+                Algunas imágenes no llegaron. Ya hay dibujos en cada página;
+                puedes intentarlo otra vez.{" "}
                 <button
                   className="text-button"
                   type="button"
