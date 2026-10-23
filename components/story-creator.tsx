@@ -42,6 +42,8 @@ import {
   type ScenePlan,
 } from "@/lib/story-illustrations";
 import { useAnswerSound, SoundControl, ReadFeedback } from "./answer-audio";
+import { InterruptorAudio } from "./interruptor-audio";
+import { estaActivo, reproducir } from "@/lib/sonidos";
 import { BookShelf } from "./book-shelf";
 import {
   listSavedBooks,
@@ -470,9 +472,12 @@ export function StoryCreator() {
 
   function turnPage(next: number) {
     stopSpeaking();
-    const target = pages[Math.max(0, Math.min(next, pages.length - 1))];
-    if (target)
+    const targetIndex = Math.max(0, Math.min(next, pages.length - 1));
+    const target = pages[targetIndex];
+    if (target) {
+      if (targetIndex !== currentPageIndex) reproducir("pagina");
       setPosition({ paragraph: target.paragraph, word: target.start });
+    }
   }
 
   function resizeFont(next: number) {
@@ -509,7 +514,13 @@ export function StoryCreator() {
   function answerQuestion(answer: number) {
     if (selectedAnswer !== null || !currentQuestion) return;
     setSelectedAnswer(answer);
-    answerSound.play(answer === currentQuestion.correctIndex);
+    const correct = answer === currentQuestion.correctIndex;
+    if (estaActivo()) {
+      // The new sounds replace the old answer tones so they never overlap.
+      reproducir(correct ? "correcta" : "incorrecta");
+      // After a wrong answer a hint appears: a soft note announces it.
+      if (!correct) window.setTimeout(() => reproducir("pista"), 420);
+    } else answerSound.play(correct);
     if (answer !== currentQuestion.correctIndex)
       setWrongAttempts((attempts) => attempts + 1);
   }
@@ -1251,6 +1262,10 @@ export function StoryCreator() {
           </Link>
         </section>
       ) : null}
+      {/* Temporal: para probar el audio aquí hasta que esté en Ajustes. */}
+      <div style={{ maxWidth: 320, margin: "32px auto 0" }}>
+        <InterruptorAudio />
+      </div>
     </div>
   );
 }
