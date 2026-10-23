@@ -102,8 +102,9 @@ export function ReadingSettings({
             </button>
           ) : null}
           {/* AQUÍ: interruptor de sonido y música (Fabio). Audio apagado por defecto. */}
-          {/* AQUÍ: selector de nivel y desbloqueo (Iván); conservar ?nivel= en la URL. */}
+          {/* XP-IVAN: selector de nivel */}
           {children}
+          {/* XP-IVAN: borrar progreso */}
         </div>
       </dialog>
     </div>

@@ -253,6 +253,7 @@ export function ReadingHelp({
         <Lightbulb size={18} aria-hidden="true" /> No entendí
       </button>
       {children}
+      {/* XP-IVAN: barra compacta */}
       <span className="sr-only" role="status">
         {notice ||
           (selection

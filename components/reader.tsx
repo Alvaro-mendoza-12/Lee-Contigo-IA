@@ -332,7 +332,6 @@ export function Reader({
                 />
               ) : null}
             </ReadingHelp>
-            {/* AQUÍ: barra de experiencia compacta (Iván). */}
             {fullText ? (
               <div
                 className="story-text book-full-text"
