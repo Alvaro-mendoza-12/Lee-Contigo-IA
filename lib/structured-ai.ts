@@ -2,7 +2,11 @@ import { generateText, Output } from "ai";
 import { z } from "zod";
 import { getTextAiFallbackModels, getTextAiModel } from "./ai-models.ts";
 import { getGatewayFailureDetails } from "./ai-diagnostics.ts";
-import { generateOpenRouterObject, getOpenRouterKeys } from "./openrouter.ts";
+import {
+  generateOpenRouterObject,
+  getOpenRouterKeys,
+  OpenRouterError,
+} from "./openrouter.ts";
 import {
   generateCloudflareObject,
   hasCloudflareText,
@@ -70,11 +74,13 @@ export async function generateStructuredText<T>({
                 deadline,
                 AbortSignal.timeout(
                   Math.min(
-                    feature === "generated-story"
-                      ? 15_000
-                      : cloudflare
-                        ? 2_000
-                        : 4_500,
+                    feature === "story-safety"
+                      ? 1_500
+                      : feature === "generated-story"
+                        ? 15_000
+                        : cloudflare
+                          ? 2_000
+                          : 4_500,
                     Math.floor(timeoutMs * 0.55),
                   ),
                 ),
@@ -92,7 +98,16 @@ export async function generateStructuredText<T>({
     }
   }
   const routerMs = cloudflare
-    ? openRouterBudget(timeoutMs, Date.now() - started)
+    ? feature === "story-safety"
+      ? // Short classifications do not need the 8.5–18s story-generation reserve.
+        // That reserve previously left OpenRouter no time in a 7–8s review.
+        Math.max(
+          0,
+          timeoutMs -
+            (Date.now() - started) -
+            Math.min(2_000, timeoutMs * 0.25),
+        )
+      : openRouterBudget(timeoutMs, Date.now() - started)
     : timeoutMs;
   if (keys.length && routerMs > 250) {
     try {
@@ -114,6 +129,9 @@ export async function generateStructuredText<T>({
         feature,
         provider: "openrouter",
         name: error instanceof Error ? error.name : "unknown",
+        ...(error instanceof OpenRouterError
+          ? { status: error.status, category: error.category }
+          : {}),
       });
     }
   }
