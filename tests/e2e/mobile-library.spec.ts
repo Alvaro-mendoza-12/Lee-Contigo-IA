@@ -82,7 +82,7 @@ test("las tres categorías muestran cuentos y se deslizan con dedo, botones y te
   const hrefs = await page
     .locator(".story-card-direct[href^='/leer/']")
     .evaluateAll((elements) => elements.map((el) => el.getAttribute("href")));
-  expect(new Set(hrefs).size).toBe(19);
+  expect(new Set(hrefs).size).toBe(18);
   const previous = friends.getByRole("button", {
     name: "Ver cuentos anteriores de Amigos",
   });

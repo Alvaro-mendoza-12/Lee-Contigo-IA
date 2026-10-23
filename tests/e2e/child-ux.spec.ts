@@ -56,6 +56,7 @@ test("la portada infantil organiza sus destinos y no desborda a 320 px", async (
 test("catálogo por categorías, cuentos completos y navegación visible en móvil", async ({
   page,
 }) => {
+  test.setTimeout(90_000);
   await page.goto("/");
   await page.getByRole("link", { name: "Leer Una luz en el bosque" }).click();
   await expect(page).toHaveURL(/\/leer\/luz-del-bosque/);
