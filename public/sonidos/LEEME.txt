@@ -1,0 +1,3 @@
+Marcador: aquí van musica.ogg y musica.mp3 (música de fondo infantil, en bucle).
+Antes de agregarlas, registra autor, fuente y licencia en licencias/README.md.
+Mientras no existan, lib/sonidos.ts usa una caja musical generada por código.

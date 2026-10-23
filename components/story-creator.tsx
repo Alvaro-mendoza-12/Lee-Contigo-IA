@@ -41,7 +41,9 @@ import {
   pageImagesSchema,
   type ScenePlan,
 } from "@/lib/story-illustrations";
-import { useAnswerSound, SoundControl, ReadFeedback } from "./answer-audio";
+import { ReadFeedback } from "./answer-audio";
+import { InterruptorAudio } from "./interruptor-audio";
+import { reproducir, reproducirRespuesta } from "@/lib/sonidos";
 import { BookShelf } from "./book-shelf";
 import {
   listSavedBooks,
@@ -129,7 +131,6 @@ export function StoryCreator() {
     stop: stopNarration,
   } = useNarration();
   const canSpeak = true;
-  const answerSound = useAnswerSound();
   const [audioTokens, setAudioTokens] = useState<string[]>([]);
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
   const [questionIndex, setQuestionIndex] = useState(0);
@@ -483,9 +484,12 @@ export function StoryCreator() {
 
   function turnPage(next: number) {
     stopSpeaking();
-    const target = pages[Math.max(0, Math.min(next, pages.length - 1))];
-    if (target)
+    const targetIndex = Math.max(0, Math.min(next, pages.length - 1));
+    const target = pages[targetIndex];
+    if (target) {
+      if (targetIndex !== currentPageIndex) reproducir("pagina");
       setPosition({ paragraph: target.paragraph, word: target.start });
+    }
   }
 
   function resizeFont(next: number) {
@@ -522,7 +526,8 @@ export function StoryCreator() {
   function answerQuestion(answer: number) {
     if (selectedAnswer !== null || !currentQuestion) return;
     setSelectedAnswer(answer);
-    answerSound.play(answer === currentQuestion.correctIndex);
+    // Only lib/sonidos.ts plays audio here: with Sonidos off, nothing sounds.
+    reproducirRespuesta(answer === currentQuestion.correctIndex);
     if (answer !== currentQuestion.correctIndex)
       setWrongAttempts((attempts) => attempts + 1);
   }
@@ -1082,10 +1087,6 @@ export function StoryCreator() {
           <div className="creator-quiz-progress" role="status">
             Pregunta {questionIndex + 1} de {story.questions.length}
           </div>
-          <SoundControl
-            enabled={answerSound.sound}
-            onChange={answerSound.setSound}
-          />
           <article className="creator-question-card">
             <span className="skill-pill">
               {comprehensionSkillLabels[currentQuestion.skill]}
@@ -1262,6 +1263,10 @@ export function StoryCreator() {
           </Link>
         </section>
       ) : null}
+      {/* Temporal: para probar el audio aquí hasta que esté en Ajustes. */}
+      <div style={{ maxWidth: 320, margin: "32px auto 0" }}>
+        <InterruptorAudio />
+      </div>
     </div>
   );
 }
