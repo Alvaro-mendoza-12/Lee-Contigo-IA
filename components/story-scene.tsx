@@ -436,6 +436,9 @@ export function StoryScene({
 }) {
   const id = useId().replace(/:/g, "");
   const scene = plan.scenes[Math.min(5, paragraph)];
+  const visibleCharacters = (
+    scene.characterIndexes ?? plan.characters.map((_, i) => i)
+  ).map((i) => plan.characters[i]);
   const night = scene.time === "night" || scene.setting === "space";
   const sky = night
     ? ["#244664", "#8094a3"]
@@ -565,10 +568,10 @@ export function StoryScene({
       <g
         transform={`translate(${((frame * 13) % 31) - 15} ${offset === 1 ? 10 : 0}) scale(${1 + ((frame * 7) % 11) * 0.009})`}
       >
-        {plan.characters.map((character, i) => (
+        {visibleCharacters.map((character, i) => (
           <g
             key={i}
-            transform={`translate(${plan.characters.length === 1 ? 285 : 204 + i * 145} ${scene.action === "wait" ? 387 : 371}) ${i === 1 ? "scale(-1 1)" : ""} rotate(${scene.action === "travel" ? (i % 2 ? -5 : 5) : 0})`}
+            transform={`translate(${visibleCharacters.length === 1 ? 285 : 204 + i * 145} ${scene.action === "wait" ? 387 : 371}) ${i === 1 ? "scale(-1 1)" : ""} rotate(${scene.action === "travel" ? (i % 2 ? -5 : 5) : 0})`}
           >
             <ellipse cy="16" rx="49" ry="9" fill="#4e765c" opacity=".14" />
             <Character

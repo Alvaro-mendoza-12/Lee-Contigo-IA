@@ -46,6 +46,10 @@ import { ReadFeedback } from "./answer-audio";
 import { InterruptorAudio } from "./interruptor-audio";
 import { reproducir, reproducirRespuesta } from "@/lib/sonidos";
 import { sumarXP } from "@/lib/progreso";
+import {
+  illustrationPolicySchema,
+  type IllustrationPolicy,
+} from "@/lib/illustration-policy";
 import { BookShelf } from "./book-shelf";
 import {
   listSavedBooks,
@@ -311,7 +315,11 @@ export function StoryCreator() {
     );
     setIllustrationPlan(fallbackPlan);
     const authorizations = currentBook.current?.audioTokens;
-    if (!authorizations || authorizations.length !== 6) {
+    const illustrationPolicy = currentBook.current?.illustrationPolicy;
+    if (
+      !illustrationPolicy &&
+      (!authorizations || authorizations.length !== 6)
+    ) {
       setCoverState("unavailable");
       return;
     }
@@ -323,6 +331,7 @@ export function StoryCreator() {
           artDescription: createdStory.artDescription,
           scenes: createdStory.paragraphs,
           authorizations,
+          illustrationPolicy,
           adultReviewed: true,
         }),
         signal: AbortSignal.any([
@@ -409,6 +418,7 @@ export function StoryCreator() {
         error?: string;
         code?: string;
         audioTokens?: string[];
+        illustrationPolicy?: IllustrationPolicy;
       };
       if (controller.signal.aborted) return;
       if (!response.ok || !data.story) {
@@ -435,6 +445,9 @@ export function StoryCreator() {
       const saved = {
         ...makeSavedBook(data.story, level),
         audioTokens: data.audioTokens,
+        illustrationPolicy: data.illustrationPolicy
+          ? illustrationPolicySchema.parse(data.illustrationPolicy)
+          : undefined,
         illustrationPlan: initialPlan,
       };
       currentBook.current = saved;
