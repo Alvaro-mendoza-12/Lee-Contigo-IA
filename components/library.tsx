@@ -104,7 +104,7 @@ export function Library({
         </Link>
       </div>
 
-      {/* AQUÍ: barra de experiencia (Iván). Pasarla mediante experienceBar. */}
+      {/* XP-IVAN: barra grande */}
       <div className="home-experience-slot" data-slot="barra-xp">
         {experienceBar}
       </div>
