@@ -1,0 +1,98 @@
+/* The family's uploaded storybook art gives the pages a shared, gentle world. */
+body {
+  background-color: #fffaf0;
+  background-image:
+    url("/images/lee-contigo-fondo-infancia.webp"),
+    radial-gradient(circle at 24% 24%, #ffe58a70 0 116px, transparent 117px),
+    radial-gradient(circle at 76% 27%, #9be7ff70 0 132px, transparent 133px),
+    radial-gradient(circle at 30% 76%, #ffc2e270 0 122px, transparent 123px),
+    radial-gradient(circle at 72% 74%, #d7c4ff70 0 126px, transparent 127px);
+  background-position:
+    center top,
+    left top,
+    right top,
+    left 850px,
+    right 1320px;
+  background-repeat: no-repeat;
+  background-size:
+    min(100vw, 1500px) auto,
+    480px 480px,
+    500px 500px,
+    480px 480px,
+    500px 500px;
+  background-attachment: scroll;
+}
+
+.kid-library,
+.creator-page,
+.reader-page,
+.practice-page {
+  position: relative;
+  isolation: isolate;
+  --section-wash: rgba(255, 255, 255, 0.08);
+}
+
+.kid-library::before,
+.creator-page::before,
+.reader-page::before,
+.practice-page::before {
+  position: absolute;
+  z-index: -1;
+  inset: 0 -20px;
+  border-radius: 32px;
+  background: linear-gradient(
+    145deg,
+    var(--section-wash),
+    rgba(255, 255, 255, 0.03) 60%,
+    var(--section-wash)
+  );
+  content: "";
+  pointer-events: none;
+}
+
+.kid-library {
+  --section-wash: rgba(255, 220, 119, 0.2);
+}
+
+.creator-page {
+  --section-wash: rgba(214, 198, 255, 0.2);
+}
+
+.reader-page {
+  --section-wash: rgba(161, 220, 247, 0.2);
+}
+
+.practice-page {
+  --section-wash: rgba(177, 231, 188, 0.22);
+}
+
+@media (max-width: 760px) {
+  body {
+    background-position:
+      center top,
+      left top,
+      right top,
+      left 700px,
+      right 1150px;
+    background-size:
+      100% auto,
+      340px 340px,
+      360px 360px,
+      340px 340px,
+      360px 360px;
+  }
+
+  .kid-library::before,
+  .creator-page::before,
+  .reader-page::before,
+  .practice-page::before {
+    inset-inline: -10px;
+    border-radius: 24px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body {
+    background-attachment: scroll;
+  }
+}

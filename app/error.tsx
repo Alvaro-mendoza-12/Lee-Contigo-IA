@@ -11,7 +11,7 @@ export default function ErrorPage({ reset }: { reset: () => void }) {
       <button className="button" onClick={reset}>
         Intentar de nuevo
       </button>
-      <Link className="text-button" href="/biblioteca">
+      <Link className="text-button" href="/">
         Volver a las historias
       </Link>
     </div>

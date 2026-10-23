@@ -6,17 +6,33 @@ const defaultModels = [
   "nvidia/nemotron-3.5-super-vl:free",
 ];
 
-export function getOpenRouterKeys() {
+export function getOpenRouterKeys(
+  environment: Record<string, string | undefined> = process.env,
+) {
+  const names = Object.keys(environment)
+    .filter(
+      (name) =>
+        name === "OPENROUTER_API_KEY" ||
+        /^OPENROUTER_API_KEY_(?:[2-9]|[1-9]\d+)$/.test(name),
+    )
+    .sort(
+      (a, b) =>
+        Number(a.replace("OPENROUTER_API_KEY", "").slice(1) || 1) -
+        Number(b.replace("OPENROUTER_API_KEY", "").slice(1) || 1),
+    );
+  let pool: unknown[] = [];
+  try {
+    const parsed: unknown = JSON.parse(environment.OPENROUTER_API_KEYS ?? "[]");
+    if (Array.isArray(parsed)) pool = parsed;
+  } catch {
+    // A malformed optional pool must not disable the existing credentials.
+  }
   return [
     ...new Set(
-      [
-        process.env.OPENROUTER_API_KEY,
-        process.env.OPENROUTER_API_KEY_2,
-        process.env.OPENROUTER_API_KEY_3,
-        process.env.OPENROUTER_API_KEY_4,
-      ]
-        .map((key) => key?.trim())
-        .filter((key): key is string => Boolean(key)),
+      [...names.map((name) => environment[name]), ...pool]
+        .filter((key): key is string => typeof key === "string")
+        .map((key) => key.trim())
+        .filter(Boolean),
     ),
   ];
 }
@@ -97,6 +113,7 @@ export async function generateOpenRouterObject<T>({
             { role: "user", content: prompt },
           ],
           max_tokens: maxOutputTokens,
+          reasoning: { enabled: false, exclude: true },
           provider: {
             require_parameters: true,
             data_collection: "deny",

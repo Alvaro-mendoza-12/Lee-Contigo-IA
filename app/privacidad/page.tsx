@@ -14,7 +14,8 @@ export default function Privacy() {
         El nivel y las respuestas seleccionadas se usan en memoria para mostrar
         el recorrido. No guardamos perfiles ni respuestas en una base de datos o
         en el almacenamiento del navegador. Al recargar o salir de la sesión se
-        reinicia el progreso.
+        reinicia el progreso de las preguntas. Los libros creados tienen un
+        guardado temporal independiente, descrito más abajo.
       </p>
       <h2>Qué se envía al solicitar una pista</h2>
       <p>
@@ -27,9 +28,11 @@ export default function Privacy() {
         puede servirse mediante Google o Google Vertex AI; GPT-5.4 Nano,
         mediante OpenAI o Azure. La selección depende de las rutas disponibles
         en AI Gateway. Como respaldo, el servidor puede usar OpenRouter con
-        modelos gratuitos. En OpenRouter se solicita excluir proveedores que
-        declaran usar el contenido para entrenamiento; esto no garantiza que no
-        exista retención técnica. Consulta su{" "}
+        modelos gratuitos. Si ambos servicios fallan y hay cuota disponible, el
+        servidor puede usar Llama 3.3 70B mediante Cloudflare Workers AI con las
+        mismas validaciones de formato y contenido. En OpenRouter se solicita
+        excluir proveedores que declaran usar el contenido para entrenamiento;
+        esto no garantiza que no exista retención técnica. Consulta su{" "}
         <a
           href="https://openrouter.ai/docs/guides/privacy/provider-logging"
           target="_blank"
@@ -53,7 +56,11 @@ export default function Privacy() {
         OpenAI o Azure pueden servir el respaldo. Las políticas y condiciones de
         cada proveedor pueden variar. Si AI Gateway falla, puede intentarse
         mediante OpenRouter con modelos gratuitos y las mismas validaciones.
-        Consulta la{" "}
+        Cloudflare Workers AI puede actuar como último respaldo para escribir el
+        cuento, preparar sus escenas o explicar un pasaje. En ese caso recibe la
+        idea ficticia o el texto necesario para esa función, el nivel y las
+        instrucciones pedagógicas. No se envían respuestas elegidas ni un perfil
+        del estudiante. Consulta la{" "}
         <a
           href="https://cloud.google.com/privacy"
           target="_blank"
@@ -78,14 +85,30 @@ export default function Privacy() {
           política de privacidad de Microsoft
         </a>{" "}
         y las políticas del proveedor seleccionado. El filtro de no
-        entrenamiento no se activa y no se fuerza retención cero. Después, otra
-        solicitud automática usa la descripción visual y cuatro fragmentos del
-        cuento generado para ilustrar sus escenas; no vuelve a enviar la idea
-        original. La aplicación no guarda la idea, el cuento ni la imagen en una
-        cuenta, base de datos o almacenamiento del navegador: permanecen en
-        memoria mientras la página está abierta. El proveedor de IA y el
-        alojamiento pueden procesar las solicitudes y datos técnicos según sus
-        propias condiciones.
+        entrenamiento no se activa y no se fuerza retención cero. El proveedor
+        de IA y el alojamiento pueden procesar las solicitudes y datos técnicos
+        según sus propias condiciones. Las ilustraciones se preparan
+        automáticamente mediante el recorrido descrito más abajo.
+      </p>
+      <h2>Mis libros: guardado temporal en este dispositivo</h2>
+      <p>
+        Los seis libros más recientes se guardan automáticamente en una base
+        local del navegador (IndexedDB), junto con su nivel e ilustraciones.
+        Están disponibles durante siete días desde su creación. Al volver a
+        abrir este espacio se eliminan los registros vencidos y los que superan
+        el límite de seis. Si no abres la web, el navegador puede conservar
+        físicamente esos registros hasta la siguiente visita o hasta que borres
+        sus datos.
+      </p>
+      <p>
+        El guardado no incluye la idea original, respuestas, intentos ni un
+        perfil del niño. No sincroniza libros entre dispositivos ni los sube a
+        una cuenta. Otras personas que usen el mismo navegador pueden abrirlos.
+        Puedes borrar un libro o todos desde «Mis libros», o borrar los datos
+        del sitio en tu navegador. La navegación privada, la falta de espacio o
+        la limpieza del navegador pueden impedir el guardado o eliminar los
+        libros antes. Si falla, podrás seguir leyendo mientras la página esté
+        abierta.
       </p>
       <p>
         El cuento incluye tres tipos de preguntas —buscar información, inferir y
@@ -100,12 +123,82 @@ export default function Privacy() {
         frases que parecen datos personales, pero no puede reconocer todos los
         nombres ni todos los datos sensibles. No escribas información real:
         inventa personajes y lugares. Una persona adulta debe revisar la idea y
-        leer el resultado junto contigo. Al pulsar «Crear mi cuento» se añaden
-        ilustraciones originales de la colección: son paisajes decorativos, no
-        imágenes generadas a partir de esa idea ni evidencia para responder las
-        preguntas. En este modo gratuito no se envía la historia a un proveedor
-        de imágenes. Si el cuento incluye algo extraño, cierra la página y crea
-        otro.
+        leer el resultado junto contigo. Las ilustraciones acompañan el relato;
+        las respuestas de comprensión se comprueban con el texto. Si el cuento
+        incluye algo extraño, cierra la página y crea otro.
+      </p>
+      <h2>Ayuda para una palabra, frase o párrafo</h2>
+      <p>
+        Seleccionar texto no hace una llamada a la IA. Al pulsar «Ayúdame con
+        esta parte» o «Ayuda con este párrafo», el servidor reconstruye el
+        pasaje del catálogo o verifica la autorización de un párrafo de un libro
+        creado. Puede enviar a AI Gateway u OpenRouter el párrafo, la parte
+        seleccionada, el nivel y la etapa de ayuda. No enviamos una respuesta
+        libre ni grabamos voz. La explicación, el ejemplo y la pregunta guiada
+        pueden contener errores y deben contrastarse con el relato. Si el
+        servicio falla, mostramos una ayuda preparada identificada como tal. Los
+        fragmentos de cuentos creados no se guardan en la caché de ayuda del
+        servidor; los resultados de catálogo se reutilizan por un periodo corto.
+        No guardamos un historial personal de las consultas.
+      </p>
+      <h2>Ilustraciones con personajes</h2>
+      <p>
+        Los libros nuevos muestran de inmediato composiciones vectoriales de
+        personajes, objetos y lugares. El servidor puede pedir un plan de seis
+        escenas a la IA y, cuando Cloudflare Workers AI está configurado, enviar
+        los párrafos autorizados y la descripción ficticia de los personajes a
+        FLUX.1 schnell para generar seis imágenes. No enviamos la idea original,
+        las respuestas ni identificadores del estudiante a Cloudflare. Las
+        imágenes generadas pueden no representar exactamente el relato y no
+        sustituyen su texto. Si el proveedor falla o se agota su cuota,
+        conservamos las composiciones vectoriales. Las imágenes y el plan se
+        guardan con el libro en este navegador durante el periodo indicado. Los
+        libros anteriores conservan sus ilustraciones. Consulta las{" "}
+        <a
+          href="https://developers.cloudflare.com/workers-ai/platform/data-usage/"
+          target="_blank"
+          rel="noreferrer"
+        >
+          condiciones de datos de Workers AI
+        </a>
+        ; no prometemos retención cero de todos los proveedores implicados.
+      </p>
+      <h2>Escuchar una página o una ayuda</h2>
+      <p>
+        Al pulsar «Escuchar», el texto de esa página puede enviarse a ElevenLabs
+        para generar una narración en español. Puedes elegir entre George, Sarah
+        y Daniel; la preferencia de voz se recuerda localmente hasta que borres
+        los datos del sitio. No enviamos la voz del niño, sus respuestas ni
+        identificadores de estudiante. Los párrafos de libros nuevos llevan una
+        autorización del servidor; los libros antiguos pueden usar directamente
+        la voz del dispositivo. Las grabaciones de los niños no se solicitan ni
+        se capturan.
+      </p>
+      <p>
+        En «No entendí», «Escuchar ayuda» puede enviar a ElevenLabs la
+        explicación, el ejemplo y la pregunta guiada que acabas de recibir.
+        Utiliza la misma voz elegida para el libro. El servidor autoriza ese
+        texto exacto durante diez minutos; no admite texto libre para narrar. Si
+        no hay autorización o el servicio falla, se intenta la voz del
+        dispositivo. No se añade un perfil ni se guardan las dudas del niño.
+      </p>
+      <p>
+        ElevenLabs puede procesar y conservar el texto y el audio según sus
+        condiciones; el plan de demostración no ofrece una garantía de retención
+        cero. El servidor reutiliza temporalmente audio de cuentos del catálogo,
+        y el navegador reutiliza hasta seis páginas durante la sesión. Si el
+        servicio falla o llega a su límite, se intenta la síntesis de voz del
+        dispositivo. El estado del lector indica cuándo usa esa alternativa.
+        Narración con ElevenLabs: elevenlabs.io. Consulta su{" "}
+        <a
+          href="https://elevenlabs.io/privacy-policy"
+          target="_blank"
+          rel="noreferrer"
+        >
+          política de privacidad
+        </a>
+        . El audio de esta demo se utiliza bajo las condiciones del plan
+        configurado; el uso comercial necesita la licencia correspondiente.
       </p>
       <h2>Pistas con IA y pistas preparadas</h2>
       <p>
@@ -141,10 +234,11 @@ export default function Privacy() {
       </p>
       <h2>Volver a empezar</h2>
       <p>
-        Recarga la página o cierra la web para borrar el estado local de la
-        historia. No hay una cuenta que debas eliminar.
+        Recargar la página reinicia las respuestas y los intentos. Tus libros
+        permanecen en «Mis libros» durante el periodo indicado; usa sus botones
+        de borrado para quitarlos antes. No hay una cuenta que debas eliminar.
       </p>
-      <Link className="button button-outline" href="/biblioteca">
+      <Link className="button button-outline" href="/">
         Volver a las historias
       </Link>
     </article>

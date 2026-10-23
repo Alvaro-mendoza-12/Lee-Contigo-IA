@@ -13,6 +13,8 @@ export type BookPage = {
   book: string;
   number: number;
   text: string;
+  paragraph?: number;
+  startWord?: number;
   chapter: string;
   illustration: ReactNode;
 };
@@ -30,6 +32,7 @@ export function BookSpread({
   onNavigate: (offset: number) => void;
 }) {
   const latest = useRef(page);
+  const touchStart = useRef<{ x: number; y: number } | null>(null);
   const [opening, setOpening] = useState(true);
   const [turn, setTurn] = useState<{
     id: string;
@@ -82,6 +85,8 @@ export function BookSpread({
         <p
           className={copy ? "paper-copy-paragraph" : "book-page-text"}
           id={copy ? undefined : "lectura"}
+          data-help-paragraph={copy ? undefined : item.paragraph}
+          data-help-start={copy ? undefined : item.startWord}
         >
           {item.text}
         </p>
@@ -113,12 +118,33 @@ export function BookSpread({
         className="paper-book"
         role="region"
         tabIndex={0}
-        aria-label="Libro ilustrado. Usa las flechas para pasar páginas."
+        aria-label="Libro ilustrado. Usa las flechas o desliza el dedo para pasar páginas."
         onKeyDown={(event) => {
           if (event.key === "ArrowRight" || event.key === "ArrowLeft") {
             event.preventDefault();
             onNavigate(event.key === "ArrowRight" ? 1 : -1);
           }
+        }}
+        onTouchStart={(event) => {
+          const touch = event.touches[0];
+          touchStart.current =
+            event.touches.length === 1
+              ? { x: touch.clientX, y: touch.clientY }
+              : null;
+        }}
+        onTouchEnd={(event) => {
+          const start = touchStart.current;
+          touchStart.current = null;
+          if (!start) return;
+          const touch = event.changedTouches[0];
+          const dx = touch.clientX - start.x;
+          const dy = touch.clientY - start.y;
+          // A clear sideways swipe turns the page; vertical moves still scroll.
+          if (Math.abs(dx) >= 50 && Math.abs(dx) > Math.abs(dy) * 1.5)
+            onNavigate(dx < 0 ? 1 : -1);
+        }}
+        onTouchCancel={() => {
+          touchStart.current = null;
         }}
       >
         <div className="paper-cover" aria-hidden="true" />

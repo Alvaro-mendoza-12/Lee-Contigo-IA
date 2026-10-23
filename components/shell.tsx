@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { BookOpen, Leaf, ArrowUpRight, Sparkles } from "lucide-react";
+import { BookOpen, Leaf } from "lucide-react";
 export function Logo() {
   return (
     <span className="brand">
@@ -20,16 +20,17 @@ export function Header() {
         <Link href="/" aria-label="LeeContigo IA, inicio">
           <Logo />
         </Link>
-        <nav aria-label="Navegación principal">
-          <Link href="/biblioteca">Las historias</Link>
-          <Link href="/crear">
-            <Sparkles size={14} aria-hidden="true" /> Crea tu cuento
+        <nav aria-label="Navegación principal" className="kid-nav">
+          <Link href="/">
+            <span aria-hidden="true">📚</span> Cuentos
           </Link>
-          <Link href="/acompanar">Para acompañar</Link>
+          <Link href="/crear">
+            <span aria-hidden="true">✨</span> Crear
+          </Link>
+          <Link href="/acompanar">
+            <span aria-hidden="true">👨‍👩‍👧</span> Adultos
+          </Link>
         </nav>
-        <Link href="/biblioteca" className="button button-small header-cta">
-          Vamos a leer <ArrowUpRight size={17} />
-        </Link>
       </div>
     </header>
   );
@@ -39,9 +40,7 @@ export function Footer() {
     <footer className="site-footer">
       <div className="container footer-inner">
         <Logo />
-        <span>Pequeñas lecturas. Grandes descubrimientos.</span>
         <div>
-          <Link href="/acompanar">Guía para adultos</Link>
           <Link href="/privacidad">Privacidad</Link>
         </div>
       </div>

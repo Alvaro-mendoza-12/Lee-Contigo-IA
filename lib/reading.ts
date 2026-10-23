@@ -25,23 +25,62 @@ export function paginateStory(
 ): ReadingPage[] {
   const baseLimit =
     fontSteps[Math.max(0, Math.min(size, fontSteps.length - 1))].words;
-  const mobileScale = 0.45;
+  const minimumReadableWords = 12;
+  const mobileScale = 0.72;
   const limit = compact
-    ? Math.max(size >= 8 ? 4 : 8, Math.floor(baseLimit * mobileScale))
+    ? Math.max(minimumReadableWords, Math.floor(baseLimit * mobileScale))
     : baseLimit;
   return paragraphs.flatMap((paragraph, index) => {
-    const words = paragraph.split(/\s+/);
+    const words = paragraph.trim().split(/\s+/).filter(Boolean);
     const pages: ReadingPage[] = [];
+    if (words.length === 0) return pages;
     for (let start = 0; start < words.length;) {
-      let end = Math.min(start + limit, words.length);
+      const remaining = words.length - start;
+      const pageMinimum =
+        remaining >= minimumReadableWords * 2
+          ? minimumReadableWords
+          : remaining;
+      let end = words.length;
+      if (remaining > limit && remaining >= minimumReadableWords * 2) {
+        // Share a short final section between two pages instead of leaving a
+        // few words on their own. A pair may exceed the target slightly.
+        const balancedPair = remaining <= limit * 2;
+        end = start + (balancedPair ? Math.ceil(remaining / 2) : limit);
+        if (remaining - (end - start) < minimumReadableWords)
+          end = words.length - minimumReadableWords;
+      }
+      // Long words need more room than the word count alone suggests.
+      // Keep whole words so selection and narration share the same offsets.
+      const characters = limit * 7;
+      while (
+        end - start > pageMinimum &&
+        words.slice(start, end).join(" ").length > characters
+      ) {
+        end--;
+      }
+      if (
+        pageMinimum === minimumReadableWords &&
+        words.length - end > 0 &&
+        words.length - end < minimumReadableWords
+      )
+        end = words.length - minimumReadableWords;
+      if (
+        end - start < pageMinimum &&
+        words.length - start >= pageMinimum
+      )
+        end = start + pageMinimum;
       if (end < words.length) {
         // Prefer a sentence boundary without making very short fragments.
         for (
           let candidate = end;
-          candidate >= start + Math.ceil(limit * 0.55);
+          candidate >=
+          start + Math.max(pageMinimum, Math.ceil(limit * 0.55));
           candidate--
         ) {
-          if (/[.!?…][»”\"]?$/.test(words[candidate - 1])) {
+          if (
+            words.length - candidate >= pageMinimum &&
+            /[.!?…][»”\"]?$/.test(words[candidate - 1])
+          ) {
             end = candidate;
             break;
           }

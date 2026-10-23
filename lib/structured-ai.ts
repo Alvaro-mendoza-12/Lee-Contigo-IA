@@ -3,13 +3,19 @@ import { z } from "zod";
 import { getTextAiFallbackModels, getTextAiModel } from "./ai-models.ts";
 import { getGatewayFailureDetails } from "./ai-diagnostics.ts";
 import { generateOpenRouterObject, getOpenRouterKeys } from "./openrouter.ts";
+import {
+  generateCloudflareObject,
+  hasCloudflareText,
+  openRouterBudget,
+} from "./cloudflare-text.ts";
 
 export function hasTextAi() {
   return Boolean(
     process.env.AI_GATEWAY_API_KEY ||
     process.env.VERCEL_OIDC_TOKEN ||
     process.env.VERCEL === "1" ||
-    getOpenRouterKeys().length,
+    getOpenRouterKeys().length ||
+    hasCloudflareText(),
   );
 }
 
@@ -20,6 +26,7 @@ export async function generateStructuredText<T>({
   maxOutputTokens,
   timeoutMs,
   feature,
+  signal,
 }: {
   schema: z.ZodType<T>;
   instructions: string;
@@ -27,8 +34,13 @@ export async function generateStructuredText<T>({
   maxOutputTokens: number;
   timeoutMs: number;
   feature: string;
+  signal?: AbortSignal;
 }): Promise<{ output: T }> {
-  const deadline = AbortSignal.timeout(timeoutMs);
+  const started = Date.now();
+  const cloudflare = hasCloudflareText();
+  const deadline = signal
+    ? AbortSignal.any([signal, AbortSignal.timeout(timeoutMs)])
+    : AbortSignal.timeout(timeoutMs);
   const keys = getOpenRouterKeys();
   const gatewayConfigured = Boolean(
     process.env.AI_GATEWAY_API_KEY ||
@@ -52,21 +64,26 @@ export async function generateStructuredText<T>({
         },
         maxOutputTokens,
         maxRetries: 0,
-        abortSignal: keys.length
-          ? AbortSignal.any([
-              deadline,
-              AbortSignal.timeout(
-                Math.min(
-                  feature === "generated-story" ? 15_000 : 4_500,
-                  Math.floor(timeoutMs * 0.55),
+        abortSignal:
+          keys.length || cloudflare
+            ? AbortSignal.any([
+                deadline,
+                AbortSignal.timeout(
+                  Math.min(
+                    feature === "generated-story"
+                      ? 15_000
+                      : cloudflare
+                        ? 2_000
+                        : 4_500,
+                    Math.floor(timeoutMs * 0.55),
+                  ),
                 ),
-              ),
-            ])
-          : deadline,
+              ])
+            : deadline,
       });
       return { output: schema.parse(result.output) };
     } catch (error) {
-      if (!keys.length || deadline.aborted) throw error;
+      if ((!keys.length && !cloudflare) || deadline.aborted) throw error;
       console.warn("text_provider_fallback", {
         feature,
         provider: "gateway",
@@ -74,14 +91,40 @@ export async function generateStructuredText<T>({
       });
     }
   }
+  const routerMs = cloudflare
+    ? openRouterBudget(timeoutMs, Date.now() - started)
+    : timeoutMs;
+  if (keys.length && routerMs > 250) {
+    try {
+      return {
+        output: await generateOpenRouterObject({
+          schema,
+          instructions,
+          prompt,
+          maxOutputTokens,
+          signal: cloudflare
+            ? AbortSignal.any([deadline, AbortSignal.timeout(routerMs)])
+            : deadline,
+          keys,
+        }),
+      };
+    } catch (error) {
+      if (!cloudflare || deadline.aborted) throw error;
+      console.warn("text_provider_fallback", {
+        feature,
+        provider: "openrouter",
+        name: error instanceof Error ? error.name : "unknown",
+      });
+    }
+  }
+  if (!cloudflare) throw new Error("TextAiNotConfigured");
   return {
-    output: await generateOpenRouterObject({
+    output: await generateCloudflareObject({
       schema,
       instructions,
       prompt,
       maxOutputTokens,
       signal: deadline,
-      keys,
     }),
   };
 }

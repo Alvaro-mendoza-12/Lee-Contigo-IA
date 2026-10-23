@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import type { Story, Level } from "@/lib/stories";
 import { Journey } from "./journey";
+import { useAnswerSound, SoundControl, ReadFeedback } from "./answer-audio";
 type Hint = {
   hint: string;
   action?: string;
@@ -48,6 +49,7 @@ export function Practice({ story, level }: { story: Story; level: Level }) {
   const abort = useRef<AbortController | null>(null);
   const hintRequest = useRef(0);
   const question = version.questions[index];
+  const answerSound = useAnswerSound();
   useEffect(
     () => () => {
       hintRequest.current++;
@@ -79,6 +81,7 @@ export function Practice({ story, level }: { story: Story; level: Level }) {
     requestAnimationFrame(() => heading.current?.focus());
   }
   async function askHint() {
+    if (loading || hintCount >= 2) return;
     const requestId = ++hintRequest.current;
     setLoading(true);
     setReported(false);
@@ -86,7 +89,7 @@ export function Practice({ story, level }: { story: Story; level: Level }) {
     abort.current?.abort();
     const controller = new AbortController();
     abort.current = controller;
-    const timer = setTimeout(() => controller.abort(), 9000);
+    const timer = setTimeout(() => controller.abort(), 14000);
     try {
       const response = await fetch("/api/tutor", {
         method: "POST",
@@ -132,20 +135,16 @@ export function Practice({ story, level }: { story: Story; level: Level }) {
             <span>✦</span>
             <span>✧</span>
           </div>
-          <span className="small-label">
-            UNA HISTORIA, NUEVOS DESCUBRIMIENTOS
-          </span>
           <h1 ref={heading} tabIndex={-1}>
             ¡Mira todo lo que exploraste!
           </h1>
           <p>
-            Terminaste <strong>{story.title}</strong>.<br />
-            Cada vez que vuelves al texto, descubres algo más.
+            Leíste <strong>{story.title}</strong>.
           </p>
           <div className="skills-earned">
             {version.questions.map((q) => (
               <span key={q.id}>
-                <Check size={16} />
+                <Sprout size={16} aria-hidden="true" />
                 {q.skill}
               </span>
             ))}
@@ -183,7 +182,10 @@ export function Practice({ story, level }: { story: Story; level: Level }) {
           <ArrowLeft size={16} />
           Volver a leer
         </Link>
-        <span>{story.title}</span>
+        <SoundControl
+          enabled={answerSound.sound}
+          onChange={answerSound.setSound}
+        />
       </div>
       <div className="practice-layout">
         <section className="question-card">
@@ -191,7 +193,6 @@ export function Practice({ story, level }: { story: Story; level: Level }) {
             <span className="small-label">
               PREGUNTA {index + 1} DE {version.questions.length}
             </span>
-            <span className="skill-pill">{question.skill}</span>
           </div>
           <div
             className="question-track"
@@ -208,9 +209,7 @@ export function Practice({ story, level }: { story: Story; level: Level }) {
           <h1 ref={heading} tabIndex={-1}>
             {question.prompt}
           </h1>
-          <p className="question-instruction">
-            Elige la opción que te parezca mejor.
-          </p>
+          <p className="question-instruction">Elige una respuesta.</p>
           <fieldset className="answers">
             <legend className="sr-only">Opciones de respuesta</legend>
             {question.options.map((option, i) => (
@@ -219,7 +218,8 @@ export function Practice({ story, level }: { story: Story; level: Level }) {
                 className={
                   "answer " +
                   (selected === i ? "selected " : "") +
-                  (feedback === "correct" && i === selected ? "correct" : "")
+                  (feedback === "correct" && i === selected ? "correct" : "") +
+                  (feedback === "retry" && i === selected ? " incorrect" : "")
                 }
               >
                 <input
@@ -248,21 +248,35 @@ export function Practice({ story, level }: { story: Story; level: Level }) {
             ))}
           </fieldset>
           {feedback ? (
-            <div className={"answer-feedback " + feedback} role="status">
+            <div
+              className={
+                "answer-feedback " +
+                feedback +
+                (feedback === "retry" ? " feedback-incorrect" : "")
+              }
+              role="status"
+            >
               <strong>
                 {feedback === "correct"
                   ? "¡Encontraste una buena pista en el texto!"
                   : feedback === "revealed"
                     ? "Leamos juntos la parte clave."
-                    : "Probemos una vez más."}
+                    : "Aún no es la respuesta. Busquemos una pista."}
               </strong>
               <p>
                 {feedback === "correct"
                   ? question.explanation
                   : feedback === "revealed"
                     ? question.explanation
-                    : "Vuelve al relato o pide una pista. Puedes cambiar tu respuesta; aquí estamos para aprender."}
+                    : question.hints[
+                        Math.min(Math.max(incorrectAttempts - 1, 0), 1)
+                      ]}
               </p>
+              {feedback === "retry" ? (
+                <ReadFeedback
+                  text={`Aún no es la respuesta. ${question.hints[Math.min(Math.max(incorrectAttempts - 1, 0), 1)]}`}
+                />
+              ) : null}
               {feedback === "correct" || feedback === "revealed" ? (
                 <blockquote className="answer-evidence">
                   {version.paragraphs[question.paragraph]}
@@ -276,23 +290,6 @@ export function Practice({ story, level }: { story: Story; level: Level }) {
                   ¿Te ayudaría leerlo con frases más cortas? Prueba Paso a paso
                 </Link>
               ) : null}
-              {feedback === "retry" && hintCount < 2 ? (
-                <button
-                  className="text-button"
-                  disabled={loading}
-                  aria-controls="tutor-pistas"
-                  onClick={() => {
-                    void askHint();
-                    hintPanel.current?.scrollIntoView({ block: "nearest" });
-                    hintPanel.current?.focus({ preventScroll: true });
-                  }}
-                >
-                  <Lightbulb size={16} aria-hidden="true" />
-                  {loading
-                    ? "Preparando una pista…"
-                    : "Pedir una pista para reintentar"}
-                </button>
-              ) : null}
             </div>
           ) : null}
           <div className="question-actions">
@@ -304,8 +301,9 @@ export function Practice({ story, level }: { story: Story; level: Level }) {
             ) : (
               <button
                 className="button"
-                disabled={selected === null}
+                disabled={selected === null || feedback === "retry"}
                 onClick={() => {
+                  answerSound.play(selected === question.correct);
                   if (selected === question.correct) {
                     setFeedback("correct");
                     return;
@@ -313,10 +311,10 @@ export function Practice({ story, level }: { story: Story; level: Level }) {
                   const attempts = incorrectAttempts + 1;
                   setIncorrectAttempts(attempts);
                   setNeedsSupport(true);
-                  setFeedback(attempts >= 3 ? "revealed" : "retry");
+                  setFeedback("retry");
                 }}
               >
-                Explorar mi respuesta <ArrowRight size={18} />
+                Comprobar respuesta <ArrowRight size={18} />
               </button>
             )}
           </div>
@@ -350,17 +348,13 @@ export function Practice({ story, level }: { story: Story; level: Level }) {
             <span className="hint-icon">
               <Lightbulb size={25} />
             </span>
-            <span className="small-label">UN EMPUJONCITO</span>
           </div>
-          <h2>
-            ¿Lo pensamos <br />
-            juntos?
-          </h2>
-          <p>A veces, una pequeña pista abre una gran idea.</p>
+          <h2>¿Una pista?</h2>
           <button
             className="button button-outline full-width"
             onClick={askHint}
-            disabled={loading || hintCount >= 2 || feedback === "revealed"}
+            disabled={hintCount >= 2 || feedback === "revealed"}
+            aria-disabled={loading}
             aria-busy={loading}
           >
             {loading ? (
@@ -383,11 +377,6 @@ export function Practice({ story, level }: { story: Story; level: Level }) {
                   <Sparkles size={13} aria-hidden="true" />
                   {hints.source === "ai" ? "Pista con IA" : "Pista preparada"}
                 </span>
-                {hints.support === "retry" ? (
-                  <span className="hint-adaptation">
-                    Una ayuda para volver a intentarlo
-                  </span>
-                ) : null}
                 {hints.action && hints.reflection ? (
                   <div className="hint-scaffold">
                     <p>
@@ -401,36 +390,30 @@ export function Practice({ story, level }: { story: Story; level: Level }) {
                   <p>{hints.hint}</p>
                 )}
                 <details>
-                  <summary>Ver el fragmento del relato</summary>
+                  <summary>Ver el texto</summary>
                   <blockquote>{hints.quote}</blockquote>
                 </details>
-                {hints.source === "prepared" ? (
-                  <p className="hint-footnote">
-                    Usamos una pista preparada para que puedas seguir leyendo.
-                  </p>
-                ) : (
-                  <p className="hint-footnote">
-                    La IA puede equivocarse. Comprueba la pista con el relato.
-                  </p>
-                )}
-                <button
-                  className="text-button report-button"
-                  onClick={() => setReportOpen(true)}
-                >
-                  <Flag size={13} />
-                  Esta pista necesita revisión
-                </button>
+                <details className="hint-information">
+                  <summary>Sobre esta pista</summary>
+                  {hints.source === "prepared" ? (
+                    <p className="hint-footnote">
+                      Usamos una pista preparada para que puedas seguir leyendo.
+                    </p>
+                  ) : (
+                    <p className="hint-footnote">
+                      La IA puede equivocarse. Comprueba la pista con el relato.
+                    </p>
+                  )}
+                  <button
+                    className="text-button report-button"
+                    onClick={() => setReportOpen(true)}
+                  >
+                    <Flag size={13} />
+                    Esta pista necesita revisión
+                  </button>
+                </details>
               </>
-            ) : (
-              <div className="hint-empty">
-                <LeafHint />
-                <small>
-                  La respuesta está en la historia.
-                  <br />
-                  Te ayudamos a encontrarla.
-                </small>
-              </div>
-            )}
+            ) : null}
           </div>
           {reportOpen ? (
             <div className="report-box" role="status">
@@ -470,9 +453,6 @@ export function Practice({ story, level }: { story: Story; level: Level }) {
       </div>
     </div>
   );
-}
-function LeafHint() {
-  return <Sprout size={39} strokeWidth={1.2} aria-hidden="true" />;
 }
 function HeartMessage() {
   return (

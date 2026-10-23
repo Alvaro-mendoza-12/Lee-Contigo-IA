@@ -1,6 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { fontSteps, paginateStory } from "../lib/reading.ts";
+import { stories } from "../lib/stories.ts";
 
 test("la paginación conserva el relato y reduce texto por página en móvil", () => {
   const paragraphs = [
@@ -25,9 +26,52 @@ test("la paginación conserva el relato y reduce texto por página en móvil", (
     assert.equal(reconstruct(mobilePages), paragraphs.join("|"));
     assert.ok(
       desktopPages.every(
-        (page) => page.text.split(/\s+/).length <= fontSteps[size].words,
+        (page) =>
+          page.text.split(/\s+/).length <=
+          Math.max(fontSteps[size].words + 4, 23),
       ),
     );
     assert.ok(mobilePages.length >= desktopPages.length);
   }
+});
+test("las palabras largas no deforman páginas ni cambian los rangos de voz", () => {
+  const text = Array(50).fill("extraordinariamente").join(" ");
+  for (let size = 0; size < fontSteps.length; size++)
+    for (const compact of [false, true]) {
+      const pages = paginateStory([text], size, compact);
+      assert.equal(pages.map((page) => page.text).join(" "), text);
+      for (const page of pages) {
+        assert.equal(
+          page.text,
+          text.split(/\s+/).slice(page.start, page.end).join(" "),
+        );
+        assert.ok(page.end > page.start);
+      }
+      assert.ok(
+        pages.every((page) => page.text.trim().split(/\s+/).length >= 12),
+      );
+    }
+});
+
+test("ninguna página del catálogo queda reducida a un fragmento", () => {
+  for (const story of stories)
+    for (const version of Object.values(story.versions))
+      for (let size = 0; size < fontSteps.length; size++)
+        for (const compact of [false, true]) {
+          const pages = paginateStory(version.paragraphs, size, compact);
+          assert.ok(
+            pages.every((page) => page.text.trim().split(/\s+/).length >= 12),
+          );
+        }
+});
+
+test("equilibra el final de una escena antes de dejar una página suelta", () => {
+  const paragraph =
+    "Nina encontró una huella junto al sendero y llamó a su amigo para mirar con cuidado. Juntos compararon las marcas del suelo, siguieron una pista pequeña y descubrieron quién había pasado por allí. Al final, compartieron su hallazgo.";
+  for (let size = 0; size < fontSteps.length; size++)
+    for (const compact of [false, true]) {
+      const pages = paginateStory([paragraph], size, compact);
+      assert.ok(pages.every((page) => page.text.split(/\s+/).length >= 12));
+      assert.equal(pages.map((page) => page.text).join(" "), paragraph);
+    }
 });

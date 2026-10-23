@@ -23,7 +23,19 @@ export const createStoryInput = z
 export const generatedStorySchema = z.object({
   title: z.string().trim().min(3).max(70),
   subtitle: z.string().trim().min(8).max(120),
-  paragraphs: z.array(z.string().trim().min(120).max(700)).length(6),
+  paragraphs: z
+    .array(
+      z
+        .string()
+        .trim()
+        .min(80)
+        .max(360)
+        .refine((text) => {
+          const words = text.split(/\s+/).filter(Boolean).length;
+          return words >= 14 && words <= 50;
+        }, "Cada escena debe tener entre 14 y 50 palabras."),
+    )
+    .length(6),
   artDescription: z.string().trim().min(20).max(280),
   questions: z
     .array(
@@ -57,18 +69,48 @@ const personalDataPatterns = [
   /\b(?:me llamo|mi nombre es|mi direcci[oó]n|mi tel[eé]fono|mi colegio|mi escuela|vivo en|soy de)\b/i,
 ];
 
-const unsafeStoryPattern =
-  /pornograf|sexual|desnud|suicid|autolesi|mutil|sangrient|arma de fuego|drogas? ilegales|odio racial/i;
+const unsafeStoryPatterns = [
+  /\b(?:pornograf\w*|sexo|sexual\w*|desnud\w*|genital\w*|sexting|grooming)\b/,
+  /\b(?:violaci\w*|abuso sexual|tocamientos|explotaci\w* sexual)\b/,
+  /\b(?:suicid\w*|autolesi\w*|matarme|quitarme la vida|hacerme dano|hacerse dano|lastimarse|cortarme)\b/,
+  /\b(?:matar\w*|asesin\w*|apunal\w*|dispar\w*|pistola\w*|rifle\w*|bomba\w*|tortur\w*|decapit\w*|sangrient\w*)\b/,
+  /\b(?:cocaina|heroina|metanfetamina|fentanilo|drogas? ilegales|vender drogas?)\b/,
+  /\b(?:secuestro|secuestr\w*|trata de personas|robar\w*|allanamiento)\b/,
+  /\b(?:beber|bebe|tomar|tome) lejia\b|\b(?:comer|come) detergente\b|\b(?:mezclar productos de limpieza|jugar con fuego|encender fuego|saltar desde el techo|cruzar la calle sin mirar|reto viral peligroso)\b/,
+];
+
+function normalizeSafetyText(value: string) {
+  return value
+    .toLocaleLowerCase("es")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^\p{L}\p{N}\s]/gu, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+export function hasUnsafeStoryContent(value: string) {
+  const normalized = normalizeSafetyText(value);
+  return unsafeStoryPatterns.some((pattern) => pattern.test(normalized));
+}
 
 export function containsPersonalDetails(value: string) {
   return personalDataPatterns.some((pattern) => pattern.test(value));
 }
 
-export function isAppropriateStory(
+export type StoryQualityIssue =
+  | "distinct_skills"
+  | "answer_leaking_hint"
+  | "ungrounded_quote"
+  | "personal_data"
+  | "unsafe_content";
+
+export function storyQualityIssues(
   story: z.infer<typeof generatedStorySchema>,
-) {
+): StoryQualityIssue[] {
+  const issues: StoryQualityIssue[] = [];
   const skills = new Set(story.questions.map((question) => question.skill));
-  if (skills.size !== 3) return false;
+  if (skills.size !== 3) issues.push("distinct_skills");
 
   const text = [
     story.title,
@@ -106,12 +148,70 @@ export function isAppropriateStory(
     return quote.length >= 20 && paragraph.includes(quote);
   });
 
-  return (
-    hintsDoNotGiveAnswers &&
-    evidenceQuotesAreGrounded &&
-    !containsPersonalDetails(text) &&
-    !unsafeStoryPattern.test(text)
-  );
+  if (!hintsDoNotGiveAnswers) issues.push("answer_leaking_hint");
+  if (!evidenceQuotesAreGrounded) issues.push("ungrounded_quote");
+  if (containsPersonalDetails(text)) issues.push("personal_data");
+  if (hasUnsafeStoryContent(text)) issues.push("unsafe_content");
+  return issues;
+}
+
+/** Keep the model's selected evidence paragraph, but derive the displayed quote
+ * from its exact story text so the tutor never highlights an invented phrase. */
+export function groundStoryEvidence(
+  story: z.infer<typeof generatedStorySchema>,
+) {
+  return {
+    ...story,
+    questions: story.questions.map((question) => {
+      const paragraph = story.paragraphs[question.evidenceParagraph];
+      if (!paragraph) return question;
+      const paragraphText = normalizeForComparison(paragraph);
+      if (
+        paragraphText.includes(normalizeForComparison(question.evidenceQuote))
+      )
+        return question;
+
+      const sentences = paragraph.match(/[^.!?]+(?:[.!?]+|$)/gu) ?? [];
+      const candidates = sentences.flatMap((sentence) => {
+        const trimmed = sentence.trim();
+        if (trimmed.length <= 150) return [trimmed];
+        const fragments: string[] = [];
+        let fragment = "";
+        for (const word of trimmed.split(/\s+/)) {
+          if (fragment && `${fragment} ${word}`.length > 150) {
+            fragments.push(fragment);
+            fragment = word;
+          } else {
+            fragment = fragment ? `${fragment} ${word}` : word;
+          }
+        }
+        if (fragment) fragments.push(fragment);
+        return fragments;
+      }).filter((sentence) => sentence.length >= 20 && sentence.length <= 150);
+      const keywords = new Set(
+        normalizeForComparison(
+          `${question.prompt} ${question.options[question.correctIndex]} ${question.explanation}`,
+        )
+          .split(" ")
+          .filter((word) => word.length > 3),
+      );
+      const quote = candidates
+        .map((sentence) => ({
+          sentence,
+          score: normalizeForComparison(sentence)
+            .split(" ")
+            .filter((word) => keywords.has(word)).length,
+        }))
+        .sort((a, b) => b.score - a.score)[0]?.sentence;
+      return quote ? { ...question, evidenceQuote: quote } : question;
+    }),
+  };
+}
+
+export function isAppropriateStory(
+  story: z.infer<typeof generatedStorySchema>,
+) {
+  return storyQualityIssues(story).length === 0;
 }
 
 export function getIllustrationScene(
@@ -132,5 +232,5 @@ function normalizeForComparison(value: string) {
 }
 
 export function isAppropriateArtDescription(value: string) {
-  return !containsPersonalDetails(value) && !unsafeStoryPattern.test(value);
+  return !containsPersonalDetails(value) && !hasUnsafeStoryContent(value);
 }

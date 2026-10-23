@@ -30,6 +30,9 @@ import { Journey } from "./journey";
 import { ReadingPause } from "./reading-pause";
 import { useReadingLevel } from "./use-reading-level";
 import { getIllustrationScene } from "@/lib/story-creator";
+import { useNarration } from "./use-narration";
+import { ReadingHelp } from "./reading-help";
+import { ReadingSettings } from "./reading-settings";
 
 export function Reader({
   story,
@@ -50,10 +53,18 @@ export function Reader({
   const dialogRef = useRef<HTMLElement>(null);
   const expandControlRef = useRef<HTMLButtonElement>(null);
   const [animate, setAnimate] = useState(true);
-  const [reducedMotion, setReducedMotion] = useState(true);
   const [compact, setCompact] = useState(false);
-  const [speaking, setSpeaking] = useState(false);
-  const [canSpeak, setCanSpeak] = useState(false);
+  const {
+    speaking,
+    loading: voiceLoading,
+    message: voiceMessage,
+    provider: voiceProvider,
+    voice,
+    changeVoice,
+    speak,
+    stop: stopNarration,
+  } = useNarration();
+  const canSpeak = true;
   const version = story.versions[level];
   const pages = paginateStory(version.paragraphs, size, compact);
   const matchedIndex = pages.findIndex(
@@ -71,20 +82,11 @@ export function Reader({
     ];
 
   useEffect(() => {
-    setCanSpeak("speechSynthesis" in window);
-    const preference = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const update = () => {
-      setReducedMotion(preference.matches);
-      setAnimate(!preference.matches);
-    };
-    update();
-    preference.addEventListener("change", update);
     const compactPreference = window.matchMedia("(max-width: 900px)");
     const updateCompact = () => setCompact(compactPreference.matches);
     updateCompact();
     compactPreference.addEventListener("change", updateCompact);
     return () => {
-      preference.removeEventListener("change", update);
       compactPreference.removeEventListener("change", updateCompact);
       if ("speechSynthesis" in window) window.speechSynthesis.cancel();
     };
@@ -103,6 +105,7 @@ export function Reader({
       expandControlRef.current?.focus(),
     );
     function manageDialogKeys(event: KeyboardEvent) {
+      if (document.querySelector("dialog[open]")) return;
       if (event.key === "Escape") {
         setExpanded(false);
         return;
@@ -146,13 +149,11 @@ export function Reader({
 
   useEffect(() => {
     setPosition({ paragraph: 0, word: 0 });
-    if ("speechSynthesis" in window) window.speechSynthesis.cancel();
-    setSpeaking(false);
-  }, [level]);
+    stopNarration();
+  }, [level, stopNarration]);
 
   function stopVoice() {
-    if ("speechSynthesis" in window) window.speechSynthesis.cancel();
-    setSpeaking(false);
+    stopNarration();
   }
   function turnPage(next: number) {
     stopVoice();
@@ -170,22 +171,25 @@ export function Reader({
     changeLevel(next);
   }
   function readAloud() {
-    if (speaking) {
+    if (speaking || voiceLoading) {
       stopVoice();
       return;
     }
-    const utterance = new SpeechSynthesisUtterance(
+    void speak(
       fullText
         ? story.title + ". " + version.paragraphs.join(" ")
         : current.text,
+      fullText
+        ? undefined
+        : {
+            source: "catalogue",
+            storyId: story.id as import("@/lib/stories").StoryId,
+            level,
+            paragraph: current.paragraph,
+            start: current.start,
+            end: current.end,
+          },
     );
-    utterance.lang = "es";
-    utterance.rate = 0.85;
-    utterance.onend = () => setSpeaking(false);
-    utterance.onerror = () => setSpeaking(false);
-    window.speechSynthesis.cancel();
-    window.speechSynthesis.speak(utterance);
-    setSpeaking(true);
   }
 
   return (
@@ -212,9 +216,7 @@ export function Reader({
           <div className="reading-content">
             <div className="reader-book-heading">
               <div>
-                <span className="small-label">TU MOMENTO DE LECTURA</span>
                 <h1 id="reader-title">{story.title}</h1>
-                <p className="story-subtitle">{story.subtitle}</p>
               </div>
               <div
                 className="reader-level-picker"
@@ -275,13 +277,18 @@ export function Reader({
                     type="button"
                     className="text-button audio-button"
                     onClick={readAloud}
+                    aria-busy={voiceLoading}
                   >
                     {speaking ? (
                       <Square size={17} aria-hidden="true" />
                     ) : (
                       <Volume2 size={18} aria-hidden="true" />
                     )}
-                    {speaking ? "Detener lectura" : "Escuchar"}
+                    {voiceLoading
+                      ? "Cancelar voz…"
+                      : speaking
+                        ? "Detener lectura"
+                        : "Escuchar"}
                   </button>
                 ) : null}
                 <button
@@ -301,43 +308,43 @@ export function Reader({
                   )}
                   {expanded ? "Cerrar ampliación" : "Ampliar"}
                 </button>
-                <label className="book-animation-control">
-                  <input
-                    type="checkbox"
-                    checked={animate}
-                    onChange={(event) => setAnimate(event.target.checked)}
-                  />
-                  Animar páginas
-                </label>
-                <details className="book-settings">
-                  <summary>Opciones</summary>
-                  <div>
-                    {reducedMotion ? (
-                      <p>
-                        Empiezas sin movimiento por la preferencia de tu
-                        dispositivo. Puedes activarlo aquí.
-                      </p>
-                    ) : null}
-                    <button
-                      type="button"
-                      className="text-button"
-                      aria-pressed={fullText}
-                      onClick={() => {
-                        stopVoice();
-                        setFullText((value) => !value);
-                      }}
-                    >
-                      {fullText ? (
-                        <BookOpen size={16} aria-hidden="true" />
-                      ) : (
-                        <AlignLeft size={16} aria-hidden="true" />
-                      )}
-                      {fullText ? "Volver al libro" : "Ver relato completo"}
-                    </button>
-                  </div>
-                </details>
+                <ReadingSettings
+                  voice={voice}
+                  onVoiceChange={changeVoice}
+                  animate={animate}
+                  onAnimateChange={setAnimate}
+                >
+                  <button
+                    type="button"
+                    className="text-button"
+                    aria-pressed={fullText}
+                    onClick={() => {
+                      stopVoice();
+                      setFullText((value) => !value);
+                    }}
+                  >
+                    {fullText ? (
+                      <BookOpen size={16} aria-hidden="true" />
+                    ) : (
+                      <AlignLeft size={16} aria-hidden="true" />
+                    )}
+                    {fullText ? "Volver al libro" : "Ver relato completo"}
+                  </button>
+                </ReadingSettings>
               </div>
             </div>
+            <p className="voice-status" role="status">
+              {voiceMessage}
+              {voiceProvider === "elevenlabs" ? " Voz: elevenlabs.io" : ""}
+            </p>
+            <ReadingHelp
+              onOpen={stopVoice}
+              paragraphs={version.paragraphs}
+              paragraph={current.paragraph}
+              pageKey={`${story.id}-${level}-${index}-${size}-${fullText}`}
+              level={level}
+              storyId={story.id as import("@/lib/stories").StoryId}
+            />
             {fullText ? (
               <div
                 className="story-text book-full-text"
@@ -349,7 +356,9 @@ export function Reader({
                 }
               >
                 {version.paragraphs.map((paragraph, i) => (
-                  <p key={i}>{paragraph}</p>
+                  <p key={i} data-help-paragraph={i}>
+                    {paragraph}
+                  </p>
                 ))}
               </div>
             ) : (
@@ -363,6 +372,8 @@ export function Reader({
                     book: `${story.id}-${level}-${size}-${compact}`,
                     number: index + 1,
                     text: current.text,
+                    paragraph: current.paragraph,
+                    startWord: current.start,
                     chapter:
                       index === 0
                         ? "Érase una vez…"
@@ -424,14 +435,10 @@ export function Reader({
                   className="button"
                   href={`/practicar/${story.id}?nivel=${level}`}
                 >
-                  Ya leí, vamos a explorar
+                  Vamos a pensar
                   <ArrowRight size={19} aria-hidden="true" />
                 </Link>
-              ) : (
-                <p className="reading-reassurance">
-                  A tu ritmo. Las preguntas te esperan al final.
-                </p>
-              )}
+              ) : null}
             </div>
             {accompanied ? (
               <div className="reading-companion-inline">

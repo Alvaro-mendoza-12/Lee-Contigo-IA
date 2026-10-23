@@ -1,6 +1,6 @@
 import type { Story, Question } from "./stories.ts";
 
-function question(
+export function question(
   id: string,
   skill: string,
   prompt: string,
@@ -16,6 +16,7 @@ function question(
 export const extraStories: Story[] = [
   {
     id: "camino-al-faro",
+    category: "aventuras",
     title: "El camino al faro",
     subtitle: "A veces, avanzar empieza por mirar con atención.",
     theme: "Curiosidad y descubrimiento",
@@ -150,6 +151,7 @@ export const extraStories: Story[] = [
   },
   {
     id: "cometa-en-equipo",
+    category: "amigos",
     title: "La cometa que aprendió a volar",
     subtitle: "Una idea crece cuando la pensamos juntos.",
     theme: "Amistad y creatividad",
