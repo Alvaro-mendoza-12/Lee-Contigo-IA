@@ -54,7 +54,7 @@ test("recorrido completo, reintento y pista de respaldo", async ({ page }) => {
       session: Object.keys(sessionStorage),
     })),
   ).toEqual({
-    local: [fontPreferenceKey, "tutorial-visto"].sort(),
+    local: [fontPreferenceKey, "tutorial-visto", "lee-contigo-progreso"].sort(),
     session: [],
   });
   expect(errors).toEqual([]);

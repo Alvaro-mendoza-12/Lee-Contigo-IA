@@ -15,6 +15,9 @@ import { storiesForShelf, storyCategories, type Level } from "@/lib/stories";
 import { useReadingLevel } from "./use-reading-level";
 import { StoryShelfRow, type StoryLocks } from "./story-shelf-row";
 import { BotonTutorial } from "./tutorial";
+import { BarraXP } from "./barra-xp";
+import { useReadingProgress } from "./use-reading-progress";
+import { nivelParaCuento } from "@/lib/progreso";
 
 const categoryIcons = {
   amigos: Users,
@@ -39,6 +42,21 @@ export function Library({
   const [level] = useReadingLevel(initialLevel);
   const catalogue = useRef<HTMLDivElement>(null);
   const shelf = storiesForShelf(level);
+  const progress = useReadingProgress();
+  const progressLocks: StoryLocks = Object.fromEntries(
+    shelf
+      .filter(
+        (story) =>
+          progress &&
+          !progress.demo &&
+          (nivelParaCuento(story.id)?.numero ?? 1) > progress.nivel.numero,
+      )
+      .map((story) => [
+        story.id,
+        `Se abre en el nivel ${nivelParaCuento(story.id)?.numero}. Sigue explorando.`,
+      ]),
+  );
+  const locks = { ...progressLocks, ...lockedStories };
 
   return (
     <div className="container kid-library child-library inicio-page">
@@ -113,9 +131,8 @@ export function Library({
         </Link>
       </div>
 
-      {/* XP-IVAN: barra grande */}
       <div className="home-experience-slot" data-slot="barra-xp">
-        {experienceBar}
+        {experienceBar ?? <BarraXP />}
       </div>
 
       <div
@@ -154,7 +171,7 @@ export function Library({
                 priority={index === 0}
                 level={level}
                 books={books}
-                lockedStories={lockedStories}
+                lockedStories={locks}
                 includeCreateCard={category.id === "aventuras"}
               />
             ) : null;

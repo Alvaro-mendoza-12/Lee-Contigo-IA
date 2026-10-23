@@ -2,7 +2,6 @@
 // TEMPORAL: página para probar el sistema de experiencia. Se borra en la Fase 4.
 import { useEffect, useRef, useState } from "react";
 import { BarraXP } from "@/components/barra-xp";
-import { AvisoNivel } from "@/components/aviso-nivel";
 import {
   DESBLOQUEOS,
   EVENTO_XP,
@@ -122,7 +121,6 @@ export default function PruebaXP() {
           </li>
         ))}
       </ul>
-      <AvisoNivel />
       <style>{`
         .xp-prueba { padding-block: 24px 48px; display: grid; gap: 12px; }
         .xp-prueba h2 { margin: 16px 0 0; font-size: 1.2rem; }

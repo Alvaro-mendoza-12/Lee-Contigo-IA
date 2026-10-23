@@ -216,6 +216,13 @@ export default function Privacy() {
       </p>
       <h2>Preferencias de lectura y guía</h2>
       <p>
+        Los puntos de práctica se guardan solo en este navegador: total de XP e
+        identificadores de actividades ya premiadas para no repetir puntos. No
+        se guardan respuestas, nombres ni un diagnóstico de habilidad. Puedes
+        borrarlos en Ajustes → Mis puntos sin borrar tus libros. La demostración
+        usa un progreso separado del recorrido normal.
+      </p>
+      <p>
         Este navegador recuerda el tamaño de letra, la voz elegida, si activaste
         los sonidos o la música y si ya viste la guía de la luciérnaga. Los
         sonidos y la música empiezan apagados; puedes cambiarlos en Ajustes.

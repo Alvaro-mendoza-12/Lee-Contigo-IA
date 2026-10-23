@@ -5,6 +5,9 @@ import type { NarrationVoice } from "@/lib/narration-voices";
 import { VoicePicker } from "./voice-picker";
 import { InterruptorAudio } from "./interruptor-audio";
 import { abrirTutorial } from "./tutorial";
+import type { Level } from "@/lib/stories";
+import { NIVEL_RETO, reiniciarProgreso } from "@/lib/progreso";
+import { useReadingProgress } from "./use-reading-progress";
 
 export function ReadingSettings({
   voice,
@@ -14,6 +17,8 @@ export function ReadingSettings({
   children,
   expanded = false,
   onExpandedChange,
+  level,
+  onLevelChange,
 }: {
   voice: NarrationVoice;
   onVoiceChange: (voice: NarrationVoice) => void;
@@ -22,7 +27,14 @@ export function ReadingSettings({
   children?: ReactNode;
   expanded?: boolean;
   onExpandedChange?: (expanded: boolean) => void;
+  level?: Level;
+  onLevelChange?: (level: Level) => void;
 }) {
+  const progress = useReadingProgress();
+  const challengeAvailable = Boolean(
+    progress && (progress.demo || progress.nivel.numero >= NIVEL_RETO),
+  );
+  const [confirmReset, setConfirmReset] = useState(false);
   const [open, setOpen] = useState(false);
   const dialog = useRef<HTMLDialogElement>(null);
   const trigger = useRef<HTMLButtonElement>(null);
@@ -117,9 +129,63 @@ export function ReadingSettings({
           >
             Ver la guía
           </button>
-          {/* XP-IVAN: selector de nivel */}
+          {level && onLevelChange ? (
+            <label className="reading-level-setting">
+              Cómo leer
+              <select
+                value={level}
+                onChange={(event) => onLevelChange(event.target.value as Level)}
+              >
+                <option value="paso">Paso a paso</option>
+                <option
+                  value="reto"
+                  disabled={!challengeAvailable && level !== "reto"}
+                >
+                  {challengeAvailable
+                    ? "Un nuevo reto"
+                    : `Un nuevo reto · nivel ${NIVEL_RETO}`}
+                </option>
+              </select>
+            </label>
+          ) : null}
           {children}
-          {/* XP-IVAN: borrar progreso */}
+          <details className="progress-reset">
+            <summary>Mis puntos</summary>
+            <p className="small">
+              Los puntos celebran tu práctica. No son una nota escolar.
+            </p>
+            {confirmReset ? (
+              <div>
+                <p>¿Borrar tus puntos aquí? Tus libros se conservan.</p>
+                <button
+                  type="button"
+                  className="text-button"
+                  onClick={() => {
+                    reiniciarProgreso();
+                    setConfirmReset(false);
+                    onLevelChange?.("paso");
+                  }}
+                >
+                  Sí, borrar puntos
+                </button>
+                <button
+                  type="button"
+                  className="text-button"
+                  onClick={() => setConfirmReset(false)}
+                >
+                  Conservar mis puntos
+                </button>
+              </div>
+            ) : (
+              <button
+                type="button"
+                className="text-button"
+                onClick={() => setConfirmReset(true)}
+              >
+                Reiniciar progreso
+              </button>
+            )}
+          </details>
         </div>
       </dialog>
     </div>

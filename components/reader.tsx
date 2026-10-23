@@ -31,6 +31,9 @@ import { useNarration } from "./use-narration";
 import { ReadingHelp } from "./reading-help";
 import { ReadingSettings } from "./reading-settings";
 import { reproducir } from "@/lib/sonidos";
+import { sumarXP } from "@/lib/progreso";
+import { useReadingLevel } from "./use-reading-level";
+import { StoryAccessGate } from "./story-access-gate";
 
 export function Reader({
   story,
@@ -43,7 +46,7 @@ export function Reader({
   accompanied?: boolean;
   goal?: ReadingGoal;
 }) {
-  const level = initialLevel;
+  const [level, changeLevel] = useReadingLevel(initialLevel);
   const [size, setSize] = useReadingFont();
   const [position, setPosition] = useState({ paragraph: 0, word: 0 });
   const [fullText, setFullText] = useState(false);
@@ -170,6 +173,8 @@ export function Reader({
     const targetIndex = Math.max(0, Math.min(next, pages.length - 1));
     const target = pages[targetIndex];
     if (targetIndex !== index) reproducir("pagina");
+    if (targetIndex !== index && targetIndex === pages.length - 1)
+      sumarXP("cuento-terminado", story.id, level);
     setPosition({ paragraph: target.paragraph, word: target.start });
   }
   function resize(next: number) {
@@ -200,7 +205,8 @@ export function Reader({
   }
 
   return (
-    <div className="container reader-page book-reader">
+    <StoryAccessGate storyId={story.id} level={level}>
+      <div className="container reader-page book-reader">
       <Journey current={2} />
       <Link href={`/biblioteca?nivel=${level}`} className="back-link">
         <ArrowLeft size={16} aria-hidden="true" />
@@ -294,6 +300,8 @@ export function Reader({
                   onAnimateChange={setAnimate}
                   expanded={expanded}
                   onExpandedChange={setExpanded}
+                  level={level}
+                  onLevelChange={changeLevel}
                 >
                   <button
                     type="button"
@@ -425,6 +433,7 @@ export function Reader({
                 <Link
                   className="button"
                   href={`/practicar/${story.id}?nivel=${level}`}
+                  onClick={() => sumarXP("cuento-terminado", story.id, level)}
                 >
                   Vamos a pensar
                   <ArrowRight size={19} aria-hidden="true" />
@@ -443,6 +452,7 @@ export function Reader({
           </div>
         </article>
       </div>
-    </div>
+      </div>
+    </StoryAccessGate>
   );
 }

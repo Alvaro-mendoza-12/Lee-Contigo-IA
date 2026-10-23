@@ -141,7 +141,10 @@ export function sumarXP(
   // Una pregunta paga una sola vez: +10 o +5, nunca ambas.
   const grupo = motivo.startsWith("pregunta-") ? "pregunta" : motivo;
   const recompensa = [grupo, idCuento, nivel, idPregunta ?? ""].join(":");
-  if (progreso.recompensas.includes(recompensa))
+  if (
+    progreso.recompensas.includes(recompensa) ||
+    progreso.recompensas.length >= 5000
+  )
     return {
       motivo,
       ganada: 0,

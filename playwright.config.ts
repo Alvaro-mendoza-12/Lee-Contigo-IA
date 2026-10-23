@@ -18,7 +18,13 @@ export default defineConfig({
         {
           origin: new URL(process.env.TEST_BASE_URL || "http://127.0.0.1:4173")
             .origin,
-          localStorage: [{ name: "tutorial-visto", value: "true" }],
+          localStorage: [
+            { name: "tutorial-visto", value: "true" },
+            {
+              name: "lee-contigo-progreso",
+              value: JSON.stringify({ version: 1, xp: 500, recompensas: [] }),
+            },
+          ],
         },
       ],
     },

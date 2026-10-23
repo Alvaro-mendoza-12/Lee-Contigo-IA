@@ -11,6 +11,7 @@ import {
   type NivelLector,
 } from "@/lib/progreso";
 import "@/app/xp.css";
+import { useReadingProgress } from "./use-reading-progress";
 
 const iconos = [Bean, Sprout, Compass, Shield, Crown];
 const tamanosIcono = { grande: 44, mediana: 34, mini: 20, aviso: 54 };
@@ -54,17 +55,15 @@ export function InsigniaXP({
 }
 
 function useProgresoXP() {
-  const [progreso, setProgreso] = useState<Progreso | null>(null);
+  const progreso = useReadingProgress();
   const [ganancia, setGanancia] = useState<{ id: number; xp: number } | null>(
     null,
   );
 
   useEffect(() => {
     let temporizador: ReturnType<typeof setTimeout> | undefined;
-    setProgreso(obtenerProgreso());
     function actualizar(evento: Event) {
       const { ganada } = (evento as CustomEvent<DetalleXP>).detail;
-      setProgreso(obtenerProgreso());
       if (ganada <= 0) return;
       setGanancia({ id: Date.now(), xp: ganada });
       clearTimeout(temporizador);

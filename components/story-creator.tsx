@@ -44,6 +44,9 @@ import {
 } from "@/lib/story-illustrations";
 import { ReadFeedback } from "./answer-audio";
 import { InterruptorAudio } from "./interruptor-audio";
+import { NIVEL_RETO, sumarXP } from "@/lib/progreso";
+import { useReadingProgress } from "./use-reading-progress";
+import { BarraXP } from "./barra-xp";
 import { reproducir, reproducirRespuesta } from "@/lib/sonidos";
 import { BookShelf } from "./book-shelf";
 import {
@@ -88,6 +91,10 @@ const ideaStarters = [
 ] satisfies { label: string; idea: string; art: StoryArtVariant }[];
 
 export function StoryCreator() {
+  const progress = useReadingProgress();
+  const challengeAvailable = Boolean(
+    progress && (progress.demo || progress.nivel.numero >= NIVEL_RETO),
+  );
   const [screen, setScreen] = useState<Screen>("form");
   const [workspace, setWorkspace] = useState<"create" | "shelf">("create");
   const [books, setBooks] = useState<SavedBook[]>([]);
@@ -437,6 +444,7 @@ export function StoryCreator() {
         illustrationPlan: initialPlan,
       };
       currentBook.current = saved;
+      sumarXP("cuento-creado", saved.id, level);
       persistBook(saved);
       await createCover(data.story);
       if (!controller.signal.aborted) setScreen("book");
@@ -489,6 +497,12 @@ export function StoryCreator() {
     const target = pages[targetIndex];
     if (target) {
       if (targetIndex !== currentPageIndex) reproducir("pagina");
+      if (
+        targetIndex !== currentPageIndex &&
+        targetIndex === pages.length - 1 &&
+        currentBook.current
+      )
+        sumarXP("cuento-terminado", currentBook.current.id, level);
       setPosition({ paragraph: target.paragraph, word: target.start });
     }
   }
@@ -529,6 +543,13 @@ export function StoryCreator() {
     setSelectedAnswer(answer);
     // Only lib/sonidos.ts plays audio here: with Sonidos off, nothing sounds.
     reproducirRespuesta(answer === currentQuestion.correctIndex);
+    if (answer === currentQuestion.correctIndex && currentBook.current)
+      sumarXP(
+        wrongAttempts === 0 ? "pregunta-primer-intento" : "pregunta-con-pista",
+        currentBook.current.id,
+        level,
+        String(questionIndex),
+      );
     if (answer !== currentQuestion.correctIndex)
       setWrongAttempts((attempts) => attempts + 1);
   }
@@ -536,6 +557,8 @@ export function StoryCreator() {
   function nextQuestion() {
     if (!story) return;
     if (questionIndex === story.questions.length - 1) {
+      if (currentBook.current)
+        sumarXP("preguntas-completas", currentBook.current.id, level);
       setScreen("complete");
       return;
     }
@@ -703,6 +726,7 @@ export function StoryCreator() {
                         name="create-level"
                         value={id}
                         checked={level === id}
+                        disabled={id === "reto" && !challengeAvailable}
                         onChange={() => setLevel(id)}
                       />
                       <span className="creator-level-icon">
@@ -714,6 +738,9 @@ export function StoryCreator() {
                       </span>
                       <span>
                         <strong>{item.label}</strong>
+                        {id === "reto" && !challengeAvailable ? (
+                          <small>Nivel {NIVEL_RETO}</small>
+                        ) : null}
                       </span>
                       {level === id ? (
                         <Check size={18} aria-hidden="true" />
@@ -1037,6 +1064,8 @@ export function StoryCreator() {
                 className="button"
                 onClick={() => {
                   stopSpeaking();
+                  if (currentBook.current)
+                    sumarXP("cuento-terminado", currentBook.current.id, level);
                   setScreen("questions");
                 }}
               >
@@ -1079,6 +1108,7 @@ export function StoryCreator() {
 
       {story && screen === "questions" && currentQuestion ? (
         <section className="creator-quiz" aria-labelledby="quiz-title">
+          <BarraXP variante="compacta" />
           <span className="small-label">LO LEÍSTE, AHORA EXPLOREMOS</span>
           <h1 id="quiz-title" ref={activeHeading} tabIndex={-1}>
             ¿Qué descubriste en el cuento?

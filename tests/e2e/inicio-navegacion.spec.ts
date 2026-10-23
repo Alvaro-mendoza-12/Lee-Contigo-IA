@@ -11,7 +11,9 @@ test("los tres destinos del inicio funcionan y Cuentos enfoca la biblioteca", as
   const destinations = page.getByRole("group", { name: "¿Qué quieres hacer?" });
   await expect(destinations.getByRole("link")).toHaveCount(3);
   await expect(page.getByRole("radio")).toHaveCount(0);
-  await expect(page.locator("[data-slot='barra-xp']")).toBeEmpty();
+  await expect(
+    page.locator("[data-slot='barra-xp'] .xp-barra-grande"),
+  ).toBeVisible();
   const books = page.locator(".story-card-direct[href^='/leer/']");
   await expect(books).toHaveCount(storiesForShelf("paso").length);
   expect(

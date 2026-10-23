@@ -30,6 +30,7 @@ function premios(nivel: NivelLector) {
 export function AvisoNivel() {
   const [nivel, setNivel] = useState<NivelLector | null>(null);
   const boton = useRef<HTMLButtonElement>(null);
+  const dialog = useRef<HTMLDialogElement>(null);
 
   useEffect(() => {
     function escuchar(evento: Event) {
@@ -46,29 +47,67 @@ export function AvisoNivel() {
   useEffect(() => {
     if (!nivel) return;
     const anterior = document.activeElement as HTMLElement | null;
-    boton.current?.focus({ preventScroll: true });
-    const cerrarConEscape = (evento: KeyboardEvent) => {
-      if (evento.key === "Escape") setNivel(null);
+    dialog.current?.showModal();
+    // Let the browser finish its modal autofocus before placing focus on the
+    // single, child-friendly action.
+    const focusFrame = requestAnimationFrame(() =>
+      boton.current?.focus({ preventScroll: true }),
+    );
+    const gestionarTeclado = (evento: KeyboardEvent) => {
+      if (evento.key === "Escape") {
+        setNivel(null);
+        return;
+      }
+      if (evento.key !== "Tab") return;
+      const elementos = Array.from(
+        dialog.current?.querySelectorAll<HTMLElement>(
+          'a[href], button:not(:disabled), input:not(:disabled), select:not(:disabled), textarea:not(:disabled), [tabindex]:not([tabindex="-1"])',
+        ) ?? [],
+      ).filter((elemento) => elemento.getClientRects().length > 0);
+      if (elementos.length <= 1) {
+        evento.preventDefault();
+        elementos[0]?.focus({ preventScroll: true });
+        return;
+      }
+      const primero = elementos[0];
+      const ultimo = elementos[elementos.length - 1];
+      if (evento.shiftKey && document.activeElement === primero) {
+        evento.preventDefault();
+        ultimo.focus();
+      } else if (!evento.shiftKey && document.activeElement === ultimo) {
+        evento.preventDefault();
+        primero.focus();
+      }
     };
     const temporizador = setTimeout(() => setNivel(null), DURACION);
-    window.addEventListener("keydown", cerrarConEscape);
+    window.addEventListener("keydown", gestionarTeclado);
     return () => {
       clearTimeout(temporizador);
-      window.removeEventListener("keydown", cerrarConEscape);
-      if (anterior?.isConnected) anterior.focus({ preventScroll: true });
+      cancelAnimationFrame(focusFrame);
+      if (dialog.current?.open) dialog.current.close();
+      window.removeEventListener("keydown", gestionarTeclado);
+      const destino = anterior?.isConnected
+        ? anterior
+        : document.querySelector<HTMLElement>("#contenido h1");
+      destino?.focus({ preventScroll: true });
     };
   }, [nivel]);
 
   if (!nivel) return null;
   return (
-    <div className="xp-aviso-fondo">
+    <dialog
+      ref={dialog}
+      className="xp-aviso-fondo"
+      role="alertdialog"
+      aria-modal="true"
+      aria-labelledby="xp-aviso-titulo"
+      aria-describedby="xp-aviso-detalle"
+      onCancel={() => setNivel(null)}
+    >
       <section
         key={nivel.numero}
         className="xp-aviso"
         data-nivel={nivel.numero}
-        role="alertdialog"
-        aria-labelledby="xp-aviso-titulo"
-        aria-describedby="xp-aviso-detalle"
       >
         <div className="xp-aviso-decoracion" aria-hidden="true">
           {confeti.map((papel, i) => (
@@ -100,6 +139,7 @@ export function AvisoNivel() {
         </p>
         <button
           ref={boton}
+          autoFocus
           type="button"
           className="xp-aviso-boton"
           onClick={() => setNivel(null)}
@@ -107,6 +147,6 @@ export function AvisoNivel() {
           ¡Genial!
         </button>
       </section>
-    </div>
+    </dialog>
   );
 }
