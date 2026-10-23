@@ -63,7 +63,7 @@ test("catálogo por categorías, cuentos completos y navegación visible en móv
     .getByRole("navigation")
     .getByRole("link", { name: "Cuentos", exact: true })
     .click();
-  const books = page.locator(".story-card-direct");
+  const books = page.locator(".story-card-direct[href^='/leer/']");
   await expect(books).toHaveCount(18);
   const hrefs = await books.evaluateAll((links) =>
     links.map((link) => link.getAttribute("href")),
@@ -79,8 +79,7 @@ test("catálogo por categorías, cuentos completos y navegación visible en móv
       ),
     ).toBeTruthy();
   }
-  await page.goto("/biblioteca");
-  await page.getByRole("radio", { name: "Un nuevo reto", exact: true }).check();
+  await page.goto("/biblioteca?nivel=reto");
   await page
     .getByRole("link", { name: "Leer El pan de la abuela", exact: true })
     .click();

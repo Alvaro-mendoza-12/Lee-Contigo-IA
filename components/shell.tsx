@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { BookOpen, Leaf } from "lucide-react";
+import { PrimaryNavigation } from "./primary-navigation";
 export function Logo() {
   return (
     <span className="brand">
@@ -20,17 +21,7 @@ export function Header() {
         <Link href="/" aria-label="LeeContigo IA, inicio">
           <Logo />
         </Link>
-        <nav aria-label="Navegación principal" className="kid-nav">
-          <Link href="/">
-            <span aria-hidden="true">📚</span> Cuentos
-          </Link>
-          <Link href="/crear">
-            <span aria-hidden="true">✨</span> Crear
-          </Link>
-          <Link href="/acompanar">
-            <span aria-hidden="true">👨‍👩‍👧</span> Adultos
-          </Link>
-        </nav>
+        <PrimaryNavigation />
       </div>
     </header>
   );
@@ -41,6 +32,7 @@ export function Footer() {
       <div className="container footer-inner">
         <Logo />
         <div>
+          <Link href="/acompanar">Acompañar</Link>
           <Link href="/privacidad">Privacidad</Link>
         </div>
       </div>

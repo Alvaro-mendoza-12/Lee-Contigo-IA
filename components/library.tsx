@@ -1,19 +1,19 @@
 "use client";
 
+import Link from "next/link";
+import { useRef, type ReactNode } from "react";
 import {
+  ArrowRight,
   BookOpen,
   Compass,
+  HeartHandshake,
   Leaf,
+  Sparkles,
   Users,
 } from "lucide-react";
-import {
-  levels,
-  storiesForShelf,
-  storyCategories,
-  type Level,
-} from "@/lib/stories";
+import { storiesForShelf, storyCategories, type Level } from "@/lib/stories";
 import { useReadingLevel } from "./use-reading-level";
-import { StoryShelfRow } from "./story-shelf-row";
+import { StoryShelfRow, type StoryLocks } from "./story-shelf-row";
 
 const categoryIcons = {
   amigos: Users,
@@ -26,49 +26,90 @@ const categoryIds = {
   aventuras: "cuentos-descubrimientos",
 };
 
-export function Library({ initialLevel = "paso" }: { initialLevel?: Level }) {
-  const [level, setLevel] = useReadingLevel(initialLevel);
+export function Library({
+  initialLevel = "paso",
+  experienceBar,
+  lockedStories,
+}: {
+  initialLevel?: Level;
+  experienceBar?: ReactNode;
+  lockedStories?: StoryLocks;
+}) {
+  const [level] = useReadingLevel(initialLevel);
+  const catalogue = useRef<HTMLDivElement>(null);
   const shelf = storiesForShelf(level);
 
   return (
-    <div className="container kid-library child-library">
-      <header className="kid-hello">
-        <h1>
-          ¡Hola! <span aria-hidden="true">👋</span>
-          <br className="kid-hello-break" />
-          ¿Qué cuento leemos hoy?
-        </h1>
+    <div className="container kid-library child-library inicio-page">
+      <header className="kid-hello home-welcome">
+        <div className="home-welcome-copy">
+          <h1>
+            ¡Hola! <span aria-hidden="true">👋</span>
+            <br className="kid-hello-break" />
+            ¿Qué cuento leemos hoy?
+          </h1>
+          <p>Historias para descubrir, imaginar y compartir a tu ritmo.</p>
+        </div>
       </header>
 
-      <fieldset className="kid-levels" data-level={level}>
-        <legend>Elige cómo leer</legend>
-        <div className="kid-level-options">
-          {(Object.keys(levels) as Level[]).map((id) => (
-            <label
-              key={id}
-              className={"kid-level" + (level === id ? " selected" : "")}
-            >
-              <input
-                type="radio"
-                name="nivel"
-                value={id}
-                checked={level === id}
-                onChange={() => setLevel(id)}
-                aria-label={levels[id].label}
-                aria-describedby="library-level-feedback"
-              />
-              <span className="kid-level-emoji" aria-hidden="true">
-                {id === "paso" ? "🐣" : "🚀"}
-              </span>
-              <span>
-                <strong>{levels[id].label}</strong>
-                <small>
-                    {id === "paso" ? "Frases cortas" : "Más largo"}
-                </small>
-              </span>
-            </label>
-          ))}
-        </div>
+      <div
+        className="home-destinations"
+        role="group"
+        aria-label="¿Qué quieres hacer?"
+      >
+        <Link
+          className="home-destination"
+          href="#cuentos"
+          aria-label="Cuentos"
+          onNavigate={() => catalogue.current?.focus({ preventScroll: true })}
+        >
+          <BookOpen
+            className="home-destination-icon"
+            size={28}
+            aria-hidden="true"
+          />
+          <span>
+            <strong>Cuentos</strong>
+            <small>Elige una historia</small>
+          </span>
+          <ArrowRight size={22} aria-hidden="true" />
+        </Link>
+        <Link className="home-destination" href="/crear" aria-label="Crear">
+          <Sparkles
+            className="home-destination-icon"
+            size={28}
+            aria-hidden="true"
+          />
+          <span>
+            <strong>Crear</strong>
+            <small>Imagina tu cuento</small>
+          </span>
+          <ArrowRight size={22} aria-hidden="true" />
+        </Link>
+        <Link
+          className="home-destination"
+          href="/acompanar"
+          aria-label="Acompañar"
+        >
+          <HeartHandshake
+            className="home-destination-icon"
+            size={28}
+            aria-hidden="true"
+          />
+          <span>
+            <strong>Acompañar</strong>
+            <small>Lean en compañía</small>
+          </span>
+          <ArrowRight size={22} aria-hidden="true" />
+        </Link>
+      </div>
+
+      {/* AQUÍ: barra de experiencia (Iván). Pasarla mediante experienceBar. */}
+      <div className="home-experience-slot" data-slot="barra-xp">
+        {experienceBar}
+      </div>
+
+      <div ref={catalogue} id="cuentos" className="home-catalogue" tabIndex={-1}>
         <p
           id="library-level-feedback"
           className="library-level-feedback"
@@ -80,28 +121,31 @@ export function Library({ initialLevel = "paso" }: { initialLevel?: Level }) {
           <span key={level}>
             {level === "paso"
               ? "Escoge una portada y empezamos."
-              : "Reto listo. Tú marcas el ritmo."}
+              : "Tú marcas el ritmo. Escoge una portada."}
           </span>
         </p>
-      </fieldset>
 
-      <div className="story-shelves">
-        {storyCategories.map((category, index) => {
-          const Icon = categoryIcons[category.id];
-          const books = shelf.filter((story) => story.category === category.id);
-          return books.length ? (
-            <StoryShelfRow
-              key={category.id}
-              id={categoryIds[category.id]}
-              title={category.title}
-              icon={<Icon size={20} aria-hidden="true" />}
-              priority={index === 0}
-              level={level}
-              books={books}
-              includeCreateCard={category.id === "aventuras"}
-            />
-          ) : null;
-        })}
+        <div className="story-shelves">
+          {storyCategories.map((category, index) => {
+            const Icon = categoryIcons[category.id];
+            const books = shelf.filter(
+              (story) => story.category === category.id,
+            );
+            return books.length ? (
+              <StoryShelfRow
+                key={category.id}
+                id={categoryIds[category.id]}
+                title={category.title}
+                icon={<Icon size={20} aria-hidden="true" />}
+                priority={index === 0}
+                level={level}
+                books={books}
+                lockedStories={lockedStories}
+                includeCreateCard={category.id === "aventuras"}
+              />
+            ) : null;
+          })}
+        </div>
       </div>
     </div>
   );

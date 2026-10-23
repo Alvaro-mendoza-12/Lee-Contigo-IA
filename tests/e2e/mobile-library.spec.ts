@@ -43,6 +43,12 @@ test("el menú móvil ocupa una fila con iconos, nombres y estado actual", async
   await expect(
     nav.getByRole("link", { name: "Cuentos", exact: true }),
   ).toHaveAttribute("href", "/");
+  await expect(
+    nav.getByRole("link", { name: "Cuentos", exact: true }),
+  ).toHaveAttribute("aria-current", "page");
+  await expect(
+    nav.getByRole("link", { name: "Acompañar", exact: true }),
+  ).toBeVisible();
   await nav.getByRole("link", { name: "Crear", exact: true }).tap();
   await expect(
     page.getByRole("heading", { name: "Crea tu cuento" }),
@@ -72,11 +78,11 @@ test("las tres categorías muestran cuentos y se deslizan con dedo, botones y te
     page
       .getByRole("region", { name: "Aventuras", exact: true })
       .getByRole("link"),
-  ).toHaveCount(8);
+  ).toHaveCount(9);
   const hrefs = await page
     .locator(".story-card-direct")
     .evaluateAll((elements) => elements.map((el) => el.getAttribute("href")));
-  expect(new Set(hrefs).size).toBe(18);
+  expect(new Set(hrefs).size).toBe(19);
   const previous = friends.getByRole("button", {
     name: "Ver cuentos anteriores de Amigos",
   });
@@ -100,7 +106,8 @@ test("las tres categorías muestran cuentos y se deslizan con dedo, botones y te
   await expect
     .poll(() => rail.evaluate((el) => el.scrollLeft))
     .toBeGreaterThan(0);
-  await page.getByRole("radio", { name: "Un nuevo reto", exact: true }).check();
+  await expect(page.getByRole("radio")).toHaveCount(0);
+  await page.goto("/biblioteca?nivel=reto");
   await expect(page.locator(".story-card-direct").first()).toHaveAttribute(
     "href",
     /nivel=reto/,

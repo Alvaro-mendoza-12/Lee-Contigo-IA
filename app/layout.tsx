@@ -10,6 +10,7 @@ import "./workshop.css";
 import "./kids.css";
 import "./section-backgrounds.css";
 import "./story-shelves.css";
+import "./inicio.css";
 const nunito = Nunito_Sans({
   subsets: ["latin"],
   variable: "--font-nunito",

@@ -1,0 +1,210 @@
+/* Piero: navigation and home only. Keep reader/creator styles in their own files. */
+.site-header .kid-nav a[aria-current="page"] {
+  background: #ffd66b;
+  color: #352560;
+  box-shadow: inset 0 -3px 0 #6a3fd6;
+}
+
+@media (max-width: 760px) {
+  .site-header .header-inner nav.kid-nav a {
+    width: auto;
+    min-height: 52px;
+    flex-direction: column;
+    justify-content: center;
+    gap: 2px;
+    padding: 6px 8px;
+    font-size: 12px;
+  }
+}
+
+.inicio-page {
+  padding-block: clamp(18px, 3vw, 40px) clamp(36px, 6vw, 72px);
+}
+
+.inicio-page::before {
+  inset-inline: 0;
+}
+
+.inicio-page .home-welcome {
+  display: grid;
+  min-height: clamp(240px, 30vw, 360px);
+  place-items: center;
+  padding: clamp(24px, 5vw, 64px) clamp(16px, 8vw, 100px);
+  border: 1px solid #e9dfc6;
+  border-radius: clamp(22px, 3vw, 36px);
+  background: #fffbee url("/images/lee-contigo-fondo-infancia.webp") center /
+    cover no-repeat;
+  text-align: center;
+}
+
+.inicio-page .home-welcome-copy {
+  max-width: 38rem;
+  padding: clamp(16px, 2.5vw, 28px);
+  border-radius: 24px;
+  background: #fffdf4ed;
+}
+
+.inicio-page .home-welcome h1 {
+  font-size: clamp(29px, 4vw, 50px);
+  line-height: 1.2;
+  letter-spacing: -0.035em;
+}
+
+.inicio-page .home-welcome p {
+  max-width: 30rem;
+  margin: 12px auto 0;
+  color: #55517a;
+  font-size: clamp(16px, 1.6vw, 19px);
+  line-height: 1.6;
+}
+
+.inicio-page .home-destinations {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
+  gap: clamp(12px, 2vw, 24px);
+  margin-block: clamp(20px, 3vw, 32px);
+}
+
+.inicio-page .home-destination {
+  display: flex;
+  align-items: center;
+  gap: clamp(12px, 1.6vw, 20px);
+  min-width: 0;
+  min-height: clamp(92px, 10vw, 120px);
+  padding: clamp(16px, 2vw, 24px);
+  border: 2px solid #dec376;
+  border-radius: 22px;
+  background: #fff1c9;
+  color: #352560;
+  box-shadow: 0 4px 0 #dec376;
+}
+
+.inicio-page .home-destination:nth-child(2) {
+  border-color: #c3adee;
+  background: #efe8ff;
+  box-shadow: 0 4px 0 #c3adee;
+}
+
+.inicio-page .home-destination:nth-child(3) {
+  border-color: #a6cfca;
+  background: #e4f5f2;
+  box-shadow: 0 4px 0 #a6cfca;
+}
+
+.inicio-page .home-destination > span {
+  flex: 1;
+  min-width: 0;
+}
+
+.inicio-page .home-destination svg {
+  flex-shrink: 0;
+}
+
+.inicio-page .home-destination strong,
+.inicio-page .home-destination small {
+  display: block;
+  overflow-wrap: anywhere;
+}
+
+.inicio-page .home-destination strong {
+  font-size: clamp(21px, 2vw, 26px);
+  font-weight: 900;
+  line-height: 1.3;
+}
+
+.inicio-page .home-destination small {
+  margin-top: 4px;
+  font-size: clamp(14px, 1.3vw, 16px);
+  line-height: 1.4;
+}
+
+.inicio-page .home-destination:hover {
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.inicio-page .home-experience-slot:empty {
+  display: none;
+}
+
+.inicio-page .home-experience-slot:not(:empty) {
+  margin-block: clamp(20px, 3vw, 32px);
+}
+
+.inicio-page .home-catalogue {
+  scroll-margin-top: 24px;
+}
+
+.inicio-page .library-level-feedback {
+  gap: 8px;
+  margin-block: 0 clamp(16px, 2vw, 24px);
+  font-size: clamp(15px, 1.4vw, 18px);
+}
+
+.inicio-page .library-level-feedback svg {
+  flex-shrink: 0;
+}
+
+.inicio-page .story-shelves {
+  gap: clamp(20px, 3vw, 36px);
+}
+
+.inicio-page .story-shelf-row {
+  padding: clamp(12px, 2vw, 24px);
+}
+
+.inicio-page .story-card-body h3 {
+  font-size: clamp(16px, 1.5vw, 19px);
+}
+
+.inicio-page .story-card-locked {
+  display: flex;
+  width: 100%;
+  flex-direction: column;
+  overflow: hidden;
+  border: 3px solid #b5adc6;
+  border-radius: 22px;
+  background: #f7f4fb;
+}
+
+.inicio-page .story-card-locked .story-art {
+  filter: saturate(0.35);
+}
+
+.inicio-page .story-lock-badge {
+  position: absolute;
+  inset: 10px 10px auto auto;
+  display: grid;
+  width: 38px;
+  height: 38px;
+  place-items: center;
+  border-radius: 50%;
+  background: #352560;
+  color: white;
+}
+
+.inicio-page .story-lock-message {
+  margin-top: 6px;
+  color: #514366;
+  font-size: 14px;
+  font-weight: 800;
+  line-height: 1.5;
+}
+
+@media (min-width: 761px) {
+  .inicio-page .story-rail {
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr));
+    gap: clamp(16px, 2vw, 24px);
+  }
+}
+
+@media (max-width: 480px) {
+  .inicio-page .home-welcome {
+    background-position: 18% center;
+  }
+
+  .inicio-page .story-rail {
+    --rail-columns: 1;
+    grid-auto-columns: 100%;
+  }
+}
