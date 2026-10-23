@@ -25,11 +25,13 @@ export function BookSpread({
   fontSize,
   animated,
   onNavigate,
+  paragraphs,
 }: {
   page: BookPage;
   fontSize: number;
   animated: boolean;
   onNavigate: (offset: number) => void;
+  paragraphs?: string[];
 }) {
   const latest = useRef(page);
   const touchStart = useRef<{ x: number; y: number } | null>(null);
@@ -152,6 +154,14 @@ export function BookSpread({
           key={page.id}
           className={`paper-spread ${page.number % 2 === 1 ? "text-on-left" : "text-on-right"} ${animated && previous ? `mobile-turn-${turn.direction}` : ""}`}
         >
+          <div className="paper-sizing" aria-hidden="true" inert>
+            {(paragraphs ?? [page.text]).map((text, index) => (
+              <div className="paper-sizing-scene" key={index}>
+                <span className="book-chapter">La historia continúa…</span>
+                <p className="paper-sizing-text">{text}</p>
+              </div>
+            ))}
+          </div>
           {face(page, "left")}
           {face(page, "right")}
         </div>
