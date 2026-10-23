@@ -50,7 +50,15 @@ export function completeReadingHelp(
     if (/[.!?…][»”]?$/u.test(text)) return text;
     const endings = [...text.matchAll(/[.!?…][»”]?(?=\s|$)/gu)];
     const end = endings.at(-1);
-    return end ? text.slice(0, end.index + end[0].length).trim() : "";
+    if (end) return text.slice(0, end.index + end[0].length).trim();
+    if (
+      !text ||
+      /\s(?:de|del|a|al|con|en|para|por|sin|sobre|que|y|e|o|u|mi|tu|su|el|la|los|las|un|una|unos|unas|este|esta|estos|estas|muy|más|menos|porque|cuando|donde|como)[.!?…»”]*$/iu.test(
+        text,
+      )
+    )
+      return "";
+    return `${text.replace(/[.!?…»”]+$/u, "").trim()}.`;
   }
   const result = readingHelpOutput.safeParse({
     ...value,

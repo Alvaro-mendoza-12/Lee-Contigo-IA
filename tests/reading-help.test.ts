@@ -36,6 +36,21 @@ test("una explicación recortada conserva solo frases completas o usa el respald
     })?.explanation,
     "Diminuta significa muy pequeña.",
   );
+  assert.equal(
+    completeReadingHelp({
+      ...prepared,
+      explanation: "Diminuta quiere decir muy pequeña",
+      example: "Una semilla cabe en tu mano",
+    })?.explanation,
+    "Diminuta quiere decir muy pequeña.",
+  );
+  assert.equal(
+    completeReadingHelp({
+      ...prepared,
+      example: "Una semilla cabe en tu mano",
+    })?.example,
+    "Una semilla cabe en tu mano.",
+  );
 });
 
 test("la ayuda solo acepta partes canónicas, etapas acotadas y ningún prompt libre", () => {
