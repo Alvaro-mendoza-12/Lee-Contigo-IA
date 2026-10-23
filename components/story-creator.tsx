@@ -28,6 +28,7 @@ import { fontSteps, paginateStory } from "@/lib/reading";
 import { levels, type Level, type StoryArtVariant } from "@/lib/stories";
 import { StoryArt } from "./art";
 import { ReadingFriend } from "./reading-friend";
+import { BotonTutorial } from "./tutorial";
 import { BookSpread } from "./book-spread";
 import { ReadingPause } from "./reading-pause";
 import { useNarration } from "./use-narration";
@@ -41,7 +42,9 @@ import {
   pageImagesSchema,
   type ScenePlan,
 } from "@/lib/story-illustrations";
-import { useAnswerSound, SoundControl, ReadFeedback } from "./answer-audio";
+import { ReadFeedback } from "./answer-audio";
+import { InterruptorAudio } from "./interruptor-audio";
+import { reproducir, reproducirRespuesta } from "@/lib/sonidos";
 import { BookShelf } from "./book-shelf";
 import {
   listSavedBooks,
@@ -59,6 +62,10 @@ import {
   storySafetyMessage,
   type GeneratedStory,
 } from "@/lib/story-creator";
+import {
+  buscarPalabraProhibida,
+  mensajePalabraProhibida,
+} from "@/lib/filtro-palabras";
 
 type Screen = "form" | "preparing" | "book" | "questions" | "complete";
 type CoverState = "idle" | "loading" | "ready" | "unavailable";
@@ -88,7 +95,15 @@ export function StoryCreator() {
     "idle" | "saving" | "saved" | "unavailable"
   >("idle");
   const [idea, setIdea] = useState("");
-  const ideaSafetyIssue = getStoryIdeaSafetyIssue(idea);
+  // Checked ~300 ms after the child stops typing, so the warning does not
+  // flash on every key; submitting always checks the latest text.
+  const [checkedIdea, setCheckedIdea] = useState("");
+  useEffect(() => {
+    const timer = window.setTimeout(() => setCheckedIdea(idea), 300);
+    return () => window.clearTimeout(timer);
+  }, [idea]);
+  const ideaSafetyIssue = getStoryIdeaSafetyIssue(checkedIdea);
+  const forbiddenWord = buscarPalabraProhibida(checkedIdea);
   const [level, setLevel] = useState<Level>("paso");
   const [adultReviewed, setAdultReviewed] = useState(false);
   const [story, setStory] = useState<GeneratedStory | null>(null);
@@ -117,7 +132,6 @@ export function StoryCreator() {
     stop: stopNarration,
   } = useNarration();
   const canSpeak = true;
-  const answerSound = useAnswerSound();
   const [audioTokens, setAudioTokens] = useState<string[]>([]);
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
   const [questionIndex, setQuestionIndex] = useState(0);
@@ -364,6 +378,7 @@ export function StoryCreator() {
     event.preventDefault();
     const safetyIssue = getStoryIdeaSafetyIssue(idea);
     if (safetyIssue) {
+      setCheckedIdea(idea);
       setError("");
       ideaField.current?.focus();
       return;
@@ -470,9 +485,12 @@ export function StoryCreator() {
 
   function turnPage(next: number) {
     stopSpeaking();
-    const target = pages[Math.max(0, Math.min(next, pages.length - 1))];
-    if (target)
+    const targetIndex = Math.max(0, Math.min(next, pages.length - 1));
+    const target = pages[targetIndex];
+    if (target) {
+      if (targetIndex !== currentPageIndex) reproducir("pagina");
       setPosition({ paragraph: target.paragraph, word: target.start });
+    }
   }
 
   function resizeFont(next: number) {
@@ -509,7 +527,8 @@ export function StoryCreator() {
   function answerQuestion(answer: number) {
     if (selectedAnswer !== null || !currentQuestion) return;
     setSelectedAnswer(answer);
-    answerSound.play(answer === currentQuestion.correctIndex);
+    // Only lib/sonidos.ts plays audio here: with Sonidos off, nothing sounds.
+    reproducirRespuesta(answer === currentQuestion.correctIndex);
     if (answer !== currentQuestion.correctIndex)
       setWrongAttempts((attempts) => attempts + 1);
   }
@@ -547,6 +566,7 @@ export function StoryCreator() {
             <h1 ref={activeHeading} tabIndex={-1}>
               Crea tu cuento
             </h1>
+            <BotonTutorial />
           </header>
           <div
             className="creator-workspace-tabs"
@@ -612,17 +632,15 @@ export function StoryCreator() {
               <div className="creator-count" id="idea-count" aria-live="polite">
                 {idea.length} de 220 caracteres
               </div>
-              {ideaSafetyIssue ? (
-                <p
-                  className="creator-safety-warning"
-                  id="idea-safety"
-                  role="status"
-                  aria-live="polite"
-                  aria-atomic="true"
-                >
-                  {storySafetyMessage(ideaSafetyIssue)}
-                </p>
-              ) : null}
+              <div role="status" aria-live="polite" aria-atomic="true">
+                {ideaSafetyIssue ? (
+                  <p className="creator-safety-warning" id="idea-safety">
+                    {forbiddenWord
+                      ? mensajePalabraProhibida(forbiddenWord)
+                      : storySafetyMessage(ideaSafetyIssue)}
+                  </p>
+                ) : null}
+              </div>
               <details className="creator-ideas">
                 <summary>Necesito una idea</summary>
                 <div
@@ -1071,10 +1089,6 @@ export function StoryCreator() {
           <div className="creator-quiz-progress" role="status">
             Pregunta {questionIndex + 1} de {story.questions.length}
           </div>
-          <SoundControl
-            enabled={answerSound.sound}
-            onChange={answerSound.setSound}
-          />
           <article className="creator-question-card">
             <span className="skill-pill">
               {comprehensionSkillLabels[currentQuestion.skill]}
@@ -1251,6 +1265,10 @@ export function StoryCreator() {
           </Link>
         </section>
       ) : null}
+      {/* Temporal: para probar el audio aquí hasta que esté en Ajustes. */}
+      <div style={{ maxWidth: 320, margin: "32px auto 0" }}>
+        <InterruptorAudio />
+      </div>
     </div>
   );
 }

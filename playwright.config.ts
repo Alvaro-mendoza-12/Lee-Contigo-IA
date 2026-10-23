@@ -10,6 +10,18 @@ export default defineConfig({
   reporter: [["list"], ["html", { open: "never" }]],
   use: {
     baseURL: process.env.TEST_BASE_URL || "http://127.0.0.1:4173",
+    // Most flows represent a returning reader. tutorial.spec.ts overrides
+    // this state to verify the real first visit and its persisted dismissal.
+    storageState: {
+      cookies: [],
+      origins: [
+        {
+          origin: new URL(process.env.TEST_BASE_URL || "http://127.0.0.1:4173")
+            .origin,
+          localStorage: [{ name: "tutorial-visto", value: "true" }],
+        },
+      ],
+    },
     trace: "retain-on-failure",
     screenshot: "only-on-failure",
     launchOptions: {

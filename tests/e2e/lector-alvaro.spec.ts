@@ -157,6 +157,8 @@ test("el creador permite ideas seguras y bloquea insultos en la entrada y el ser
   for (const text of [
     "Un s0ns0 se burla de su amigo",
     "Un t.o.n.t.o pierde su pelota",
+    "Un so\u200bnso se burla de su amigo",
+    "Un ton-to pierde su pelota",
   ]) {
     await idea.fill(text);
     await expect(submit).toBeDisabled();

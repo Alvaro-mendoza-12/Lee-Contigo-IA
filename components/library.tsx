@@ -14,6 +14,7 @@ import {
 import { storiesForShelf, storyCategories, type Level } from "@/lib/stories";
 import { useReadingLevel } from "./use-reading-level";
 import { StoryShelfRow, type StoryLocks } from "./story-shelf-row";
+import { BotonTutorial } from "./tutorial";
 
 const categoryIcons = {
   amigos: Users,
@@ -48,6 +49,7 @@ export function Library({
             <br className="kid-hello-break" />
             ¿Qué cuento leemos hoy?
           </h1>
+          <BotonTutorial />
           <p>Historias para descubrir, imaginar y compartir a tu ritmo.</p>
         </div>
       </header>
@@ -60,6 +62,7 @@ export function Library({
         <Link
           className="home-destination"
           href="#cuentos"
+          data-tutorial="cuentos"
           aria-label="Cuentos"
           onNavigate={() => catalogue.current?.focus({ preventScroll: true })}
         >
@@ -74,7 +77,12 @@ export function Library({
           </span>
           <ArrowRight size={22} aria-hidden="true" />
         </Link>
-        <Link className="home-destination" href="/crear" aria-label="Crear">
+        <Link
+          className="home-destination"
+          href="/crear"
+          aria-label="Crear"
+          data-tutorial="crear"
+        >
           <Sparkles
             className="home-destination-icon"
             size={28}
@@ -89,6 +97,7 @@ export function Library({
         <Link
           className="home-destination"
           href="/acompanar"
+          data-tutorial="acompanar"
           aria-label="Acompañar"
         >
           <HeartHandshake
@@ -109,7 +118,12 @@ export function Library({
         {experienceBar}
       </div>
 
-      <div ref={catalogue} id="cuentos" className="home-catalogue" tabIndex={-1}>
+      <div
+        ref={catalogue}
+        id="cuentos"
+        className="home-catalogue"
+        tabIndex={-1}
+      >
         <p
           id="library-level-feedback"
           className="library-level-feedback"

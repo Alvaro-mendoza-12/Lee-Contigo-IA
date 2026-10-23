@@ -3,7 +3,12 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import type { NarrationInput } from "@/lib/narration";
 import { isNarrationVoice, type NarrationVoice } from "@/lib/narration-voices";
 
+// Several readers can be mounted together (the page and its help). An idle
+// reader must not restore the music while another reader is still speaking.
+const activeNarrators = new Set<symbol>();
+
 export function useNarration() {
+  const narrator = useRef(Symbol("narrator"));
   const [voice, setVoice] = useState<NarrationVoice>("george");
   const [speaking, setSpeaking] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -36,6 +41,22 @@ export function useNarration() {
       /* Reading stays available when storage is blocked. */
     }
   }, []);
+  useEffect(() => {
+    const id = narrator.current;
+    if (speaking) {
+      activeNarrators.add(id);
+      window.dispatchEvent(new CustomEvent("voz:inicio"));
+    } else {
+      activeNarrators.delete(id);
+      if (!activeNarrators.size)
+        window.dispatchEvent(new CustomEvent("voz:fin"));
+    }
+    return () => {
+      activeNarrators.delete(id);
+      if (speaking && !activeNarrators.size)
+        window.dispatchEvent(new CustomEvent("voz:fin"));
+    };
+  }, [speaking]);
   function changeVoice(next: NarrationVoice) {
     stop();
     setVoice(next);

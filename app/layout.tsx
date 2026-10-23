@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Nunito_Sans } from "next/font/google";
 import { Header, Footer } from "@/components/shell";
+import { Tutorial } from "@/components/tutorial";
 import "./globals.css";
 import "./book.css";
 import "./child-ux.css";
@@ -41,6 +42,7 @@ export default function RootLayout({
         <Header />
         <main id="contenido">{children}</main>
         <Footer />
+        <Tutorial />
       </body>
     </html>
   );

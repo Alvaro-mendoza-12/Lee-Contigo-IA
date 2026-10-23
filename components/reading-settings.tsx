@@ -3,6 +3,8 @@ import { useEffect, useId, useRef, useState, type ReactNode } from "react";
 import { Maximize2, Minimize2, SlidersHorizontal, X } from "lucide-react";
 import type { NarrationVoice } from "@/lib/narration-voices";
 import { VoicePicker } from "./voice-picker";
+import { InterruptorAudio } from "./interruptor-audio";
+import { abrirTutorial } from "./tutorial";
 
 export function ReadingSettings({
   voice,
@@ -101,7 +103,20 @@ export function ReadingSettings({
               {expanded ? "Cerrar ampliación" : "Ampliar página"}
             </button>
           ) : null}
-          {/* AQUÍ: interruptor de sonido y música (Fabio). Audio apagado por defecto. */}
+          <InterruptorAudio />
+          <button
+            type="button"
+            className="button button-outline"
+            onClick={() => {
+              close();
+              onExpandedChange?.(false);
+              // Wait for the native settings dialog to close before moving
+              // focus to the guide, which lives outside the reader.
+              requestAnimationFrame(abrirTutorial);
+            }}
+          >
+            Ver la guía
+          </button>
           {/* XP-IVAN: selector de nivel */}
           {children}
           {/* XP-IVAN: borrar progreso */}

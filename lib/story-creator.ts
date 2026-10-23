@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { buscarPalabraProhibida } from "./filtro-palabras.ts";
 
 export const comprehensionSkillSchema = z.enum([
   "localizar",
@@ -162,11 +163,6 @@ const unsafeStoryRules: Array<{
     pattern:
       /\b(?:beb(?:er|e|en|iendo|io)|tom(?:ar|a|an|ando|o)|ing(?:erir|iere|ieren|irio|iriendo))\s+(?:(?:un|una)\s+(?:vaso|poco|botella|taza)\s+de\s+)?(?:lejia|cloro|detergente|productos? de limpieza)\b/u,
   },
-  {
-    category: "profanity",
-    pattern:
-      /\b(?:mierdas?|put[oa]s?|jod(?:er|ido|ida|idos|idas|ete|anse)|cabron(?:es|a|as)?|pendej[oa]s?|vergas?|chingad[oa]s?|carajos?|gonorrea|malparid[oa]s?|cojones|maricon(?:es|a|as)?|imbecil(?:es)?|estupid[oa]s?|idiotas?|sons[oa]s?|zonz[oa]s?|tont[oa]s?)\b/u,
-  },
 ];
 
 const obfuscationMap: Record<string, string> = {
@@ -228,50 +224,6 @@ function termPattern(terms: string[]) {
   );
 }
 
-const profanityTerms = [
-  "mierda",
-  "puta",
-  "puto",
-  "joder",
-  "jodido",
-  "jodida",
-  "cabron",
-  "pendejo",
-  "verga",
-  "chingada",
-  "carajo",
-  "gonorrea",
-  "malparido",
-  "cojones",
-  "maricon",
-  "imbecil",
-  "estupido",
-  "estupida",
-  "idiota",
-  "sonso",
-  "sonsa",
-  "sonsito",
-  "sonsita",
-  "zonzo",
-  "zonza",
-  "zonzito",
-  "zonzita",
-  "tonto",
-  "tonta",
-  "cagar",
-  "cagada",
-  "hijueputa",
-  "fuck",
-  "fucked",
-  "fucker",
-  "fucking",
-  "shit",
-  "bullshit",
-  "bitch",
-  "bastard",
-  "asshole",
-  "motherfucker",
-];
 const adultTerms = ["porno", "pornografia", "erotico", "contenido adulto"];
 const sexTerms = [
   "sexo",
@@ -361,7 +313,8 @@ function storyContentCategory(
   const variants = [normalized, compact];
   if (variants.some((text) => bypassPattern.test(text)))
     return "bypass_attempt";
-  if (matchesTerms(normalized, profanityTerms)) return "profanity";
+  // Profanity has a single source shared with the live check in the creator.
+  if (buscarPalabraProhibida(value)) return "profanity";
   if (matchesTerms(normalized, adultTerms)) return "adult_content";
   if (matchesTerms(normalized, sexTerms)) return "sexual_content";
   if (matchesTerms(normalized, selfHarmTerms)) return "self_harm";

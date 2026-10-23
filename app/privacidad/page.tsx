@@ -214,6 +214,17 @@ export default function Privacy() {
         preparada. No es una herramienta de diagnóstico ni una evaluación
         escolar.
       </p>
+      <h2>Preferencias de lectura y guía</h2>
+      <p>
+        Este navegador recuerda el tamaño de letra, la voz elegida, si activaste
+        los sonidos o la música y si ya viste la guía de la luciérnaga. Los
+        sonidos y la música empiezan apagados; puedes cambiarlos en Ajustes.
+        Estas preferencias no contienen nombres ni respuestas y no se envían a
+        los modelos de IA. La música se genera en el dispositivo y baja de
+        volumen durante la narración. Puedes borrar las preferencias desde los
+        datos del sitio en tu navegador y volver a abrir la guía con «?» o desde
+        Ajustes.
+      </p>
       <h2>Seguridad y datos técnicos</h2>
       <p>
         El alojamiento procesa las solicitudes necesarias para servir la web. El
