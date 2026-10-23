@@ -41,9 +41,9 @@ import {
   pageImagesSchema,
   type ScenePlan,
 } from "@/lib/story-illustrations";
-import { useAnswerSound, SoundControl, ReadFeedback } from "./answer-audio";
+import { ReadFeedback } from "./answer-audio";
 import { InterruptorAudio } from "./interruptor-audio";
-import { estaActivo, reproducir } from "@/lib/sonidos";
+import { reproducir, reproducirRespuesta } from "@/lib/sonidos";
 import { BookShelf } from "./book-shelf";
 import {
   listSavedBooks,
@@ -119,7 +119,6 @@ export function StoryCreator() {
     stop: stopNarration,
   } = useNarration();
   const canSpeak = true;
-  const answerSound = useAnswerSound();
   const [audioTokens, setAudioTokens] = useState<string[]>([]);
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
   const [questionIndex, setQuestionIndex] = useState(0);
@@ -514,13 +513,8 @@ export function StoryCreator() {
   function answerQuestion(answer: number) {
     if (selectedAnswer !== null || !currentQuestion) return;
     setSelectedAnswer(answer);
-    const correct = answer === currentQuestion.correctIndex;
-    if (estaActivo()) {
-      // The new sounds replace the old answer tones so they never overlap.
-      reproducir(correct ? "correcta" : "incorrecta");
-      // After a wrong answer a hint appears: a soft note announces it.
-      if (!correct) window.setTimeout(() => reproducir("pista"), 420);
-    } else answerSound.play(correct);
+    // Only lib/sonidos.ts plays audio here: with Sonidos off, nothing sounds.
+    reproducirRespuesta(answer === currentQuestion.correctIndex);
     if (answer !== currentQuestion.correctIndex)
       setWrongAttempts((attempts) => attempts + 1);
   }
@@ -1082,10 +1076,6 @@ export function StoryCreator() {
           <div className="creator-quiz-progress" role="status">
             Pregunta {questionIndex + 1} de {story.questions.length}
           </div>
-          <SoundControl
-            enabled={answerSound.sound}
-            onChange={answerSound.setSound}
-          />
           <article className="creator-question-card">
             <span className="skill-pill">
               {comprehensionSkillLabels[currentQuestion.skill]}
