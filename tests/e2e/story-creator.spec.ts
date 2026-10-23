@@ -71,6 +71,82 @@ const story = {
   ],
 };
 
+test("la política de ilustración se conserva al guardar y reintentar, sin depender de la voz", async ({
+  page,
+}) => {
+  const illustrationPolicy = {
+    allowHumanAnimalHybrids: false,
+    authorization: `${Date.now() + 86400_000}.${"a".repeat(64)}`,
+  };
+  const requests: Record<string, unknown>[] = [];
+  await page.route("**/api/crear", (route) =>
+    route.fulfill({ json: { story, illustrationPolicy } }),
+  );
+  await page.route("**/api/crear/portada", (route) => {
+    requests.push(route.request().postDataJSON());
+    return route.fulfill({
+      json: {
+        layout: "vector",
+        source: "composed",
+        illustrationPlan: composeStoryPlan(
+          story.paragraphs,
+          story.artDescription,
+        ),
+      },
+    });
+  });
+  await page.goto("/crear");
+  await page
+    .getByLabel("Mi idea", { exact: true })
+    .fill("Una tortuga sigue un mapa con su amiga");
+  await page.getByLabel(/Un adulto revisó mi idea/).check();
+  await page
+    .getByRole("button", { name: "Crear mi cuento", exact: true })
+    .click();
+  await expect(page.getByRole("heading", { name: story.title })).toBeVisible();
+  expect(requests).toHaveLength(1);
+  expect(requests[0]).toMatchObject({
+    scenes: story.paragraphs,
+    artDescription: story.artDescription,
+    illustrationPolicy,
+  });
+  expect(requests[0]).not.toHaveProperty("authorizations");
+  expect(requests[0]).not.toHaveProperty("idea");
+  await expect(page.getByText("Guardado por 7 días.")).toBeVisible();
+  await page.reload();
+  await page
+    .getByRole("button", { name: `Abrir ${story.title}`, exact: true })
+    .click();
+  await page
+    .getByRole("button", { name: "Reintentar ilustraciones", exact: true })
+    .click();
+  await expect.poll(() => requests.length).toBe(2);
+  expect(requests[1]).toHaveProperty("illustrationPolicy", illustrationPolicy);
+});
+
+test("un cuento que falla la coherencia conserva la idea para reintentar", async ({
+  page,
+}) => {
+  const idea = "Una tortuga sigue un mapa junto al río";
+  const error =
+    "El cuento o sus ilustraciones no coincidían bien con tu idea. Tu idea sigue aquí; vuelve a intentarlo.";
+  await page.route("**/api/crear", (route) =>
+    route.fulfill({
+      status: 502,
+      json: { code: "STORY_COHERENCE_FAILED", error },
+    }),
+  );
+  await page.goto("/crear");
+  await page.getByLabel("Mi idea", { exact: true }).fill(idea);
+  await page.getByLabel(/Un adulto revisó mi idea/).check();
+  await page
+    .getByRole("button", { name: "Crear mi cuento", exact: true })
+    .click();
+  await expect(page.getByText(error, { exact: true })).toBeVisible();
+  await expect(page.getByLabel("Mi idea", { exact: true })).toHaveValue(idea);
+  await expect(page.getByRole("heading", { name: story.title })).toHaveCount(0);
+});
+
 test("las ideas ilustradas completan el campo sin crear un cuento automáticamente", async ({
   page,
 }) => {
@@ -288,7 +364,9 @@ test("el cuento creado conecta la respuesta con una cita del texto sin reenviar 
   await expect(page.getByRole("heading", { name: story.title })).toBeVisible();
   await page.getByRole("button", { name: "Ajustes", exact: true }).click();
   await expect(page.getByLabel("Animar páginas")).toBeChecked();
-  await page.getByRole("button", { name: "Cerrar ajustes", exact: true }).click();
+  await page
+    .getByRole("button", { name: "Cerrar ajustes", exact: true })
+    .click();
   expect(illustrationRequests).toHaveLength(1);
   await expect(page.getByText("¿Quieres ilustrar la portada?")).toHaveCount(0);
   const audioRequest = page.waitForRequest((r) =>
@@ -296,7 +374,9 @@ test("el cuento creado conecta la respuesta con una cita del texto sin reenviar 
   );
   await page.getByRole("button", { name: "Ajustes", exact: true }).click();
   await page.getByLabel("¿Quién te lee?").selectOption("daniel");
-  await page.getByRole("button", { name: "Cerrar ajustes", exact: true }).click();
+  await page
+    .getByRole("button", { name: "Cerrar ajustes", exact: true })
+    .click();
   await page
     .getByRole("button", { name: "Escuchar página", exact: true })
     .click();
