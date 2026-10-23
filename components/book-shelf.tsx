@@ -80,6 +80,7 @@ export function BookShelf({
                     <GeneratedScene
                       plan={book.illustrationPlan}
                       images={book.pageImages}
+                      showFallback={false}
                     />
                   ) : book.cover ? (
                     <div

@@ -57,7 +57,7 @@ import {
   type GeneratedStory,
 } from "@/lib/story-creator";
 
-type Screen = "form" | "book" | "questions" | "complete";
+type Screen = "form" | "preparing" | "book" | "questions" | "complete";
 type CoverState = "idle" | "loading" | "ready" | "unavailable";
 const ideaStarters = [
   {
@@ -288,7 +288,6 @@ export function StoryCreator() {
     coverAbort.current = controller;
     setCoverState("loading");
     setCover(null);
-    setPageImages(undefined);
     const fallbackPlan = composeStoryPlan(
       createdStory.paragraphs,
       createdStory.artDescription,
@@ -296,7 +295,7 @@ export function StoryCreator() {
     setIllustrationPlan(fallbackPlan);
     const authorizations = currentBook.current?.audioTokens;
     if (!authorizations || authorizations.length !== 6) {
-      setCoverState("ready");
+      setCoverState("unavailable");
       return;
     }
     try {
@@ -336,7 +335,9 @@ export function StoryCreator() {
       setCover(data.cover ?? null);
       setCoverIsAtlas(data.layout === "atlas");
       setCoverFromCollection(data.source === "collection");
-      setCoverState("ready");
+      setCoverState(
+        images?.length === 6 && images.every(Boolean) ? "ready" : "unavailable",
+      );
       if (currentBook.current?.story === createdStory) {
         const updated = {
           ...currentBook.current,
@@ -352,7 +353,7 @@ export function StoryCreator() {
     } catch {
       if (requestId === coverRequest.current) {
         setIllustrationPlan(fallbackPlan);
-        setCoverState("ready");
+        setCoverState("unavailable");
       }
     }
   }
@@ -407,7 +408,7 @@ export function StoryCreator() {
       setCoverState("idle");
       setCover(null);
       setPageImages(undefined);
-      setScreen("book");
+      setScreen("preparing");
       const saved = {
         ...makeSavedBook(data.story, level),
         audioTokens: data.audioTokens,
@@ -415,7 +416,8 @@ export function StoryCreator() {
       };
       currentBook.current = saved;
       persistBook(saved);
-      void createCover(data.story);
+      await createCover(data.story);
+      if (!controller.signal.aborted) setScreen("book");
     } catch (cause) {
       if (controller.signal.aborted) return;
       setError(
@@ -763,6 +765,35 @@ export function StoryCreator() {
         </>
       ) : null}
 
+      {screen === "preparing" && story ? (
+        <section
+          className="creator-preparing"
+          aria-labelledby="preparing-title"
+          aria-busy="true"
+        >
+          <LoaderCircle
+            className="creator-spinner creator-preparing-spinner"
+            size={42}
+            aria-hidden="true"
+          />
+          <span className="small-label">TU CUENTO ESTÁ CASI LISTO</span>
+          <h1 id="preparing-title" ref={activeHeading} tabIndex={-1}>
+            Dibujamos cada escena
+          </h1>
+          <p>Preparamos una ilustración para cada página de «{story.title}».</p>
+          <p
+            className="creator-preparing-status"
+            role="status"
+            aria-live="polite"
+          >
+            Tus dibujos aparecerán junto con el cuento.
+          </p>
+          <button className="text-button" type="button" onClick={resetCreator}>
+            Cancelar
+          </button>
+        </section>
+      ) : null}
+
       {story && screen === "book" ? (
         <section
           className="creator-book-section"
@@ -884,6 +915,8 @@ export function StoryCreator() {
                   images={pageImages}
                   paragraph={currentPage?.paragraph ?? 0}
                   frame={currentPageIndex}
+                  showFallback={false}
+                  status={coverState === "idle" ? "unavailable" : coverState}
                 />
               ) : cover ? (
                 <div
@@ -980,11 +1013,12 @@ export function StoryCreator() {
                   size={16}
                   aria-hidden="true"
                 />
-                Dibujando… Ya puedes leer.
+                Preparando las ilustraciones…
               </p>
             ) : coverState === "unavailable" ? (
               <p role="status">
-                Las ilustraciones no llegaron esta vez. Tu cuento sigue listo.{" "}
+                Faltan algunos dibujos. Tu cuento está listo; puedes intentarlo
+                otra vez.{" "}
                 <button
                   className="text-button"
                   type="button"
@@ -996,9 +1030,7 @@ export function StoryCreator() {
             ) : (
               <p role="status" aria-live="polite">
                 <Check size={16} aria-hidden="true" />
-                {coverFromCollection
-                  ? "Dibujos de la biblioteca."
-                  : "Ilustraciones listas."}
+                Ilustraciones listas, una para cada escena.
               </p>
             )}
           </div>

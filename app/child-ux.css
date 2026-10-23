@@ -599,6 +599,57 @@ label {
   object-fit: cover;
   transform: scale(var(--scene-zoom, 1));
 }
+.generated-scene-placeholder {
+  display: grid;
+  width: 100%;
+  height: 100%;
+  place-content: center;
+  justify-items: center;
+  color: #547565;
+  background:
+    radial-gradient(ellipse at 24% 22%, #fff5d9 0 10%, transparent 10.5%),
+    radial-gradient(ellipse at 79% 70%, #e6f0df 0 16%, transparent 16.5%),
+    #f4f3e9;
+}
+.generated-scene-placeholder.is-loading svg {
+  color: #2e6853;
+}
+.creator-preparing {
+  display: grid;
+  justify-items: center;
+  gap: 14px;
+  width: min(100%, 560px);
+  min-height: 360px;
+  margin: 48px auto;
+  padding: 42px 28px;
+  border: 1px solid var(--line);
+  border-radius: 24px;
+  color: var(--ink);
+  background: var(--white);
+  box-shadow: 0 20px 55px -42px #294e3980;
+  text-align: center;
+  align-content: center;
+}
+.creator-preparing-spinner {
+  color: var(--forest);
+}
+.creator-preparing .small-label {
+  margin-top: 5px;
+}
+.creator-preparing h1 {
+  max-width: 100%;
+  margin: 0;
+  font-size: clamp(28px, 4vw, 38px);
+  letter-spacing: -1px;
+}
+.creator-preparing p {
+  max-width: 400px;
+  color: var(--muted);
+  line-height: 1.6;
+}
+.creator-preparing-status {
+  font-weight: 700;
+}
 .paper-art > .generated-story-scene,
 .saved-book-art > .generated-story-scene {
   position: absolute;
