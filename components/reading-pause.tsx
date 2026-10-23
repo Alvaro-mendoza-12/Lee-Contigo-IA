@@ -38,20 +38,22 @@ export function ReadingPause({ scene }: { scene: number }) {
       </summary>
       <div>
         <p>{prompt.text}</p>
-        <button
-          type="button"
-          className="text-button"
-          onClick={() => {
-            setDone(true);
-            if (details.current) {
-              details.current.open = false;
-              details.current.querySelector("summary")?.focus();
-            }
-          }}
-        >
-          <Check size={17} aria-hidden="true" />
-          Ya lo pensé
-        </button>
+        {!done ? (
+          <button
+            type="button"
+            className="text-button"
+            onClick={() => {
+              setDone(true);
+              if (details.current) {
+                details.current.open = false;
+                details.current.querySelector("summary")?.focus();
+              }
+            }}
+          >
+            <Check size={17} aria-hidden="true" />
+            Ya lo pensé
+          </button>
+        ) : null}
       </div>
     </details>
   );
