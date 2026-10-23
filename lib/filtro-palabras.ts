@@ -139,9 +139,9 @@ const leet: Record<string, string> = {
 export function normalizar(texto: string): string {
   return texto
     .toLocaleLowerCase("es")
-    .normalize("NFD")
+    .normalize("NFKD")
     .replace(/ñ/g, "ñ")
-    .replace(/[̀-ͯ​-‏﻿]/g, "")
+    .replace(/[\p{M}\p{Cf}]/gu, "")
     .replace(/[аевікмнорстухј]/g, (letra) => homoglifos[letra] ?? letra)
     .replace(/[4@31!05$7]/g, (signo) => leet[signo] ?? signo)
     .replace(/(\p{L})\1+/gu, "$1");
@@ -155,13 +155,16 @@ for (const palabra of palabrasProhibidas)
     /[^aeiou]$/.test(palabra) ? palabra + "es" : palabra,
   ])
     prohibidas.add(normalizar(forma));
+const longitudMaxima = Math.max(
+  ...Array.from(prohibidas, (palabra) => palabra.length),
+);
 
 type Token = { texto: string; inicio: number; fin: number };
 
 function tokenizar(texto: string): Token[] {
   const tokens: Token[] = [];
   // Letras, números y los símbolos que usa el leet (@, $, !).
-  for (const coincidencia of texto.matchAll(/[\p{L}\p{M}\p{N}@$!]+/gu)) {
+  for (const coincidencia of texto.matchAll(/[\p{L}\p{M}\p{N}\p{Cf}@$!]+/gu)) {
     let inicio = coincidencia.index;
     let fin = inicio + coincidencia[0].length;
     // «¡hola!»: los signos al borde de la palabra son puntuación, no leet.
@@ -182,19 +185,16 @@ export function buscarPalabraProhibida(texto: string): string | null {
   for (const token of tokens)
     if (prohibidas.has(normalizar(token.texto))) return token.texto;
 
-  // Letras sueltas que forman una palabra: «p u t a», «s.o.n.s.o».
+  // Match whole tokens joined across separators, including chunks such as
+  // «ton-to». Never search inside a token (e.g. «computadora»).
   for (let i = 0; i < tokens.length; i++) {
-    let j = i;
-    while (j < tokens.length && normalizar(tokens[j].texto).length === 1) j++;
-    if (j - i >= 3) {
-      const unida = tokens
-        .slice(i, j)
-        .map((token) => token.texto)
-        .join("");
-      if (prohibidas.has(normalizar(unida)))
-        return texto.slice(tokens[i].inicio, tokens[j - 1].fin);
+    let unida = normalizar(tokens[i].texto);
+    for (let j = i + 1; j < tokens.length; j++) {
+      unida = normalizar(unida + normalizar(tokens[j].texto));
+      if (unida.length > longitudMaxima) break;
+      if (prohibidas.has(unida))
+        return texto.slice(tokens[i].inicio, tokens[j].fin);
     }
-    i = Math.max(i, j - 1);
   }
   return null;
 }

@@ -48,6 +48,30 @@ test("detecta letras repetidas y letras separadas", () => {
   assert.equal(buscarPalabraProhibida("p u t a"), "p u t a");
 });
 
+test("no se evade con caracteres invisibles, ancho completo ni grupos separados", () => {
+  for (const palabra of [
+    "so\u200bnso",
+    "son\u200dso",
+    "so\u00adnso",
+    "so\ufe0fnso",
+    "ｓｏｎｓｏ",
+    "ton-to",
+    "son.so",
+    "so n so",
+    "s.o.n.s.o",
+  ]) {
+    const texto = `Un ${palabra} se burla`;
+    assert.equal(buscarPalabraProhibida(texto), palabra, texto);
+    assert.equal(getStoryIdeaSafetyIssue(texto), "profanity", texto);
+  }
+  for (const texto of [
+    "La compu-tadora ayuda a un armadillo",
+    "Una heroína siente vergüenza y ayuda a su amigo gay",
+    "Un perro y una llama juegan con una niña",
+  ])
+    assert.equal(getStoryIdeaSafetyIssue(texto), null, texto);
+});
+
 test("las frases con palabras de una letra no se leen como letras separadas", () => {
   for (const texto of [
     "Juan y Ana o Pepe",
