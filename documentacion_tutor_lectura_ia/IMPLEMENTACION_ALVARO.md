@@ -39,9 +39,9 @@ La orientación sexual mencionada con respeto no se clasifica como una mala pala
 
 ## Comprobaciones y limitaciones
 
-- Compilación de producción y TypeScript.
-- Pruebas unitarias del catálogo, paginación, migración, filtros y respaldo de moderación.
-- Playwright en los perfiles de escritorio y táctil: lector, selección, párrafo completo, pistas, narración, cuentos creados y conservación al recargar.
+- Compilación de producción y TypeScript: aprobados.
+- 42 pruebas unitarias aprobadas: catálogo, paginación, migración, filtros y respaldo de moderación.
+- 68 pruebas Playwright aprobadas en los perfiles de escritorio y táctil: lector, selección, párrafo completo, pistas, narración, cuentos creados y conservación al recargar.
 - Axe WCAG A/AA en lector y ajustes, también en modo ampliado.
 - Resoluciones de 320, 390, 768, 1024, 1366 y 1920 px; párrafos completos del catálogo en ambos niveles a 390, 768 y 1366 px.
 - Capturas locales en `output/playwright/lector-*.png`, excluidas de Git.
