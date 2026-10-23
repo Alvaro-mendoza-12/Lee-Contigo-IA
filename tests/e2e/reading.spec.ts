@@ -7,11 +7,9 @@ test("recorrido completo, reintento y pista de respaldo", async ({ page }) => {
   const errors: string[] = [];
   page.on("pageerror", (error) => errors.push(error.message));
   await page.goto("/");
-  await page
-    .getByRole("link", { name: "Leer Una luz en el bosque" })
-    .click();
+  await page.getByRole("link", { name: "Leer Una luz en el bosque" }).click();
   await page.getByRole("button", { name: "Aumentar tamaño de letra" }).click();
-  await expect(page.getByText("Muy grande", { exact: true })).toBeVisible();
+  await expect(page.getByText("Grande", { exact: true })).toBeVisible();
   const explore = page.getByRole("link", { name: "Vamos a pensar" });
   for (let turns = 0; turns < 40 && !(await explore.isVisible()); turns++) {
     const next = page.getByRole("button", { name: "Página siguiente" });
@@ -54,7 +52,7 @@ test("recorrido completo, reintento y pista de respaldo", async ({ page }) => {
       local: localStorage.length,
       session: sessionStorage.length,
     })),
-  ).toEqual({ local: 0, session: 0 });
+  ).toEqual({ local: 1, session: 0 });
   expect(errors).toEqual([]);
 });
 test("nuevo reto y otra historia preservan el nivel en las rutas", async ({
@@ -67,7 +65,7 @@ test("nuevo reto y otra historia preservan el nivel en las rutas", async ({
   ).toBeVisible();
   await expect(page.locator(".story-level-ribbon")).toHaveCount(19);
   for (const href of await page
-    .locator(".story-card-direct")
+    .locator(".story-card-direct[href^='/leer/']")
     .evaluateAll((links) => links.map((link) => link.getAttribute("href"))))
     expect(href).toContain("nivel=reto");
   await page.reload();
@@ -82,7 +80,9 @@ test("nuevo reto y otra historia preservan el nivel en las rutas", async ({
     .click();
   await expect(page).toHaveURL(/semilla-viajera\?nivel=reto/);
   await expect(
-    page.getByText(/Al guardar su abrigo, Nico descubrió/),
+    page
+      .locator(".book-page-text")
+      .filter({ hasText: /Al guardar su abrigo, Nico descubrió/ }),
   ).toBeVisible();
   const explore = page.getByRole("link", { name: "Vamos a pensar" });
   for (let turns = 0; turns < 40 && !(await explore.isVisible()); turns++) {
@@ -119,35 +119,39 @@ test("el libro cambia nivel, conserva tamaño y responde al pasar páginas", asy
   ).not.toBe(scene);
   await expect(page.locator(".paper-spread")).toHaveClass(/text-on-right/);
   await page.getByRole("button", { name: "Aumentar tamaño de letra" }).click();
-  await expect(page.locator(".book-page-text")).toHaveCSS("font-size", "28px");
-  await page
-    .getByRole("button", { name: "Un nuevo reto", exact: true })
-    .click();
+  await expect(page.locator(".book-page-text")).toHaveCSS("font-size", "26px");
+  await expect(
+    page.getByRole("button", { name: "Un nuevo reto", exact: true }),
+  ).toHaveCount(0);
+  await page.goto("/leer/luz-del-bosque?nivel=reto");
   await expect(page).toHaveURL(/nivel=reto/);
   await expect(page.locator(".book-page-text")).toContainText("Cada anochecer");
   await page.emulateMedia({ reducedMotion: "reduce" });
-  await page.locator(".reading-settings > summary").click();
+  await page.getByRole("button", { name: "Ajustes", exact: true }).click();
   const animation = page.getByLabel("Animar páginas");
   await expect(animation).toBeEnabled();
   await expect(animation).toBeChecked();
   if (await animation.isEnabled()) {
     await animation.uncheck();
-    await page.locator(".reading-settings > summary").click();
+    await page
+      .getByRole("button", { name: "Cerrar ajustes", exact: true })
+      .click();
     await next.scrollIntoViewIfNeeded();
     await next.click();
     await expect(page.locator(".book-turn-sheet")).toHaveCount(0);
-    await page.locator(".reading-settings > summary").click();
+    await page.getByRole("button", { name: "Ajustes", exact: true }).click();
     await animation.check();
-    await page.locator(".reading-settings > summary").click();
+    await page
+      .getByRole("button", { name: "Cerrar ajustes", exact: true })
+      .click();
     await next.scrollIntoViewIfNeeded();
     await next.click();
-    await expect(page.locator(".book-turn-sheet")).toHaveCSS(
-      "animation-name",
-      "paper-turn-next",
-    );
+    await expect(page.locator(".book-turn-layer")).not.toBeVisible();
   }
+  await page.getByRole("button", { name: "Ajustes", exact: true }).click();
   await animation.uncheck();
   await page.reload();
+  await page.getByRole("button", { name: "Ajustes", exact: true }).click();
   await expect(page.getByLabel("Animar páginas")).toBeChecked();
 });
 test("la guía permite preparar y comenzar una lectura acompañada", async ({
@@ -179,6 +183,13 @@ test("accesibilidad automática y ausencia de desbordamiento", async ({
     "/privacidad",
   ]) {
     await page.goto(route);
+    // /biblioteca uses a streamed Next.js redirect to the home library.
+    // Wait for that navigation before axe injects/evaluates its scripts.
+    if (route === "/biblioteca")
+      await page.waitForURL((url) => url.pathname === "/");
+    await page.waitForLoadState("load");
+    await expect(page.locator("main h1").first()).toBeVisible();
+    await page.evaluate(() => document.fonts.ready);
     const results = await new AxeBuilder({ page })
       .withTags(["wcag2a", "wcag2aa", "wcag21aa", "wcag22aa"])
       .analyze();

@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Lightbulb, X, LoaderCircle, ArrowRight } from "lucide-react";
 import type { Level, StoryId } from "@/lib/stories";
 import type { ReadingHelpInput, ReadingHelpOutput } from "@/lib/reading-help";
@@ -28,6 +28,7 @@ export function ReadingHelp({
   storyId,
   authorizations = [],
   onOpen,
+  children,
 }: {
   paragraphs: string[];
   paragraph: number;
@@ -36,6 +37,7 @@ export function ReadingHelp({
   storyId?: StoryId;
   authorizations?: string[];
   onOpen?: () => void;
+  children?: ReactNode;
 }) {
   const [selection, setSelection] = useState<Target | null>(null);
   const [target, setTarget] = useState<Target | null>(null);
@@ -51,7 +53,13 @@ export function ReadingHelp({
   const generation = useRef(0);
 
   useEffect(() => {
+    const coarsePointer = window.matchMedia("(pointer: coarse)");
     function update() {
+      if (coarsePointer.matches) {
+        setSelection(null);
+        setNotice("");
+        return;
+      }
       const selection = window.getSelection();
       if (!selection?.rangeCount || selection.isCollapsed) {
         setSelection(null);
@@ -116,9 +124,13 @@ export function ReadingHelp({
       setNotice("");
     }
     document.addEventListener("selectionchange", update);
+    coarsePointer.addEventListener("change", update);
     // Selection can precede hydration installing this listener.
     update();
-    return () => document.removeEventListener("selectionchange", update);
+    return () => {
+      document.removeEventListener("selectionchange", update);
+      coarsePointer.removeEventListener("change", update);
+    };
   }, [paragraphs, paragraph]);
 
   useEffect(() => {
@@ -240,6 +252,8 @@ export function ReadingHelp({
       >
         <Lightbulb size={18} aria-hidden="true" /> No entendí
       </button>
+      {children}
+      {/* XP-IVAN: barra compacta */}
       <span className="sr-only" role="status">
         {notice ||
           (selection
