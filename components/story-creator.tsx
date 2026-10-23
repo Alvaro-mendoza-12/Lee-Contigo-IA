@@ -59,6 +59,10 @@ import {
   storySafetyMessage,
   type GeneratedStory,
 } from "@/lib/story-creator";
+import {
+  buscarPalabraProhibida,
+  mensajePalabraProhibida,
+} from "@/lib/filtro-palabras";
 
 type Screen = "form" | "preparing" | "book" | "questions" | "complete";
 type CoverState = "idle" | "loading" | "ready" | "unavailable";
@@ -88,7 +92,15 @@ export function StoryCreator() {
     "idle" | "saving" | "saved" | "unavailable"
   >("idle");
   const [idea, setIdea] = useState("");
-  const ideaSafetyIssue = getStoryIdeaSafetyIssue(idea);
+  // Checked ~300 ms after the child stops typing, so the warning does not
+  // flash on every key; submitting always checks the latest text.
+  const [checkedIdea, setCheckedIdea] = useState("");
+  useEffect(() => {
+    const timer = window.setTimeout(() => setCheckedIdea(idea), 300);
+    return () => window.clearTimeout(timer);
+  }, [idea]);
+  const ideaSafetyIssue = getStoryIdeaSafetyIssue(checkedIdea);
+  const forbiddenWord = buscarPalabraProhibida(checkedIdea);
   const [level, setLevel] = useState<Level>("paso");
   const [adultReviewed, setAdultReviewed] = useState(false);
   const [story, setStory] = useState<GeneratedStory | null>(null);
@@ -364,6 +376,7 @@ export function StoryCreator() {
     event.preventDefault();
     const safetyIssue = getStoryIdeaSafetyIssue(idea);
     if (safetyIssue) {
+      setCheckedIdea(idea);
       setError("");
       ideaField.current?.focus();
       return;
@@ -612,17 +625,15 @@ export function StoryCreator() {
               <div className="creator-count" id="idea-count" aria-live="polite">
                 {idea.length} de 220 caracteres
               </div>
-              {ideaSafetyIssue ? (
-                <p
-                  className="creator-safety-warning"
-                  id="idea-safety"
-                  role="status"
-                  aria-live="polite"
-                  aria-atomic="true"
-                >
-                  {storySafetyMessage(ideaSafetyIssue)}
-                </p>
-              ) : null}
+              <div role="status" aria-live="polite" aria-atomic="true">
+                {ideaSafetyIssue ? (
+                  <p className="creator-safety-warning" id="idea-safety">
+                    {forbiddenWord
+                      ? mensajePalabraProhibida(forbiddenWord)
+                      : storySafetyMessage(ideaSafetyIssue)}
+                  </p>
+                ) : null}
+              </div>
               <details className="creator-ideas">
                 <summary>Necesito una idea</summary>
                 <div
