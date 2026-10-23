@@ -1,12 +1,9 @@
 "use client";
 
-import Link from "next/link";
 import {
-  ArrowRight,
   BookOpen,
   Compass,
   Leaf,
-  Sparkles,
   Users,
 } from "lucide-react";
 import {
@@ -38,7 +35,7 @@ export function Library({ initialLevel = "paso" }: { initialLevel?: Level }) {
       <header className="kid-hello">
         <h1>
           ¡Hola! <span aria-hidden="true">👋</span>
-          <br />
+          <br className="kid-hello-break" />
           ¿Qué cuento leemos hoy?
         </h1>
       </header>
@@ -66,7 +63,7 @@ export function Library({ initialLevel = "paso" }: { initialLevel?: Level }) {
               <span>
                 <strong>{levels[id].label}</strong>
                 <small>
-                  {id === "paso" ? "Frases cortas" : "Un poco más para explorar"}
+                    {id === "paso" ? "Frases cortas" : "Más largo"}
                 </small>
               </span>
             </label>
@@ -101,21 +98,11 @@ export function Library({ initialLevel = "paso" }: { initialLevel?: Level }) {
               priority={index === 0}
               level={level}
               books={books}
+              includeCreateCard={category.id === "aventuras"}
             />
           ) : null;
         })}
       </div>
-
-      <Link className="kid-create-link" href="/crear">
-        <span className="kid-create-icon" aria-hidden="true">
-          <Sparkles size={23} />
-        </span>
-        <span>
-          <strong>Inventar mi cuento</strong>
-          <small>Elige un personaje y una aventura</small>
-        </span>
-        <ArrowRight size={22} aria-hidden="true" />
-      </Link>
     </div>
   );
 }

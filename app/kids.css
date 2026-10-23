@@ -231,6 +231,12 @@ label:has(input:focus-visible) {
   .kid-library {
     padding-top: 20px;
   }
+  .kid-hello-break {
+    display: none;
+  }
+  .kid-hello h1 {
+    font-size: clamp(27px, 7vw, 36px);
+  }
   .kid-levels {
     gap: 8px;
     margin: 18px 0 22px;

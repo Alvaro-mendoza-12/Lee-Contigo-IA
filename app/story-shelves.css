@@ -149,11 +149,34 @@
   min-width: 0;
   flex-direction: column;
   overflow: hidden;
-  border: 2px solid #d9dfd2;
-  border-left: 5px solid var(--shelf-accent);
-  border-radius: 9px 18px 18px 9px;
+  border: 4px solid var(--card-accent, var(--shelf-accent));
+  border-radius: 22px;
   background: #fffefa;
-  box-shadow: 2px 4px 0 #263e3314;
+  box-shadow: 0 5px 0 var(--card-accent, var(--shelf-accent));
+}
+
+.story-card-direct[data-card-color="0"] {
+  --card-accent: #ffd23f;
+}
+
+.story-card-direct[data-card-color="1"] {
+  --card-accent: #38bdf8;
+}
+
+.story-card-direct[data-card-color="2"] {
+  --card-accent: #ff5ca8;
+}
+
+.story-card-direct[data-card-color="3"] {
+  --card-accent: #8bd346;
+}
+
+.story-card-direct[data-card-color="4"] {
+  --card-accent: #ff8a3d;
+}
+
+.story-card-direct[data-card-color="5"] {
+  --card-accent: #9b6dff;
 }
 
 .story-card-direct:focus-visible,
@@ -211,8 +234,12 @@
   display: flex;
   flex: 1;
   min-width: 0;
-  align-items: center;
-  padding: 11px 12px;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 4px;
+  min-height: 78px;
+  padding: 10px 13px 12px;
 }
 
 .story-card-body h3 {
@@ -224,45 +251,82 @@
   overflow-wrap: anywhere;
 }
 
-.kid-create-link {
-  display: flex;
-  min-height: 78px;
+.story-card-time {
+  display: inline-flex;
   align-items: center;
-  gap: 13px;
-  margin-top: 20px;
-  padding: 13px 18px;
-  border: 2px solid #d4a936;
-  border-radius: 22px;
-  background: #ffe38a;
-  color: #293c30;
-  box-shadow: 0 4px 0 #6f59251a;
+  gap: 5px;
+  color: #55517a;
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1.3;
 }
 
-.kid-create-icon {
+.story-create-card {
+  position: relative;
+  --card-accent: #9b6dff;
+  border-color: #9b6dff;
+  background: #fff;
+  text-decoration: none;
+}
+
+.story-create-art {
+  position: relative;
   display: grid;
-  width: 48px;
-  height: 48px;
+  aspect-ratio: 4 / 3;
   flex: none;
   place-items: center;
-  border-radius: 16px;
-  background: #fff8e3;
+  overflow: hidden;
+  color: #5934ba;
+  background:
+    radial-gradient(circle at 28% 28%, #ffffff9c 0 17%, transparent 18%),
+    linear-gradient(145deg, #eee5ff, #ffdff0);
 }
 
-.kid-create-link > span:nth-child(2) {
-  display: grid;
-  flex: 1;
-  min-width: 0;
-  gap: 2px;
+.story-create-art > span {
+  position: absolute;
+  font-size: clamp(22px, 3vw, 34px);
+  line-height: 1;
 }
 
-.kid-create-link strong {
-  font-size: 19px;
+.story-create-art > span:nth-of-type(1) {
+  top: 12%;
+  left: 13%;
+}
+
+.story-create-art > span:nth-of-type(2) {
+  right: 13%;
+  bottom: 12%;
+}
+
+.story-create-sparkle {
+  position: absolute;
+  top: 15%;
+  right: 16%;
+  color: #9e6a08;
+}
+
+.story-create-copy {
+  padding-right: 48px;
+}
+
+.story-create-copy strong {
+  color: var(--ink);
+  font-size: 18px;
   font-weight: 900;
+  line-height: 1.25;
 }
 
-.kid-create-link small {
-  color: #4d5642;
-  font-size: 13px;
+.story-create-arrow {
+  position: absolute;
+  right: 12px;
+  bottom: 17px;
+  display: grid;
+  width: 36px;
+  height: 36px;
+  place-items: center;
+  border-radius: 50%;
+  background: #ffd23f;
+  color: #263e33;
 }
 
 @media (hover: hover) and (prefers-reduced-motion: no-preference) {
@@ -274,14 +338,37 @@
 
   .story-card-direct:hover {
     transform: translateY(-2px);
-    box-shadow: 2px 6px 0 #263e3318;
+    box-shadow: 0 8px 0 var(--card-accent, var(--shelf-accent));
   }
 }
 
-@media (min-width: 601px) and (max-width: 1000px) {
+@media (min-width: 761px) {
   .story-rail {
-    --rail-columns: 3;
-    grid-auto-columns: calc((100% - 30px) / 3);
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-auto-columns: auto;
+    grid-auto-flow: row;
+    overflow: visible;
+    scroll-snap-type: none;
+  }
+
+  .story-card-body {
+    min-height: 88px;
+    padding: 12px 14px 14px;
+  }
+
+  .story-card-body h3 {
+    font-size: 18px;
+  }
+
+  .story-shelf-arrows {
+    display: none;
+  }
+}
+
+@media (min-width: 761px) and (max-width: 1000px) {
+  .story-rail {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
 
@@ -319,21 +406,19 @@
   }
 
   .story-card-body {
-    padding: 9px;
+    min-height: 72px;
+    padding: 9px 10px 10px;
+  }
+
+  .story-card-direct {
+    border-width: 3px;
+    border-radius: 19px;
   }
 
   .story-card-body h3 {
     font-size: 15px;
   }
 
-  .kid-create-link {
-    min-height: 68px;
-    padding: 10px 13px;
-  }
-
-  .kid-create-link small {
-    font-size: 12px;
-  }
 }
 
 @media (prefers-reduced-motion: reduce) {

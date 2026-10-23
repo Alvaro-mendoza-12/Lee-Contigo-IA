@@ -1,10 +1,25 @@
 /* The family's uploaded storybook art gives the pages a shared, gentle world. */
 body {
   background-color: #fffaf0;
-  background-image: url("/images/lee-contigo-fondo-infancia.webp");
-  background-position: center top;
+  background-image:
+    url("/images/lee-contigo-fondo-infancia.webp"),
+    radial-gradient(circle at 24% 24%, #ffe58a70 0 116px, transparent 117px),
+    radial-gradient(circle at 76% 27%, #9be7ff70 0 132px, transparent 133px),
+    radial-gradient(circle at 30% 76%, #ffc2e270 0 122px, transparent 123px),
+    radial-gradient(circle at 72% 74%, #d7c4ff70 0 126px, transparent 127px);
+  background-position:
+    center top,
+    left top,
+    right top,
+    left 850px,
+    right 1320px;
   background-repeat: no-repeat;
-  background-size: min(100vw, 1500px) auto;
+  background-size:
+    min(100vw, 1500px) auto,
+    480px 480px,
+    500px 500px,
+    480px 480px,
+    500px 500px;
   background-attachment: scroll;
 }
 
@@ -53,8 +68,18 @@ body {
 
 @media (max-width: 760px) {
   body {
-    background-position: center top;
-    background-size: 100% auto;
+    background-position:
+      center top,
+      left top,
+      right top,
+      left 700px,
+      right 1150px;
+    background-size:
+      100% auto,
+      340px 340px,
+      360px 360px,
+      340px 340px,
+      360px 360px;
   }
 
   .kid-library::before,

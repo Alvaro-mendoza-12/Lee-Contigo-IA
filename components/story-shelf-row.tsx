@@ -2,7 +2,13 @@
 
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import Link from "next/link";
-import { ArrowLeft, ArrowRight, Sparkles } from "lucide-react";
+import {
+  ArrowLeft,
+  ArrowRight,
+  BookOpen,
+  Clock3,
+  Sparkles,
+} from "lucide-react";
 import type { Level, Story } from "@/lib/stories";
 import { StoryArt } from "./art";
 
@@ -13,6 +19,7 @@ export function StoryShelfRow({
   books,
   level,
   priority = false,
+  includeCreateCard = false,
 }: {
   id: string;
   title: string;
@@ -20,6 +27,7 @@ export function StoryShelfRow({
   books: Story[];
   level: Level;
   priority?: boolean;
+  includeCreateCard?: boolean;
 }) {
   const rail = useRef<HTMLUListElement>(null);
   const [bounds, setBounds] = useState({
@@ -107,10 +115,10 @@ export function StoryShelfRow({
         ref={rail}
         id={id}
         className="story-rail"
-        tabIndex={0}
+        tabIndex={bounds.overflow ? 0 : undefined}
         aria-label={`Cuentos de ${title}`}
         onKeyDown={(event) => {
-          if (event.target !== event.currentTarget) return;
+          if (!bounds.overflow || event.target !== event.currentTarget) return;
           if (event.key === "ArrowLeft" || event.key === "ArrowRight") {
             event.preventDefault();
             move(event.key === "ArrowRight" ? 1 : -1);
@@ -121,6 +129,7 @@ export function StoryShelfRow({
           <li key={story.id}>
             <Link
               className="story-card story-card-direct"
+              data-card-color={index % 6}
               href={`/leer/${story.id}?nivel=${level}`}
               aria-label={`Leer ${story.title}`}
               aria-describedby="library-level-feedback"
@@ -141,10 +150,36 @@ export function StoryShelfRow({
               </div>
               <div className="story-card-body">
                 <h3>{story.title}</h3>
+                <span className="story-card-time">
+                  <Clock3 size={14} aria-hidden="true" /> {story.minutes} min
+                </span>
               </div>
             </Link>
           </li>
         ))}
+        {includeCreateCard ? (
+          <li>
+            <Link
+              className="story-card story-card-direct story-create-card"
+              href="/crear"
+              aria-label="Inventar mi cuento con inteligencia artificial"
+            >
+              <span className="story-create-art" aria-hidden="true">
+                <Sparkles className="story-create-sparkle" size={24} />
+                <span>🖍️</span>
+                <BookOpen size={62} strokeWidth={1.5} />
+                <span>✨</span>
+              </span>
+              <span className="story-card-body story-create-copy">
+                <strong>Inventar mi cuento</strong>
+                <span className="story-card-time">Un libro hecho por ti</span>
+              </span>
+              <span className="story-create-arrow" aria-hidden="true">
+                <ArrowRight size={21} />
+              </span>
+            </Link>
+          </li>
+        ) : null}
       </ul>
     </section>
   );
