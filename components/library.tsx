@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRef, type ReactNode } from "react";
 import {
   ArrowRight,
+  BookCheck,
   BookOpen,
   Compass,
   HeartHandshake,
@@ -32,14 +33,18 @@ export function Library({
   initialLevel = "paso",
   experienceBar,
   lockedStories,
+  readStories,
 }: {
   initialLevel?: Level;
   experienceBar?: ReactNode;
   lockedStories?: StoryLocks;
+  readStories?: ReadonlySet<string>;
 }) {
   const [level] = useReadingLevel(initialLevel);
   const catalogue = useRef<HTMLDivElement>(null);
   const shelf = storiesForShelf(level);
+  const unread = shelf.filter((story) => !readStories?.has(story.id));
+  const read = shelf.filter((story) => readStories?.has(story.id));
 
   return (
     <div className="container kid-library child-library inicio-page">
@@ -146,10 +151,11 @@ export function Library({
         <div className="story-shelves">
           {storyCategories.map((category, index) => {
             const Icon = categoryIcons[category.id];
-            const books = shelf.filter(
+            const books = unread.filter(
               (story) => story.category === category.id,
             );
-            return books.length ? (
+            // Aventuras keeps «Inventar mi cuento» even when all were read.
+            return books.length || category.id === "aventuras" ? (
               <StoryShelfRow
                 key={category.id}
                 id={categoryIds[category.id]}
@@ -163,6 +169,16 @@ export function Library({
               />
             ) : null;
           })}
+          {read.length ? (
+            <StoryShelfRow
+              id="cuentos-leidos"
+              title="Ya los leíste"
+              icon={<BookCheck size={20} aria-hidden="true" />}
+              level={level}
+              books={read}
+              readMark
+            />
+          ) : null}
         </div>
       </div>
     </div>

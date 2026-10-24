@@ -10,6 +10,7 @@ import {
   NIVELES,
   cuentoDesbloqueado,
   cuentosBloqueados,
+  cuentosLeidos,
   nivelActual,
   nivelParaCuento,
   obtenerProgreso,
@@ -312,4 +313,31 @@ test("los mensajes de candado nombran el nivel que abre cada cuento", () => {
   );
   assert.deepEqual(Object.keys(cuentosBloqueados(3)), [...DESBLOQUEOS[4]]);
   assert.deepEqual(cuentosBloqueados(NIVELES.length), {});
+});
+
+test("los cuentos leídos salen de las recompensas de cuento terminado", () => {
+  preparar();
+  assert.deepEqual([...cuentosLeidos()], []);
+  sumarXP("pregunta-primer-intento", "nube-perdida", "paso", "q1");
+  sumarXP("cuento-creado", "libro-propio", "paso");
+  assert.deepEqual([...cuentosLeidos()], []);
+
+  sumarXP("cuento-terminado", "luz-del-bosque", "paso");
+  sumarXP("cuento-terminado", "luz-del-bosque", "reto");
+  sumarXP("cuento-terminado", "mapa-sonidos", "reto");
+  assert.deepEqual([...cuentosLeidos()].sort(), [
+    "luz-del-bosque",
+    "mapa-sonidos",
+  ]);
+
+  reiniciarProgreso();
+  assert.equal(cuentosLeidos().size, 0);
+});
+
+test("en modo demo los cuentos leídos usan la clave de demo", () => {
+  preparar({ url: "?demo=1" });
+  sumarXP("cuento-terminado", "semilla-viajera", "paso");
+  assert.deepEqual([...cuentosLeidos()], ["semilla-viajera"]);
+  preparar();
+  assert.equal(cuentosLeidos().size, 0);
 });

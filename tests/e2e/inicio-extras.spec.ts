@@ -1,4 +1,21 @@
-import { expect, test } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
+import { storiesForShelf } from "../../lib/stories";
+
+async function marcarLeidos(page: Page, ids: string[]) {
+  await page.evaluate(
+    (lista) =>
+      localStorage.setItem(
+        "lee-contigo-progreso",
+        JSON.stringify({
+          version: 1,
+          xp: 500,
+          recompensas: lista.map((id) => `cuento-terminado:${id}:paso:`),
+        }),
+      ),
+    ids,
+  );
+  await page.reload();
+}
 
 test("«Ver guía» se lee bien, mide al menos 48 px y abre la guía", async ({
   page,
@@ -70,4 +87,53 @@ test("en el celular el botón de sonido es redondo y solo tiene ícono", async (
 
   await page.setViewportSize({ width: 1280, height: 900 });
   await expect(sonido).toContainText("Sonido: no");
+});
+
+test("«Ya los leíste» aparece al final y no repite cuentos", async ({
+  page,
+}) => {
+  await page.goto("/");
+  const leidos = page.locator("#cuentos-leidos");
+  await expect(page.getByRole("heading", { name: "Amigos" })).toBeVisible();
+  await expect(leidos).toHaveCount(0);
+
+  await marcarLeidos(page, ["luz-del-bosque", "mapa-sonidos"]);
+  await expect(
+    page.getByRole("heading", { name: "Ya los leíste" }),
+  ).toBeVisible();
+  await expect(leidos.locator("[data-story-id]")).toHaveCount(2);
+  await expect(page.locator('[data-story-id="luz-del-bosque"]')).toHaveCount(1);
+  await expect(leidos.locator(".story-read-badge")).toHaveCount(2);
+  await expect(
+    leidos.getByRole("link", { name: "Volver a leer Una luz en el bosque" }),
+  ).toBeVisible();
+  // La fila de leídos es la última de la biblioteca.
+  await expect(page.locator(".story-shelf-row").last()).toHaveAttribute(
+    "aria-labelledby",
+    "cuentos-leidos-title",
+  );
+  const total = await page
+    .locator(".story-card-direct[href^='/leer/']")
+    .count();
+  expect(total).toBe(storiesForShelf("paso").length);
+});
+
+test("«Inventar mi cuento» sigue visible con todas las Aventuras leídas", async ({
+  page,
+}) => {
+  await page.goto("/");
+  const aventuras = storiesForShelf("paso")
+    .filter((story) => story.category === "aventuras")
+    .map((story) => story.id);
+  await marcarLeidos(page, aventuras);
+  const fila = page.locator("#cuentos-descubrimientos");
+  await expect(fila.locator("[data-story-id]")).toHaveCount(0);
+  await expect(
+    fila.getByRole("link", {
+      name: "Inventar mi cuento con inteligencia artificial",
+    }),
+  ).toBeVisible();
+  await expect(page.locator("#cuentos-leidos [data-story-id]")).toHaveCount(
+    aventuras.length,
+  );
 });

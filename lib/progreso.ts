@@ -193,6 +193,16 @@ export function cuentoDesbloqueado(id: string) {
   return !requerido || nivelActual().numero >= requerido.numero;
 }
 
+// Cuentos terminados en cualquier nivel, según las recompensas ya guardadas.
+export function cuentosLeidos() {
+  const leidos = new Set<string>();
+  for (const recompensa of leer(claveActiva()).recompensas) {
+    const [motivo, id] = recompensa.split(":");
+    if (motivo === "cuento-terminado" && id) leidos.add(id);
+  }
+  return leidos;
+}
+
 // Mensaje de candado para cada cuento que el nivel indicado aún no abre.
 export function cuentosBloqueados(numeroNivel: number) {
   const bloqueados: Record<string, string> = {};

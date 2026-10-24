@@ -724,6 +724,24 @@
   color: var(--xp-principal-oscuro);
 }
 
+/* Cinta «Leído» en la fila «Ya los leíste» del inicio */
+.story-read-badge {
+  position: absolute;
+  inset: 10px 10px auto auto;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px 4px 6px;
+  border: 2px solid #ffffff;
+  border-radius: 999px;
+  background: #2f7d43;
+  color: #ffffff;
+  box-shadow: 0 3px 8px var(--xp-sombra);
+  font-size: 13px;
+  font-weight: 900;
+}
+
 /* Celebración del «+30» al llegar a las preguntas */
 .xp-celebracion {
   position: fixed;
