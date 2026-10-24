@@ -86,14 +86,22 @@ for (const enabled of [false, true]) {
         return original.apply(this, args);
       };
     });
-    if (enabled) {
-      await page.goto("/leer/luz-del-bosque?nivel=paso");
-      await page.getByRole("button", { name: "Ajustes", exact: true }).click();
-      await page.getByRole("switch", { name: /Sonidos/ }).click();
-    }
-    await page.goto("/prueba-xp?demo=1");
-    await expect(page.locator('[data-tutorial="barra-xp"]')).toBeVisible();
-    await page.getByRole("button", { name: "Subir de nivel ahora" }).click();
+    await page.goto("/leer/luz-del-bosque?nivel=paso");
+    // 55 XP: «Vamos a pensar» suma 30 y sube a Lector Brote (60 XP).
+    await page.evaluate(() =>
+      localStorage.setItem(
+        "lee-contigo-progreso",
+        JSON.stringify({ version: 1, xp: 55, recompensas: [] }),
+      ),
+    );
+    await page.reload();
+    const settings = page.getByRole("dialog", { name: "Ajustes de lectura" });
+    await page.getByRole("button", { name: "Ajustes", exact: true }).click();
+    if (enabled)
+      await settings.getByRole("switch", { name: /Sonidos/ }).click();
+    await settings.getByRole("button", { name: "Ver relato completo" }).click();
+    await settings.getByRole("button", { name: "Cerrar ajustes" }).click();
+    await page.getByRole("link", { name: "Vamos a pensar" }).click();
     await expect(page.getByRole("alertdialog")).toBeVisible();
     const starts = () =>
       page.evaluate(
