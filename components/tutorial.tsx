@@ -11,6 +11,7 @@ import {
 } from "react";
 import { createPortal } from "react-dom";
 import { usePathname } from "next/navigation";
+import { CircleHelp } from "lucide-react";
 import { ReadingFriend } from "./reading-friend";
 import {
   EVENTO_ABRIR,
@@ -277,8 +278,24 @@ export function Tutorial({
   );
 }
 
-/** Botón «?» para volver a ver el tutorial. */
-export function BotonTutorial({ className = "" }: { className?: string }) {
+/** Botón para volver a ver el tutorial: «?» redondo o «Ver guía» con texto. */
+export function BotonTutorial({
+  className = "",
+  variante = "icono",
+}: {
+  className?: string;
+  variante?: "icono" | "texto";
+}) {
+  if (variante === "texto")
+    return (
+      <button
+        type="button"
+        className={`tutorial-boton-ayuda tutorial-boton-ayuda--texto ${className}`}
+        onClick={abrirTutorial}
+      >
+        <CircleHelp size={22} aria-hidden="true" /> Ver guía
+      </button>
+    );
   return (
     <button
       type="button"

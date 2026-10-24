@@ -1,6 +1,11 @@
 "use client";
 import { useEffect, useRef, useState, type CSSProperties } from "react";
-import { EVENTO_XP, type DetalleXP, type NivelLector } from "@/lib/progreso";
+import {
+  EVENTO_CELEBRADO,
+  EVENTO_XP,
+  type DetalleXP,
+  type NivelLector,
+} from "@/lib/progreso";
 import { InsigniaXP, premiosDeNivel } from "./barra-xp";
 import { ReadingFriend } from "./reading-friend";
 import { reproducir } from "@/lib/sonidos";
@@ -32,15 +37,36 @@ export function AvisoNivel() {
   const boton = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
+    let guardado: NivelLector | null = null;
+    let respaldo: ReturnType<typeof setTimeout> | undefined;
+    function mostrar(siguiente: NivelLector) {
+      setNivel(siguiente);
+      reproducir("nivel");
+    }
     function escuchar(evento: Event) {
       const detalle = (evento as CustomEvent<DetalleXP>).detail;
-      if (detalle.subioDeNivel) {
-        setNivel(detalle.nivel);
-        reproducir("nivel");
+      if (!detalle.subioDeNivel) return;
+      // Al terminar un cuento, primero se ve el «+30» y después este aviso.
+      if (detalle.motivo === "cuento-terminado") {
+        guardado = detalle.nivel;
+        clearTimeout(respaldo);
+        respaldo = setTimeout(soltar, 4000);
+        return;
       }
+      mostrar(detalle.nivel);
+    }
+    function soltar() {
+      clearTimeout(respaldo);
+      if (guardado) mostrar(guardado);
+      guardado = null;
     }
     window.addEventListener(EVENTO_XP, escuchar);
-    return () => window.removeEventListener(EVENTO_XP, escuchar);
+    window.addEventListener(EVENTO_CELEBRADO, soltar);
+    return () => {
+      window.removeEventListener(EVENTO_XP, escuchar);
+      window.removeEventListener(EVENTO_CELEBRADO, soltar);
+      clearTimeout(respaldo);
+    };
   }, []);
 
   useEffect(() => {

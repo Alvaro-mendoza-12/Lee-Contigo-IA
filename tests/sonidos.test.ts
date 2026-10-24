@@ -51,8 +51,18 @@ class Oscilador extends Nodo {
     registro.finales.push(cuando);
   }
 }
+// El pase de página usa ruido: buffer, fuente de buffer y filtro.
+class FuenteFalsa extends Oscilador {
+  buffer: unknown = null;
+}
+class FiltroFalso extends Nodo {
+  type = "lowpass";
+  frequency = new Parametro();
+  Q = new Parametro();
+}
 class ContextoFalso {
   currentTime = 0;
+  sampleRate = 48000;
   destination = new Nodo();
   constructor() {
     registro.contextos++;
@@ -62,6 +72,16 @@ class ContextoFalso {
   }
   createOscillator() {
     return new Oscilador(this);
+  }
+  createBuffer(_canales: number, muestras: number) {
+    const datos = new Float32Array(muestras);
+    return { getChannelData: () => datos };
+  }
+  createBufferSource() {
+    return new FuenteFalsa(this);
+  }
+  createBiquadFilter() {
+    return new FiltroFalso(this);
   }
   resume() {
     registro.suspendido = false;

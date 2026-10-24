@@ -15,7 +15,7 @@ test("solo el inicio abre la guía en la primera visita y no la repite", async (
   await page.reload();
   await page.waitForTimeout(700);
   await expect(guide).toHaveCount(0);
-  await page.getByRole("button", { name: "Ver la guía" }).click();
+  await page.getByRole("button", { name: "Ver guía" }).click();
   await expect(guide).toBeVisible();
   await guide.getByRole("button", { name: "Siguiente" }).click();
   const target = page.locator('[data-tutorial="cuentos"]');

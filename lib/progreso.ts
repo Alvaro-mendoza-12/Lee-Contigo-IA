@@ -47,6 +47,8 @@ export const CLAVE = "lee-contigo-progreso";
 export const CLAVE_DEMO = "lee-contigo-progreso-demo";
 export const MARCA_DEMO = "lee-contigo-demo";
 export const EVENTO_XP = "xp:ganada";
+// Se emite cuando el «+30» de un cuento terminado llega a la pastilla.
+export const EVENTO_CELEBRADO = "xp:celebrado";
 
 export type NivelLector = (typeof NIVELES)[number];
 export type MotivoXP = keyof typeof RECOMPENSAS;
@@ -189,6 +191,16 @@ export function cuentoDesbloqueado(id: string) {
   if (modoDemo()) return true;
   const requerido = nivelParaCuento(id);
   return !requerido || nivelActual().numero >= requerido.numero;
+}
+
+// Cuentos terminados en cualquier nivel, según las recompensas ya guardadas.
+export function cuentosLeidos() {
+  const leidos = new Set<string>();
+  for (const recompensa of leer(claveActiva()).recompensas) {
+    const [motivo, id] = recompensa.split(":");
+    if (motivo === "cuento-terminado" && id) leidos.add(id);
+  }
+  return leidos;
 }
 
 // Mensaje de candado para cada cuento que el nivel indicado aún no abre.

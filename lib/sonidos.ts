@@ -50,8 +50,8 @@ export const configuracion = {
    * lo justo para oírse por encima de la música, sin sobresaltar.
    */
   efectos: {
-    /** «Fiu» suave al pasar página: sube de 520 a 1400 Hz. */
-    pagina: { volumen: 0.045, duracion: 0.22 },
+    /** Hoja de papel al pasar página: ruido filtrado que sube de 1800 a 4200 Hz. */
+    pagina: { volumen: 0.055, duracion: 0.25 },
     /** Campanita de tres notas que suben (Do, Mi y Sol agudos). */
     correcta: { volumen: 0.06, duracion: 0.36 },
     /**
@@ -244,6 +244,41 @@ function nota(
   };
 }
 
+/** Ruido corto con un filtro que se mueve: suena como una hoja de papel. */
+function hoja(
+  salida: GainNode,
+  inicio: number,
+  duracion: number,
+  volumen: number,
+) {
+  const audio = salida.context;
+  const muestras = Math.max(1, Math.floor(audio.sampleRate * duracion));
+  const buffer = audio.createBuffer(1, muestras, audio.sampleRate);
+  const datos = buffer.getChannelData(0);
+  for (let i = 0; i < muestras; i++) datos[i] = Math.random() * 2 - 1;
+  const fuente = audio.createBufferSource();
+  fuente.buffer = buffer;
+  const filtro = audio.createBiquadFilter();
+  filtro.type = "bandpass";
+  filtro.Q.value = 0.9;
+  filtro.frequency.setValueAtTime(1800, inicio);
+  filtro.frequency.exponentialRampToValueAtTime(4200, inicio + duracion);
+  const ganancia = audio.createGain();
+  ganancia.gain.setValueAtTime(0, inicio);
+  ganancia.gain.linearRampToValueAtTime(volumen, inicio + duracion * 0.25);
+  ganancia.gain.exponentialRampToValueAtTime(0.0001, inicio + duracion);
+  fuente.connect(filtro);
+  filtro.connect(ganancia);
+  ganancia.connect(salida);
+  fuente.start(inicio);
+  fuente.stop(inicio + duracion + 0.02);
+  fuente.onended = () => {
+    fuente.disconnect();
+    filtro.disconnect();
+    ganancia.disconnect();
+  };
+}
+
 /** Reproduce un efecto corto si los sonidos están activos. */
 export function reproducir(nombre: Sonido) {
   instalar();
@@ -258,7 +293,7 @@ export function reproducir(nombre: Sonido) {
     const { volumen: v, duracion: d } = configuracion.efectos[nombre];
     switch (nombre) {
       case "pagina":
-        nota(salida, 520, t, d, v, "sine", 1400);
+        hoja(salida, t, d, v);
         break;
       case "correcta": {
         // Campanita: cada nota suma un armónico suave al doble de frecuencia.

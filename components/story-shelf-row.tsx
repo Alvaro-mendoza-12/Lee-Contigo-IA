@@ -6,6 +6,7 @@ import {
   ArrowLeft,
   ArrowRight,
   BookOpen,
+  CircleCheck,
   Clock3,
   LockKeyhole,
   Sparkles,
@@ -26,6 +27,7 @@ export function StoryShelfRow({
   priority = false,
   includeCreateCard = false,
   lockedStories,
+  readMark = false,
 }: {
   id: string;
   title: string;
@@ -35,6 +37,7 @@ export function StoryShelfRow({
   priority?: boolean;
   includeCreateCard?: boolean;
   lockedStories?: StoryLocks;
+  readMark?: boolean;
 }) {
   const rail = useRef<HTMLUListElement>(null);
   const [bounds, setBounds] = useState({
@@ -141,6 +144,11 @@ export function StoryShelfRow({
                   variant={story.art}
                   priority={priority && index < 2}
                 />
+                {readMark ? (
+                  <span className="story-read-badge" aria-hidden="true">
+                    <CircleCheck size={18} /> Leído
+                  </span>
+                ) : null}
                 {lockMessage ? (
                   <span className="story-lock-badge" aria-hidden="true">
                     <LockKeyhole size={18} />
@@ -187,7 +195,7 @@ export function StoryShelfRow({
                   className="story-card story-card-direct"
                   data-card-color={index % 6}
                   href={`/leer/${story.id}?nivel=${level}`}
-                  aria-label={`Leer ${story.title}`}
+                  aria-label={`${readMark ? "Volver a leer" : "Leer"} ${story.title}`}
                   aria-describedby="library-level-feedback"
                 >
                   {content}

@@ -4,6 +4,7 @@ import type { Level } from "@/lib/stories";
 import {
   EVENTO_XP,
   cuentosBloqueados,
+  cuentosLeidos,
   modoDemo,
   nivelActual,
 } from "@/lib/progreso";
@@ -16,10 +17,13 @@ export function BibliotecaXP({ initialLevel }: { initialLevel: Level }) {
   const [candados, setCandados] = useState<StoryLocks>(() =>
     cuentosBloqueados(1),
   );
+  const [leidos, setLeidos] = useState<ReadonlySet<string>>(() => new Set());
 
   useEffect(() => {
-    const actualizar = () =>
+    const actualizar = () => {
       setCandados(modoDemo() ? {} : cuentosBloqueados(nivelActual().numero));
+      setLeidos(cuentosLeidos());
+    };
     actualizar();
     window.addEventListener(EVENTO_XP, actualizar);
     return () => window.removeEventListener(EVENTO_XP, actualizar);
@@ -30,6 +34,7 @@ export function BibliotecaXP({ initialLevel }: { initialLevel: Level }) {
       initialLevel={initialLevel}
       experienceBar={<BarraXP />}
       lockedStories={candados}
+      readStories={leidos}
     />
   );
 }
