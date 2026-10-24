@@ -49,7 +49,7 @@ export function Library({
             <br className="kid-hello-break" />
             ¿Qué cuento leemos hoy?
           </h1>
-          <BotonTutorial />
+          <BotonTutorial variante="texto" />
           <p>Historias para descubrir, imaginar y compartir a tu ritmo.</p>
         </div>
       </header>
