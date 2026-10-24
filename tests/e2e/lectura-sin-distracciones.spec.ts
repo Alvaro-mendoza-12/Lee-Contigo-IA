@@ -14,6 +14,12 @@ test("leer un cuento entero no muestra avisos, +XP ni sonidos", async ({
     };
   });
   await page.goto("/leer/luz-del-bosque?nivel=paso");
+  // Espera una interacción hidratada antes de enviar el evento sintético:
+  // la carga del documento no garantiza que AvisoNivel ya esté escuchando.
+  await page.getByRole("button", { name: "Ajustes", exact: true }).click();
+  const ajustes = page.getByRole("dialog", { name: "Ajustes de lectura" });
+  await expect(ajustes).toBeVisible();
+  await ajustes.getByRole("button", { name: "Cerrar ajustes" }).click();
   // Aunque llegue experiencia mientras se lee, nada salta en la página.
   await page.evaluate(() =>
     window.dispatchEvent(
