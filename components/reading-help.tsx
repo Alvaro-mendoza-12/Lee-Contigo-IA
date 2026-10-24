@@ -5,6 +5,7 @@ import type { Level, StoryId } from "@/lib/stories";
 import type { ReadingHelpInput, ReadingHelpOutput } from "@/lib/reading-help";
 import { ReadFeedback } from "./answer-audio";
 import { BarraXP } from "./barra-xp";
+import { EscucharParrafo } from "./escuchar-parrafo";
 import {
   preparedReadingHelp,
   helpNarrationText,
@@ -346,6 +347,16 @@ export function ReadingHelp({
           <ReadFeedback
             text={helpNarrationText(result)}
             authorization={result.audioAuthorization}
+          />
+        ) : null}
+        {open && target ? (
+          <EscucharParrafo
+            etiqueta="Escuchar este párrafo"
+            texto={paragraphs[target.paragraph]}
+            paragraph={target.paragraph}
+            level={level}
+            storyId={storyId}
+            authorization={authorizations[target.paragraph]}
           />
         ) : null}
         <div className="help-actions">

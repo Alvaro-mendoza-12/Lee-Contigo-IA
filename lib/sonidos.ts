@@ -19,7 +19,8 @@ export type Sonido =
   | "incorrecta"
   | "pista"
   | "nivel"
-  | "boton";
+  | "boton"
+  | "fiesta";
 
 /**
  * Todos los volúmenes y duraciones en un solo lugar, para afinarlos
@@ -66,6 +67,8 @@ export const configuracion = {
     nivel: { volumen: 0.055, duracion: 0.9 },
     /** Clic muy suave al tocar los interruptores. */
     boton: { volumen: 0.03, duracion: 0.05 },
+    /** Fiesta al terminar un cuento: cuatro notas rápidas y un brillo. */
+    fiesta: { volumen: 0.06, duracion: 0.38 },
   },
   /** Espera entre el sonido de «incorrecta» y la nota de la pista. */
   esperaAntesDePista: 0.42,
@@ -327,6 +330,14 @@ export function reproducir(nombre: Sonido) {
       case "boton":
         nota(salida, 1200, t, d, v, "sine", 800);
         break;
+      case "fiesta": {
+        const paso = d * 0.13;
+        [523, 659, 784, 1047].forEach((frecuencia, i) =>
+          nota(salida, frecuencia, t + i * paso, paso * 1.4, v, "triangle"),
+        );
+        nota(salida, 2093, t + paso * 4, d - paso * 4, v * 0.3);
+        break;
+      }
     }
   } catch {
     /* Si el audio falla, el niño sigue viendo los colores y textos. */

@@ -69,6 +69,24 @@
   color: var(--respuesta-ambar-tinta);
 }
 
+/* Respuesta revelada tras agotar las pistas: tono amable, sin error */
+.practice-page .answer.revealed-answer {
+  border: 2px solid var(--respuesta-verde);
+  background: var(--respuesta-verde-fondo);
+}
+.practice-page .answer.revealed-answer .answer-letter {
+  border-color: var(--respuesta-verde);
+  background: var(--respuesta-verde);
+  color: #fff;
+}
+.practice-page .answer-evidence--resaltada {
+  padding: 10px 14px;
+  border-left: 5px solid #f2b53c;
+  border-radius: 8px;
+  background: #fff2c2;
+  color: #3d2a05;
+}
+
 /* El «+10» que vuela hacia la pastilla (se agrega a body) */
 .respuesta-vuelo {
   position: fixed;

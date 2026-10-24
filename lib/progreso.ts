@@ -49,6 +49,8 @@ export const MARCA_DEMO = "lee-contigo-demo";
 export const EVENTO_XP = "xp:ganada";
 // Se emite cuando el «+30» de un cuento terminado llega a la pastilla.
 export const EVENTO_CELEBRADO = "xp:celebrado";
+// Se emite siempre al pulsar «Vamos a pensar», aunque el cuento ya diera XP.
+export const EVENTO_CUENTO_TERMINADO = "cuento:terminado";
 
 export type NivelLector = (typeof NIVELES)[number];
 export type MotivoXP = keyof typeof RECOMPENSAS;
@@ -176,6 +178,17 @@ export function sumarXP(
     nivel: actual,
   };
   avisar(detalle);
+  return detalle;
+}
+
+// Suma el +30 (solo la primera vez) y avisa para celebrar en las preguntas.
+export function terminarCuento(idCuento: string, nivel: Level): DetalleXP {
+  const detalle = sumarXP("cuento-terminado", idCuento, nivel);
+  try {
+    window.dispatchEvent(
+      new CustomEvent(EVENTO_CUENTO_TERMINADO, { detail: detalle }),
+    );
+  } catch {}
   return detalle;
 }
 

@@ -11,6 +11,8 @@ import {
   cuentoDesbloqueado,
   cuentosBloqueados,
   cuentosLeidos,
+  EVENTO_CUENTO_TERMINADO,
+  terminarCuento,
   nivelActual,
   nivelParaCuento,
   obtenerProgreso,
@@ -340,4 +342,18 @@ test("en modo demo los cuentos leídos usan la clave de demo", () => {
   assert.deepEqual([...cuentosLeidos()], ["semilla-viajera"]);
   preparar();
   assert.equal(cuentosLeidos().size, 0);
+});
+
+test("terminar un cuento siempre avisa, pero el +30 se paga una vez", () => {
+  const { ventana } = preparar();
+  const avisos: DetalleXP[] = [];
+  ventana.addEventListener(EVENTO_CUENTO_TERMINADO, (evento) =>
+    avisos.push((evento as CustomEvent<DetalleXP>).detail),
+  );
+  assert.equal(terminarCuento("luz-del-bosque", "paso").ganada, 30);
+  assert.equal(terminarCuento("luz-del-bosque", "paso").ganada, 0);
+  assert.deepEqual(
+    avisos.map((aviso) => aviso.ganada),
+    [30, 0],
+  );
 });

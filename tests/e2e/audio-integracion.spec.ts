@@ -102,6 +102,7 @@ for (const enabled of [false, true]) {
     await settings.getByRole("button", { name: "Ver relato completo" }).click();
     await settings.getByRole("button", { name: "Cerrar ajustes" }).click();
     await page.getByRole("link", { name: "Vamos a pensar" }).click();
+    await page.getByRole("button", { name: "¡A pensar!" }).click();
     await expect(page.getByRole("alertdialog")).toBeVisible();
     const starts = () =>
       page.evaluate(

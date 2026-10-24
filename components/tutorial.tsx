@@ -87,6 +87,7 @@ export function Tutorial({
   const globo = useRef<HTMLDivElement>(null);
   const siguiente = useRef<HTMLButtonElement>(null);
   const focoPrevio = useRef<HTMLElement | null>(null);
+  const posicionPrevia = useRef({ x: 0, y: 0 });
   const id = useId();
 
   const abrir = useCallback(() => {
@@ -95,6 +96,7 @@ export function Tutorial({
       document.activeElement instanceof HTMLElement
         ? document.activeElement
         : null;
+    posicionPrevia.current = { x: window.scrollX, y: window.scrollY };
     setIndice(0);
     setPasosActivos(disponibles);
   }, []);
@@ -135,10 +137,60 @@ export function Tutorial({
     outside.forEach((node) => {
       node.inert = true;
     });
+
+    // The guide scrolls with scrollIntoView; the child cannot scroll the page.
+    // overflow: hidden still allows programmatic scrolling, and cancelling
+    // touchmove also covers Safari on iPhone. The gutter avoids a layout jump.
+    const html = document.documentElement;
+    const estilo = {
+      overflow: html.style.overflow,
+      gutter: html.style.scrollbarGutter,
+    };
+    // Only a scrollbar that takes up space needs its gutter kept.
+    if (window.innerWidth > html.clientWidth)
+      html.style.scrollbarGutter = "stable";
+    html.style.overflow = "hidden";
+    const dentroDelGlobo = (evento: Event) => {
+      const caja = globo.current;
+      return (
+        !!caja &&
+        caja.contains(evento.target as Node) &&
+        caja.scrollHeight > caja.clientHeight
+      );
+    };
+    const frenar = (evento: Event) => {
+      if (!dentroDelGlobo(evento)) evento.preventDefault();
+    };
+    const teclas = new Set([
+      "ArrowUp",
+      "ArrowDown",
+      "ArrowLeft",
+      "ArrowRight",
+      "PageUp",
+      "PageDown",
+      "Home",
+      "End",
+    ]);
+    const frenarTecla = (evento: globalThis.KeyboardEvent) => {
+      // Space still presses the focused button («Siguiente», «Saltar»).
+      const espacio =
+        evento.key === " " && !(evento.target instanceof HTMLButtonElement);
+      if (teclas.has(evento.key) || espacio) evento.preventDefault();
+    };
+    window.addEventListener("wheel", frenar, { passive: false });
+    window.addEventListener("touchmove", frenar, { passive: false });
+    window.addEventListener("keydown", frenarTecla);
     return () => {
       outside.forEach((node, index) => {
         node.inert = before[index];
       });
+      window.removeEventListener("wheel", frenar);
+      window.removeEventListener("touchmove", frenar);
+      window.removeEventListener("keydown", frenarTecla);
+      html.style.overflow = estilo.overflow;
+      html.style.scrollbarGutter = estilo.gutter;
+      const { x, y } = posicionPrevia.current;
+      window.scrollTo({ left: x, top: y, behavior: "instant" });
     };
   }, [pasosActivos]);
 

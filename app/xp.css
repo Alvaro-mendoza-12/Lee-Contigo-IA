@@ -742,67 +742,139 @@
   font-weight: 900;
 }
 
-/* Celebración del «+30» al llegar a las preguntas */
-.xp-celebracion {
+/* Fiesta al terminar un cuento, con personajes originales */
+.fiesta-fondo {
   position: fixed;
-  top: 28vh;
-  left: 50%;
-  z-index: 994;
-  width: 0;
-  height: 0;
+  inset: 0;
+  z-index: 1001;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  background: var(--xp-velo);
+}
+.fiesta {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: 10px;
+  box-sizing: border-box;
+  width: min(560px, 100%);
+  max-height: calc(100dvh - 32px);
+  overflow: hidden auto;
+  padding: 22px 18px 20px;
+  color: var(--xp-texto);
+  text-align: center;
+  background: var(--xp-fondo);
+  border: 4px solid var(--xp-acento);
+  border-radius: 28px;
+  box-shadow: 0 18px 50px var(--xp-sombra);
+  font-family: var(--font-nunito), Arial, sans-serif;
+  animation: xp-celebracion-entra-caja 0.35s cubic-bezier(0.3, 1.5, 0.5, 1);
+}
+.fiesta-confeti {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
   pointer-events: none;
 }
-.xp-celebracion-numero {
-  position: absolute;
-  top: 0;
-  left: 0;
-  padding: 6px 22px;
+.fiesta-personajes {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: clamp(2px, 2vw, 14px);
+  width: 100%;
+}
+.fiesta-personaje {
+  width: clamp(54px, 19vw, 104px);
+  animation: fiesta-salta 0.7s ease-in-out var(--retraso) infinite alternate;
+}
+.fiesta-personaje[data-baile="baila"] {
+  animation-name: fiesta-baila;
+}
+.fiesta-personaje svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+.fiesta-personaje .fiesta-brazo-izq,
+.fiesta-personaje .fiesta-brazo-der {
+  transform-box: fill-box;
+  animation: fiesta-brazo 0.45s ease-in-out infinite alternate;
+}
+.fiesta-personaje .fiesta-brazo-izq {
+  transform-origin: right bottom;
+}
+.fiesta-personaje .fiesta-brazo-der {
+  transform-origin: left bottom;
+  animation-direction: alternate-reverse;
+}
+.fiesta h2 {
+  margin: 4px 0 0;
+  font-size: clamp(22px, 6.5vw, 38px);
+  line-height: 1.15;
+  font-weight: 900;
+}
+.fiesta-xp {
+  margin: 0;
+  padding: 4px 20px;
   color: var(--xp-texto);
   background: var(--xp-acento);
   border: 3px solid var(--xp-principal);
   border-radius: 999px;
-  box-shadow: 0 8px 24px var(--xp-sombra);
-  font-family: var(--font-nunito), Arial, sans-serif;
-  font-size: 2.25rem;
+  font-size: clamp(24px, 5vw, 32px);
   font-weight: 900;
-  white-space: nowrap;
-  transform: translate(-50%, -50%);
-  animation: xp-celebracion-entra 0.45s cubic-bezier(0.3, 1.6, 0.5, 1);
 }
-.xp-celebracion-estrella {
-  position: absolute;
-  top: 0;
-  left: 0;
-  color: var(--xp-acento);
-  line-height: 1;
-  text-shadow:
-    -1px -1px 0 var(--xp-principal),
-    1px -1px 0 var(--xp-principal),
-    -1px 1px 0 var(--xp-principal),
-    1px 1px 0 var(--xp-principal);
-  opacity: 0;
-  animation: xp-celebracion-estalla 0.8s ease-out var(--retraso) forwards;
+.fiesta-boton {
+  min-width: 200px;
+  min-height: 56px;
+  margin-top: 6px;
+  padding: 10px 28px;
+  border: 0;
+  border-radius: 999px;
+  color: #fff;
+  background: var(--xp-principal);
+  box-shadow: 0 6px 0 var(--xp-principal-oscuro);
+  font: inherit;
+  font-size: 22px;
+  font-weight: 900;
+  cursor: pointer;
 }
-@keyframes xp-celebracion-entra {
+.fiesta-boton:focus-visible {
+  outline: 4px solid var(--xp-acento);
+  outline-offset: 3px;
+}
+@keyframes fiesta-salta {
   from {
-    transform: translate(-50%, -50%) scale(0.4);
+    transform: translateY(0);
   }
   to {
-    transform: translate(-50%, -50%) scale(1);
+    transform: translateY(-14px);
   }
 }
-@keyframes xp-celebracion-estalla {
-  0% {
-    opacity: 1;
-    transform: translate(-50%, -50%) scale(0.4);
+@keyframes fiesta-baila {
+  from {
+    transform: rotate(-8deg);
   }
-  70% {
-    opacity: 1;
+  to {
+    transform: rotate(8deg) translateY(-6px);
   }
-  100% {
+}
+@keyframes fiesta-brazo {
+  from {
+    transform: rotate(-14deg);
+  }
+  to {
+    transform: rotate(14deg);
+  }
+}
+@keyframes xp-celebracion-entra-caja {
+  from {
+    transform: scale(0.7);
     opacity: 0;
-    transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy)))
-      scale(1.1) rotate(40deg);
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
   }
 }
 
@@ -829,11 +901,13 @@
     animation: none;
   }
   .xp-aviso-tiempo,
-  .xp-confeti,
-  .xp-celebracion-estrella {
+  .xp-confeti {
     display: none;
   }
-  .xp-celebracion-numero {
+  .fiesta,
+  .fiesta-personaje,
+  .fiesta-personaje .fiesta-brazo-izq,
+  .fiesta-personaje .fiesta-brazo-der {
     animation: none;
   }
 }

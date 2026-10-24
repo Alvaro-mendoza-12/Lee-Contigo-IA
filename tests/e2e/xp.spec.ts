@@ -141,28 +141,73 @@ test("«Vamos a pensar» suma 30 XP y sube de nivel una sola vez", async ({
   ).toBe(70);
 });
 
-test("el «+30» se celebra en las preguntas y el aviso de nivel llega después", async ({
-  page,
-}) => {
-  await page.goto("/leer/luz-del-bosque?nivel=paso");
-  await guardarXP(page, 40);
+async function terminarLuz(page: Page) {
   await page.getByRole("button", { name: "Ajustes", exact: true }).click();
   const ajustes = page.getByRole("dialog", { name: "Ajustes de lectura" });
   await ajustes.getByRole("button", { name: "Ver relato completo" }).click();
   await ajustes.getByRole("button", { name: "Cerrar ajustes" }).click();
   await page.getByRole("link", { name: "Vamos a pensar" }).click();
   await expect(page).toHaveURL(/\/practicar\/luz-del-bosque/);
-  const celebracion = page.locator(".xp-celebracion");
-  await expect(celebracion).toHaveText(/\+30/);
-  // Mientras se ve el «+30», el aviso de nivel espera su turno.
+}
+
+test("la fiesta con personajes llega primero y el aviso de nivel después", async ({
+  page,
+}) => {
+  await page.goto("/leer/luz-del-bosque?nivel=paso");
+  await guardarXP(page, 40);
+  await terminarLuz(page);
+  const fiesta = page.getByRole("dialog", { name: "¡Terminaste el cuento!" });
+  await expect(fiesta).toBeVisible();
+  await expect(fiesta).toContainText("+30 XP");
+  await expect(fiesta.locator(".fiesta-personaje")).toHaveCount(4);
+  const seguir = fiesta.getByRole("button", { name: "¡A pensar!" });
+  await expect(seguir).toBeFocused();
+  // Mientras dura la fiesta, el aviso de nivel espera su turno.
   await expect(page.getByRole("alertdialog")).toHaveCount(0);
+  await seguir.click();
+  await expect(fiesta).toHaveCount(0);
   await expect(page.getByRole("alertdialog")).toContainText(
     "¡Ahora eres Lector Brote!",
   );
-  await expect(celebracion).toHaveCount(0);
   await expect(
     page.locator(".practice-top .xp-pastilla-lector"),
   ).toHaveAccessibleName(/70 XP/);
+});
+
+test("un cuento ya terminado tiene una fiesta corta sin +30", async ({
+  page,
+}) => {
+  await page.goto("/leer/luz-del-bosque?nivel=paso");
+  await terminarLuz(page);
+  const fiesta = page.getByRole("dialog", { name: "¡Terminaste el cuento!" });
+  await fiesta.getByRole("button", { name: "¡A pensar!" }).click();
+  await page.goto("/leer/luz-del-bosque?nivel=paso");
+  await terminarLuz(page);
+  await expect(fiesta).toBeVisible();
+  await expect(fiesta).not.toContainText("XP");
+  // Se cierra sola en unos 2 s; Escape también la cierra.
+  await page.keyboard.press("Escape");
+  await expect(fiesta).toHaveCount(0);
+});
+
+test("con movimiento reducido los personajes quedan quietos y sin confeti", async ({
+  page,
+}) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.goto("/leer/luz-del-bosque?nivel=paso");
+  await terminarLuz(page);
+  const fiesta = page.getByRole("dialog", { name: "¡Terminaste el cuento!" });
+  await expect(fiesta).toContainText("+30 XP");
+  await expect(fiesta.locator(".fiesta-personaje").first()).toHaveCSS(
+    "animation-name",
+    "none",
+  );
+  await expect(fiesta.locator(".xp-confeti").first()).toBeHidden();
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= innerWidth,
+    ),
+  ).toBe(true);
 });
 
 test("acertar a la primera suma 10 XP y terminar suma 20 más", async ({
