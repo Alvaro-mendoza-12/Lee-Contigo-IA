@@ -221,9 +221,7 @@ test("un error tiene texto, color, ayuda audible y no se revela por repetir el c
   ).toHaveCount(0);
   await page.getByRole("radio", { name: "Hojas encima del agua." }).check();
   await page.getByRole("button", { name: "Comprobar respuesta" }).click();
-  await expect(
-    page.getByText("Aún no es la respuesta. Busquemos una pista."),
-  ).toBeVisible();
+  await expect(page.getByText("¡Casi! Mira la pista.")).toBeVisible();
   await expect(page.locator(".answer.incorrect")).toHaveCount(1);
   await expect(
     page.getByRole("button", { name: "Escuchar ayuda" }),

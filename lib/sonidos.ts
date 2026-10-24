@@ -24,7 +24,8 @@ export type Sonido =
 /**
  * Todos los volúmenes y duraciones en un solo lugar, para afinarlos
  * después de escucharlos. Volumen: 0 = silencio, 1 = máximo del navegador.
- * Duración: segundos, de principio a fin del efecto (todas < 0,4 s).
+ * Duración: segundos, de principio a fin del efecto (todas < 0,4 s, salvo
+ * la fanfarria de «nivel», que suena una vez por nivel y dura hasta 1 s).
  */
 export const configuracion = {
   musica: {
@@ -51,17 +52,18 @@ export const configuracion = {
   efectos: {
     /** «Fiu» suave al pasar página: sube de 520 a 1400 Hz. */
     pagina: { volumen: 0.045, duracion: 0.22 },
-    /** Dos notas alegres que suben (Sol y Re agudo). */
+    /** Campanita de tres notas que suben (Do, Mi y Sol agudos). */
     correcta: { volumen: 0.06, duracion: 0.36 },
     /**
-     * Respuesta incorrecta: una sola nota grave que baja un poco (de 294 a
-     * 220 Hz), corta y suave. Avisa «esa no», sin sonar a castigo.
+     * Respuesta incorrecta: un «boing» de dos notas que bajan (Sol y Mi),
+     * cada una con un pequeño deslizamiento. Invita a probar otra vez, sin
+     * sonar a castigo.
      */
     incorrecta: { volumen: 0.045, duracion: 0.24 },
     /** Nota suave que anuncia la pista. */
     pista: { volumen: 0.035, duracion: 0.3 },
-    /** Arpegio corto de celebración (Do-Mi-Sol-Do). */
-    nivel: { volumen: 0.055, duracion: 0.38 },
+    /** Fanfarria corta: Sol-Do-Mi y un Sol agudo largo. */
+    nivel: { volumen: 0.055, duracion: 0.9 },
     /** Clic muy suave al tocar los interruptores. */
     boton: { volumen: 0.03, duracion: 0.05 },
   },
@@ -242,7 +244,7 @@ function nota(
   };
 }
 
-/** Reproduce un efecto corto (< 400 ms) si los sonidos están activos. */
+/** Reproduce un efecto corto si los sonidos están activos. */
 export function reproducir(nombre: Sonido) {
   instalar();
   if (!efectosActivos) return;
@@ -258,22 +260,33 @@ export function reproducir(nombre: Sonido) {
       case "pagina":
         nota(salida, 520, t, d, v, "sine", 1400);
         break;
-      case "correcta": // la segunda nota empieza a un tercio del efecto
-        nota(salida, 784, t, d * 0.45, v, "triangle");
-        nota(salida, 1175, t + d * 0.33, d * 0.67, v, "triangle");
+      case "correcta": {
+        // Campanita: cada nota suma un armónico suave al doble de frecuencia.
+        const separacion = d * 0.2;
+        const largo = d - separacion * 2;
+        [1047, 1319, 1568].forEach((frecuencia, i) => {
+          const inicio = t + i * separacion;
+          nota(salida, frecuencia, inicio, largo, v);
+          nota(salida, frecuencia * 2, inicio, largo * 0.6, v * 0.25);
+        });
         break;
-      case "incorrecta": // seno grave: más suave que el triángulo
-        nota(salida, 294, t, d, v, "sine", 220);
+      }
+      case "incorrecta": // seno: más suave que el triángulo
+        nota(salida, 392, t, d * 0.45, v, "sine", 349);
+        nota(salida, 330, t + d * 0.5, d * 0.5, v, "sine", 262);
         break;
       case "pista":
         nota(salida, 880, t, d, v);
         break;
       case "nivel": {
-        const largo = d * 0.45;
-        const separacion = (d - largo) / 3;
-        [523, 659, 784, 1047].forEach((frecuencia, i) =>
-          nota(salida, frecuencia, t + i * separacion, largo, v, "triangle"),
+        // Tres notas cortas de entrada y una final larga con su octava.
+        const corta = d * 0.16;
+        [392, 523, 659].forEach((frecuencia, i) =>
+          nota(salida, frecuencia, t + i * d * 0.14, corta, v, "triangle"),
         );
+        const final = t + d * 0.42;
+        nota(salida, 784, final, d * 0.56, v, "triangle");
+        nota(salida, 1568, final, d * 0.4, v * 0.2);
         break;
       }
       case "boton":

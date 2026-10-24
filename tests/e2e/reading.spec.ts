@@ -23,9 +23,7 @@ test("recorrido completo, reintento y pista de respaldo", async ({ page }) => {
     .getByRole("radio", { name: /Porque quería buscar a la luna/ })
     .check();
   await page.getByRole("button", { name: "Comprobar respuesta" }).click();
-  await expect(
-    page.getByText("Aún no es la respuesta. Busquemos una pista."),
-  ).toBeVisible();
+  await expect(page.getByText("¡Casi! Mira la pista.")).toBeVisible();
   await page
     .getByRole("button", { name: "Dame una pista", exact: true })
     .click();
