@@ -141,6 +141,30 @@ test("«Vamos a pensar» suma 30 XP y sube de nivel una sola vez", async ({
   ).toBe(70);
 });
 
+test("el «+30» se celebra en las preguntas y el aviso de nivel llega después", async ({
+  page,
+}) => {
+  await page.goto("/leer/luz-del-bosque?nivel=paso");
+  await guardarXP(page, 40);
+  await page.getByRole("button", { name: "Ajustes", exact: true }).click();
+  const ajustes = page.getByRole("dialog", { name: "Ajustes de lectura" });
+  await ajustes.getByRole("button", { name: "Ver relato completo" }).click();
+  await ajustes.getByRole("button", { name: "Cerrar ajustes" }).click();
+  await page.getByRole("link", { name: "Vamos a pensar" }).click();
+  await expect(page).toHaveURL(/\/practicar\/luz-del-bosque/);
+  const celebracion = page.locator(".xp-celebracion");
+  await expect(celebracion).toHaveText(/\+30/);
+  // Mientras se ve el «+30», el aviso de nivel espera su turno.
+  await expect(page.getByRole("alertdialog")).toHaveCount(0);
+  await expect(page.getByRole("alertdialog")).toContainText(
+    "¡Ahora eres Lector Brote!",
+  );
+  await expect(celebracion).toHaveCount(0);
+  await expect(
+    page.locator(".practice-top .xp-pastilla-lector"),
+  ).toHaveAccessibleName(/70 XP/);
+});
+
 test("acertar a la primera suma 10 XP y terminar suma 20 más", async ({
   page,
 }) => {

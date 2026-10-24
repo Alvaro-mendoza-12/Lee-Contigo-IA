@@ -3,6 +3,7 @@ import { useEffect, useId, useRef, useState, type CSSProperties } from "react";
 import { Bean, Compass, Crown, Gift, Shield, Sprout, Star } from "lucide-react";
 import {
   DESBLOQUEOS,
+  EVENTO_CELEBRADO,
   EVENTO_XP,
   NIVELES,
   NIVEL_RETO,
@@ -62,17 +63,26 @@ function useProgresoXP() {
   useEffect(() => {
     let temporizador: ReturnType<typeof setTimeout> | undefined;
     setProgreso(obtenerProgreso());
-    function actualizar(evento: Event) {
-      const { ganada } = (evento as CustomEvent<DetalleXP>).detail;
-      setProgreso(obtenerProgreso());
+    function mostrar(ganada: number) {
       if (ganada <= 0) return;
       setGanancia({ id: Date.now(), xp: ganada });
       clearTimeout(temporizador);
       temporizador = setTimeout(() => setGanancia(null), 1800);
     }
+    function actualizar(evento: Event) {
+      setProgreso(obtenerProgreso());
+      mostrar((evento as CustomEvent<DetalleXP>).detail.ganada);
+    }
+    // El «+30» de un cuento terminado se ganó en el lector: aquí solo se muestra.
+    function celebrar(evento: Event) {
+      setProgreso(obtenerProgreso());
+      mostrar((evento as CustomEvent<{ ganada: number }>).detail.ganada);
+    }
     window.addEventListener(EVENTO_XP, actualizar);
+    window.addEventListener(EVENTO_CELEBRADO, celebrar);
     return () => {
       window.removeEventListener(EVENTO_XP, actualizar);
+      window.removeEventListener(EVENTO_CELEBRADO, celebrar);
       clearTimeout(temporizador);
     };
   }, []);

@@ -47,6 +47,8 @@ export const CLAVE = "lee-contigo-progreso";
 export const CLAVE_DEMO = "lee-contigo-progreso-demo";
 export const MARCA_DEMO = "lee-contigo-demo";
 export const EVENTO_XP = "xp:ganada";
+// Se emite cuando el «+30» de un cuento terminado llega a la pastilla.
+export const EVENTO_CELEBRADO = "xp:celebrado";
 
 export type NivelLector = (typeof NIVELES)[number];
 export type MotivoXP = keyof typeof RECOMPENSAS;

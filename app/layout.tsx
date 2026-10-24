@@ -3,6 +3,7 @@ import { Nunito_Sans } from "next/font/google";
 import { Header, Footer } from "@/components/shell";
 import { Tutorial } from "@/components/tutorial";
 import { AvisoNivel } from "@/components/aviso-nivel";
+import { CelebracionXP } from "@/components/celebracion-xp";
 import "./globals.css";
 import "./book.css";
 import "./child-ux.css";
@@ -45,6 +46,7 @@ export default function RootLayout({
         <Footer />
         <Tutorial />
         <AvisoNivel />
+        <CelebracionXP />
       </body>
     </html>
   );
