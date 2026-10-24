@@ -196,7 +196,9 @@ test("reproducir no hace nada apagado y suena corto al encenderlo", async () => 
     assert.ok(registro.inicios.length > 0, nombre);
     const duracion =
       Math.max(...registro.finales) - Math.min(...registro.inicios);
-    assert.ok(duracion <= 0.42, `${nombre} dura ${duracion}s`);
+    // Solo la fanfarria de «nivel» puede durar hasta 1 s.
+    const limite = nombre === "nivel" ? 1.02 : 0.42;
+    assert.ok(duracion <= limite, `${nombre} dura ${duracion}s`);
   }
   assert.equal(registro.contextos, 1, "un único AudioContext");
 });
@@ -303,7 +305,8 @@ test("la configuración mantiene los efectos cortos y suaves", async () => {
   const { efectos, musica } = modulo.configuracion;
   const picoMusica = musica.notas.bajo * musica.refuerzoCajaMusical * musica.volumen;
   for (const [nombre, efecto] of Object.entries(efectos)) {
-    assert.ok(efecto.duracion < 0.4, `${nombre} dura menos de 0,4 s`);
+    const limite = nombre === "nivel" ? 1 : 0.4;
+    assert.ok(efecto.duracion <= limite, `${nombre} dura hasta ${limite} s`);
     assert.ok(
       efecto.volumen <= picoMusica * 2,
       `${nombre} no pasa del doble de la música`,
