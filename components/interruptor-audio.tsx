@@ -1,5 +1,6 @@
 "use client";
-import { useSyncExternalStore, type CSSProperties } from "react";
+import { useSyncExternalStore } from "react";
+import styles from "./interruptor-audio.module.css";
 import {
   estaActivo,
   estaMusicaActiva,
@@ -10,45 +11,6 @@ import {
 } from "@/lib/sonidos";
 
 const apagado = () => false;
-
-const estilos = {
-  grupo: { display: "grid", gap: 8 } satisfies CSSProperties,
-  interruptor: {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "space-between",
-    gap: 12,
-    width: "100%",
-    minHeight: 48,
-    padding: "8px 14px",
-    border: "2px solid #e4dcf5",
-    borderRadius: 16,
-    background: "#ffffff",
-    color: "#23204a",
-    font: "inherit",
-    fontWeight: 800,
-    fontSize: 16,
-    cursor: "pointer",
-  } satisfies CSSProperties,
-  pista: (encendido: boolean): CSSProperties => ({
-    position: "relative",
-    flexShrink: 0,
-    width: 48,
-    height: 28,
-    borderRadius: 999,
-    background: encendido ? "#6a3fd6" : "#c9c6d6",
-  }),
-  perilla: (encendido: boolean): CSSProperties => ({
-    position: "absolute",
-    top: 3,
-    left: encendido ? 23 : 3,
-    width: 22,
-    height: 22,
-    borderRadius: "50%",
-    background: "#ffffff",
-    boxShadow: "0 1px 3px #0003",
-  }),
-};
 
 function Interruptor({
   emoji,
@@ -66,25 +28,29 @@ function Interruptor({
       type="button"
       role="switch"
       aria-checked={encendido}
-      style={estilos.interruptor}
+      className={styles.interruptor}
       onClick={() => alCambiar(!encendido)}
     >
-      <span>
+      <span className={styles.etiqueta}>
         <span aria-hidden="true">{emoji}</span> {etiqueta}
       </span>
-      <span style={estilos.pista(encendido)} aria-hidden="true">
-        <span style={estilos.perilla(encendido)} />
+      <span className={styles.pista} aria-hidden="true">
+        <span className={styles.perilla} />
       </span>
     </button>
   );
 }
 
 /** Interruptores de Sonidos y Música. Los dos empiezan apagados. */
-export function InterruptorAudio() {
+export function InterruptorAudio({ compacto = false }: { compacto?: boolean }) {
   const sonidos = useSyncExternalStore(suscribir, estaActivo, apagado);
   const musica = useSyncExternalStore(suscribir, estaMusicaActiva, apagado);
   return (
-    <div style={estilos.grupo} role="group" aria-label="Sonido y música">
+    <div
+      className={`${styles.grupo}${compacto ? ` ${styles.compacto}` : ""}`}
+      role="group"
+      aria-label="Sonido y música"
+    >
       <Interruptor
         emoji="🔔"
         etiqueta="Sonidos"

@@ -50,6 +50,11 @@
   letter-spacing: -0.035em;
 }
 
+.inicio-page .home-welcome .tutorial-boton-ayuda {
+  display: block;
+  margin: 20px auto 0;
+}
+
 .inicio-page .home-welcome p {
   max-width: 30rem;
   margin: 12px auto 0;

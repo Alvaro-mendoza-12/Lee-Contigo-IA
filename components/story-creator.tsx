@@ -46,6 +46,11 @@ import { ReadFeedback } from "./answer-audio";
 import { InterruptorAudio } from "./interruptor-audio";
 import { reproducir, reproducirRespuesta } from "@/lib/sonidos";
 import { sumarXP } from "@/lib/progreso";
+import { BarraXP } from "./barra-xp";
+import {
+  illustrationPolicySchema,
+  type IllustrationPolicy,
+} from "@/lib/illustration-policy";
 import { BookShelf } from "./book-shelf";
 import {
   listSavedBooks,
@@ -311,7 +316,11 @@ export function StoryCreator() {
     );
     setIllustrationPlan(fallbackPlan);
     const authorizations = currentBook.current?.audioTokens;
-    if (!authorizations || authorizations.length !== 6) {
+    const illustrationPolicy = currentBook.current?.illustrationPolicy;
+    if (
+      !illustrationPolicy &&
+      (!authorizations || authorizations.length !== 6)
+    ) {
       setCoverState("unavailable");
       return;
     }
@@ -323,6 +332,7 @@ export function StoryCreator() {
           artDescription: createdStory.artDescription,
           scenes: createdStory.paragraphs,
           authorizations,
+          illustrationPolicy,
           adultReviewed: true,
         }),
         signal: AbortSignal.any([
@@ -409,6 +419,7 @@ export function StoryCreator() {
         error?: string;
         code?: string;
         audioTokens?: string[];
+        illustrationPolicy?: IllustrationPolicy;
       };
       if (controller.signal.aborted) return;
       if (!response.ok || !data.story) {
@@ -435,6 +446,9 @@ export function StoryCreator() {
       const saved = {
         ...makeSavedBook(data.story, level),
         audioTokens: data.audioTokens,
+        illustrationPolicy: data.illustrationPolicy
+          ? illustrationPolicySchema.parse(data.illustrationPolicy)
+          : undefined,
         illustrationPlan: initialPlan,
       };
       currentBook.current = saved;
@@ -531,6 +545,13 @@ export function StoryCreator() {
     setSelectedAnswer(answer);
     // Only lib/sonidos.ts plays audio here: with Sonidos off, nothing sounds.
     reproducirRespuesta(answer === currentQuestion.correctIndex);
+    if (answer === currentQuestion.correctIndex && currentBook.current)
+      sumarXP(
+        wrongAttempts === 0 ? "pregunta-primer-intento" : "pregunta-con-pista",
+        currentBook.current.id,
+        level,
+        String(questionIndex),
+      );
     if (answer !== currentQuestion.correctIndex)
       setWrongAttempts((attempts) => attempts + 1);
   }
@@ -538,6 +559,8 @@ export function StoryCreator() {
   function nextQuestion() {
     if (!story) return;
     if (questionIndex === story.questions.length - 1) {
+      if (currentBook.current)
+        sumarXP("preguntas-completas", currentBook.current.id, level);
       setScreen("complete");
       return;
     }
@@ -557,9 +580,12 @@ export function StoryCreator() {
 
   return (
     <div className="container creator-page">
-      <Link href="/biblioteca" className="back-link">
-        <ArrowLeft size={16} aria-hidden="true" /> Volver a las historias
-      </Link>
+      <div className="creator-toolbar">
+        <Link href="/biblioteca" className="back-link">
+          <ArrowLeft size={16} aria-hidden="true" /> Volver a las historias
+        </Link>
+        <InterruptorAudio compacto />
+      </div>
 
       {screen === "form" ? (
         <>
@@ -1039,6 +1065,8 @@ export function StoryCreator() {
                 className="button"
                 onClick={() => {
                   stopSpeaking();
+                  if (currentBook.current)
+                    sumarXP("cuento-terminado", currentBook.current.id, level);
                   setScreen("questions");
                 }}
               >
@@ -1081,6 +1109,7 @@ export function StoryCreator() {
 
       {story && screen === "questions" && currentQuestion ? (
         <section className="creator-quiz" aria-labelledby="quiz-title">
+          <BarraXP variante="compacta" />
           <span className="small-label">LO LEÍSTE, AHORA EXPLOREMOS</span>
           <h1 id="quiz-title" ref={activeHeading} tabIndex={-1}>
             ¿Qué descubriste en el cuento?
@@ -1255,6 +1284,9 @@ export function StoryCreator() {
               type="button"
               onClick={() => {
                 setPosition({ paragraph: 0, word: 0 });
+                setQuestionIndex(0);
+                setSelectedAnswer(null);
+                setWrongAttempts(0);
                 setScreen("book");
               }}
             >
@@ -1269,10 +1301,6 @@ export function StoryCreator() {
           </Link>
         </section>
       ) : null}
-      {/* Temporal: para probar el audio aquí hasta que esté en Ajustes. */}
-      <div style={{ maxWidth: 320, margin: "32px auto 0" }}>
-        <InterruptorAudio />
-      </div>
     </div>
   );
 }

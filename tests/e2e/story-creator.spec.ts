@@ -2,6 +2,7 @@ import { expect, test } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 import { composeStoryPlan } from "../../lib/story-illustrations";
 import sharp from "sharp";
+import { expectBookMotion, observeBookMotion } from "./helpers/book-motion";
 
 const story = {
   title: "La tortuga y la luz",
@@ -70,6 +71,153 @@ const story = {
     },
   ],
 };
+
+test("el libro creado anima las hojas y suma XP al leer y practicar sin repetir recompensas", async ({
+  page,
+}) => {
+  await page.emulateMedia({ reducedMotion: "no-preference" });
+  await observeBookMotion(page);
+  await page.route("**/api/crear", (route) =>
+    route.fulfill({ json: { story } }),
+  );
+  await page.route("**/api/crear/portada", (route) =>
+    route.fulfill({ status: 503, json: {} }),
+  );
+  await page.goto("/crear");
+  await page
+    .getByLabel("Mi idea", { exact: true })
+    .fill("Una tortuga sigue un mapa");
+  await page.getByLabel(/Un adulto revisó mi idea/).check();
+  await page
+    .getByRole("button", { name: "Crear mi cuento", exact: true })
+    .click();
+  const xp = () =>
+    page.evaluate(
+      () => JSON.parse(localStorage.getItem("lee-contigo-progreso")!).xp,
+    );
+  await expect.poll(xp).toBe(515);
+  const next = page.getByRole("button", { name: "Página siguiente" });
+  const mode = page.viewportSize()!.width <= 600 ? "mobile" : "turn";
+  await next.click();
+  await expectBookMotion(page, `paper-${mode}-next`);
+  await page.getByRole("button", { name: "Anterior", exact: true }).click();
+  await expectBookMotion(page, `paper-${mode}-previous`);
+  while (await next.isVisible()) await next.click();
+  expect(await xp()).toBe(515);
+  await expect(page.getByRole("alertdialog")).toHaveCount(0);
+  await page.getByRole("button", { name: "Leer y explorar" }).click();
+  await expect.poll(xp).toBe(545);
+  await expect(page.locator(".creator-quiz .xp-pastilla-lector")).toBeVisible();
+  const options = page
+    .getByRole("group", { name: "Opciones de respuesta" })
+    .getByRole("button");
+  await options.nth(1).click();
+  expect(await xp()).toBe(545);
+  await page.getByRole("button", { name: "Intentar otra vez" }).click();
+  await options.nth(0).click();
+  await expect.poll(xp).toBe(550);
+  await page.getByRole("button", { name: "Siguiente pregunta" }).click();
+  for (let index = 1; index < story.questions.length; index++) {
+    await options.nth(0).click();
+    await page
+      .getByRole("button", {
+        name: index === 2 ? "Terminar cuento" : "Siguiente pregunta",
+      })
+      .click();
+  }
+  await expect(
+    page.getByRole("heading", { name: "¡Terminaste de leer!" }),
+  ).toBeVisible();
+  await expect.poll(xp).toBe(590);
+  await page.getByRole("button", { name: "Leer otra vez" }).click();
+  while (await next.isVisible()) await next.click();
+  await page.getByRole("button", { name: "Leer y explorar" }).click();
+  for (let index = 0; index < story.questions.length; index++) {
+    await options.nth(0).click();
+    await page
+      .getByRole("button", {
+        name: index === 2 ? "Terminar cuento" : "Siguiente pregunta",
+      })
+      .click();
+  }
+  expect(await xp()).toBe(590);
+});
+
+test("la política de ilustración se conserva al guardar y reintentar, sin depender de la voz", async ({
+  page,
+}) => {
+  const illustrationPolicy = {
+    allowHumanAnimalHybrids: false,
+    authorization: `${Date.now() + 86400_000}.${"a".repeat(64)}`,
+  };
+  const requests: Record<string, unknown>[] = [];
+  await page.route("**/api/crear", (route) =>
+    route.fulfill({ json: { story, illustrationPolicy } }),
+  );
+  await page.route("**/api/crear/portada", (route) => {
+    requests.push(route.request().postDataJSON());
+    return route.fulfill({
+      json: {
+        layout: "vector",
+        source: "composed",
+        illustrationPlan: composeStoryPlan(
+          story.paragraphs,
+          story.artDescription,
+        ),
+      },
+    });
+  });
+  await page.goto("/crear");
+  await page
+    .getByLabel("Mi idea", { exact: true })
+    .fill("Una tortuga sigue un mapa con su amiga");
+  await page.getByLabel(/Un adulto revisó mi idea/).check();
+  await page
+    .getByRole("button", { name: "Crear mi cuento", exact: true })
+    .click();
+  await expect(page.getByRole("heading", { name: story.title })).toBeVisible();
+  expect(requests).toHaveLength(1);
+  expect(requests[0]).toMatchObject({
+    scenes: story.paragraphs,
+    artDescription: story.artDescription,
+    illustrationPolicy,
+  });
+  expect(requests[0]).not.toHaveProperty("authorizations");
+  expect(requests[0]).not.toHaveProperty("idea");
+  await expect(page.getByText("Guardado por 7 días.")).toBeVisible();
+  await page.reload();
+  await page
+    .getByRole("button", { name: `Abrir ${story.title}`, exact: true })
+    .click();
+  await page
+    .getByRole("button", { name: "Reintentar ilustraciones", exact: true })
+    .click();
+  await expect.poll(() => requests.length).toBe(2);
+  expect(requests[1]).toHaveProperty("illustrationPolicy", illustrationPolicy);
+});
+
+test("un cuento que falla la coherencia conserva la idea para reintentar", async ({
+  page,
+}) => {
+  const idea = "Una tortuga sigue un mapa junto al río";
+  const error =
+    "El cuento o sus ilustraciones no coincidían bien con tu idea. Tu idea sigue aquí; vuelve a intentarlo.";
+  await page.route("**/api/crear", (route) =>
+    route.fulfill({
+      status: 502,
+      json: { code: "STORY_COHERENCE_FAILED", error },
+    }),
+  );
+  await page.goto("/crear");
+  await page.getByLabel("Mi idea", { exact: true }).fill(idea);
+  await page.getByLabel(/Un adulto revisó mi idea/).check();
+  await page
+    .getByRole("button", { name: "Crear mi cuento", exact: true })
+    .click();
+  await expect(page.getByText(error, { exact: true })).toBeVisible();
+  await expect(page.getByLabel("Mi idea", { exact: true })).toHaveValue(idea);
+  await expect(page.getByRole("heading", { name: story.title })).toHaveCount(0);
+});
 
 test("las ideas ilustradas completan el campo sin crear un cuento automáticamente", async ({
   page,
@@ -288,7 +436,9 @@ test("el cuento creado conecta la respuesta con una cita del texto sin reenviar 
   await expect(page.getByRole("heading", { name: story.title })).toBeVisible();
   await page.getByRole("button", { name: "Ajustes", exact: true }).click();
   await expect(page.getByLabel("Animar páginas")).toBeChecked();
-  await page.getByRole("button", { name: "Cerrar ajustes", exact: true }).click();
+  await page
+    .getByRole("button", { name: "Cerrar ajustes", exact: true })
+    .click();
   expect(illustrationRequests).toHaveLength(1);
   await expect(page.getByText("¿Quieres ilustrar la portada?")).toHaveCount(0);
   const audioRequest = page.waitForRequest((r) =>
@@ -296,7 +446,9 @@ test("el cuento creado conecta la respuesta con una cita del texto sin reenviar 
   );
   await page.getByRole("button", { name: "Ajustes", exact: true }).click();
   await page.getByLabel("¿Quién te lee?").selectOption("daniel");
-  await page.getByRole("button", { name: "Cerrar ajustes", exact: true }).click();
+  await page
+    .getByRole("button", { name: "Cerrar ajustes", exact: true })
+    .click();
   await page
     .getByRole("button", { name: "Escuchar página", exact: true })
     .click();

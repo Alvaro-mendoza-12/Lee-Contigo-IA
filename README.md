@@ -53,6 +53,12 @@ Para las comprobaciones de navegador hay que instalar Chromium con `npx.cmd play
 
 ## IA y configuración
 
+Los cuentos nuevos pasan una revisión de coherencia además de la revisión de seguridad: se contrastan con la idea original, la continuidad del relato y la descripción visual. Un resultado incoherente se intenta corregir una vez dentro del plazo de creación; si no pasa, no se entrega como cuento válido y la idea permanece en el formulario.
+
+Las ilustraciones reciben el párrafo exacto de su página y reglas para conservar las especies y los cuerpos separados. Solo se autoriza un híbrido humano-animal cuando la revisión identifica una petición explícita en la idea original; una niña con su gato, un animal que habla o un disfraz no bastan. Esa decisión se firma junto a los seis párrafos y la descripción visual para impedir que el cliente amplíe el permiso. `STORY_ILLUSTRATION_SECRET` permite usar una firma estable; si falta, se usa una credencial del servidor ya configurada. La ilustración no depende de tener ElevenLabs. Los libros anteriores conservan sus permisos de voz, pero no autorizan híbridos por defecto.
+
+El dibujo vectorial de respaldo ya no cambia una especie desconocida por una persona, ni añade todos los protagonistas a cada escena. Las categorías de ese dibujo no se usan para guiar el modelo de imágenes: este recibe el texto aprobado. Estas comprobaciones validan el texto y las instrucciones enviadas; no son una inspección visual automática de los píxeles que devuelve el proveedor.
+
 Copiar las variables necesarias de .env.example a .env.local (ignorado por Git). AI Gateway usa OIDC de Vercel o AI_GATEWAY_API_KEY. El modelo principal y su respaldo se configuran con AI_MODEL y AI_FALLBACK_MODEL.
 
 OpenRouter es un respaldo de texto del servidor. Admite OPENROUTER_API_KEY, variables numeradas desde _2 sin el límite anterior de nueve y un arreglo JSON opcional en OPENROUTER_API_KEYS. Conserva primero las credenciales numeradas y después el grupo adicional, quitando duplicados y espacios. Un grupo opcional mal formado no desactiva las variables anteriores. Solo permite modelos :free u openrouter/free y precio máximo cero. Las credenciales secundarias se prueban ante autenticación inválida o un límite específico de clave; un 429 general o saldo de cuenta agotado no provoca cambio de clave. Varias claves no multiplican la cuota de una cuenta. Se pide data_collection=deny y formato JSON Schema; si el proveedor no puede cumplir, se conserva la alternativa editorial.

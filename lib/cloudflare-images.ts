@@ -9,6 +9,7 @@ export async function generateCloudflareScenes({
   plan,
   description,
   paragraphs,
+  allowHumanAnimalHybrids = false,
   token,
   accountId,
   signal,
@@ -17,6 +18,7 @@ export async function generateCloudflareScenes({
   plan: ScenePlan;
   description: string;
   paragraphs: string[];
+  allowHumanAnimalHybrids?: boolean;
   token: string;
   accountId: string;
   signal: AbortSignal;
@@ -46,6 +48,8 @@ export async function generateCloudflareScenes({
                 description,
                 paragraphs[index],
                 index,
+                allowHumanAnimalHybrids,
+                paragraphs[index - 1],
               ),
               steps: 4,
             }),

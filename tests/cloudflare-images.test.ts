@@ -21,6 +21,7 @@ test("Cloudflare genera seis escenas acotadas, con personajes y hasta dos llamad
   let active = 0,
     peak = 0;
   const prompts: string[] = [];
+  const requestKeys: string[][] = [];
   const png = await sharp({
     create: { width: 8, height: 8, channels: 3, background: "#78ad81" },
   })
@@ -35,6 +36,7 @@ test("Cloudflare genera seis escenas acotadas, con personajes y hasta dos llamad
     peak = Math.max(peak, active);
     const input = JSON.parse(String(init?.body));
     prompts.push(input.prompt);
+    requestKeys.push(Object.keys(input).sort());
     assert.equal(input.steps, 4);
     await new Promise((resolve) => setTimeout(resolve, 3));
     active--;
@@ -55,6 +57,7 @@ test("Cloudflare genera seis escenas acotadas, con personajes y hasta dos llamad
   assert.equal(images.filter(Boolean).length, 6);
   assert.equal(pageImagesSchema.safeParse(images).success, true);
   assert.equal(new Set(prompts).size, 6);
+  assert.ok(requestKeys.every((keys) => keys.join(",") === "prompt,steps"));
   assert.equal(peak, 2);
   for (let i = 0; i < 6; i++) {
     assert.match(prompts[i], /tortuga/);
