@@ -473,7 +473,7 @@ export const moreStories: Story[] = [
             "Pío estaba bajo la paja tibia, durmiendo tranquilo: eso es dormir plácidamente.",
             [
               "¿Cómo estaba la paja donde dormía Pío?",
-              "¿Una paja tibia hace dormir tranquilo o asustado?",
+              "Lee otra vez el último párrafo: ¿qué hacía Pío bajo la paja tibia? ¿Parecía que algo le preocupaba?",
             ],
           ),
           question(
