@@ -18,7 +18,6 @@ import { scenePlanSchema, pageImagesSchema } from "./story-illustrations.ts";
 import { illustrationPolicySchema } from "./illustration-policy.ts";
 
 export const BOOK_LIFETIME = 7 * 24 * 60 * 60 * 1000;
-export const MAX_SAVED_BOOKS = 6;
 const coverSchema = z
   .string()
   .max(4_500_000)
@@ -90,9 +89,8 @@ export async function listSavedBooks(): Promise<SavedBook[]> {
     else valid.push(book);
   }
   valid.sort((a, b) => b.createdAt - a.createdAt);
-  discard.push(...valid.slice(MAX_SAVED_BOOKS).map((book) => book.id));
   if (discard.length) await delMany(discard, bookStore());
-  return valid.slice(0, MAX_SAVED_BOOKS);
+  return valid;
 }
 export async function saveBook(book: SavedBook) {
   const valid = readSavedBook(book);

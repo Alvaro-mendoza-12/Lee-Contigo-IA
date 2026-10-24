@@ -34,7 +34,9 @@ for (const width of [390, 900, 1440]) {
     await page.getByRole("button", { name: "Cerrar ajustes" }).click();
     await next.click();
     await expect(page.getByText(/^Página 3 de \d+$/)).toBeVisible();
-    await expect(page.locator(".book-turn-layer")).not.toBeVisible();
+    // The checked reader control enables this turn even if the OS disables
+    // decorative motion. Unchecking it above still stops all page turns.
+    await expectBookMotion(page, `paper-${mode}-next`, 2);
     await expect(page.locator(".paper-spread")).toHaveCSS(
       "animation-name",
       "none",
