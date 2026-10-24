@@ -171,6 +171,60 @@ test("acertar a la primera suma 10 XP y terminar suma 20 más", async ({
   await expect.poll(xp).toBe(10 * questions.length + 20);
 });
 
+test("en las preguntas la pastilla se actualiza en vivo sin tapar la pregunta", async ({
+  page,
+}) => {
+  const [question] = getStory("luz-del-bosque")!.versions.paso.questions;
+  await page.goto("/practicar/luz-del-bosque?nivel=paso");
+  const pastilla = page.locator(".practice-top .xp-pastilla-lector");
+  await expect(pastilla).toHaveAccessibleName(/0 XP/);
+  const caja = await pastilla.boundingBox();
+  const tarjeta = await page.locator(".question-card").boundingBox();
+  expect(caja!.y + caja!.height).toBeLessThanOrEqual(tarjeta!.y);
+
+  await page.locator(".answers label").nth(question.correct).click();
+  await page.getByRole("button", { name: /Comprobar respuesta/ }).click();
+  await expect(pastilla).toHaveAccessibleName(/10 XP/);
+  await expect(
+    page.locator(".answer.correct .respuesta-estallido"),
+  ).toHaveCount(1);
+  // El «+10» vuela hacia la pastilla y desaparece al llegar.
+  await expect(page.locator(".respuesta-vuelo")).toHaveText("+10");
+  await expect(page.locator(".respuesta-vuelo")).toHaveCount(0);
+});
+
+test("al fallar se ve un «casi» ámbar que invita a mirar la pista", async ({
+  page,
+}) => {
+  const [question] = getStory("luz-del-bosque")!.versions.paso.questions;
+  await page.goto("/practicar/luz-del-bosque?nivel=paso");
+  const incorrecta = (question.correct + 1) % question.options.length;
+  await page.locator(".answers label").nth(incorrecta).click();
+  await page.getByRole("button", { name: /Comprobar respuesta/ }).click();
+  await expect(page.getByText("¡Casi! Mira la pista.")).toBeVisible();
+  const opcion = page.locator(".answer.incorrect");
+  await expect(opcion).toHaveCSS("background-color", "rgb(255, 244, 214)");
+  await expect(opcion).toHaveCSS("animation-name", "respuesta-casi");
+});
+
+test("con movimiento reducido solo cambian el color y el ícono", async ({
+  page,
+}) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  const [question] = getStory("luz-del-bosque")!.versions.paso.questions;
+  await page.goto("/practicar/luz-del-bosque?nivel=paso");
+  await page.locator(".answers label").nth(question.correct).click();
+  await page.getByRole("button", { name: /Comprobar respuesta/ }).click();
+  const opcion = page.locator(".answer.correct");
+  await expect(opcion).toHaveCSS("background-color", "rgb(230, 246, 230)");
+  await expect(opcion).toHaveCSS("animation-name", "none");
+  await expect(opcion.locator(".respuesta-estallido")).toBeHidden();
+  await expect(page.locator(".respuesta-vuelo")).toHaveCount(0);
+  await expect(
+    page.locator(".practice-top .xp-pastilla-lector"),
+  ).toHaveAccessibleName(/10 XP/);
+});
+
 test("borrar mi progreso pide confirmación y vuelve al nivel 1", async ({
   page,
 }) => {
