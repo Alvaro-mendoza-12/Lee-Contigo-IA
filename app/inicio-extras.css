@@ -1,0 +1,47 @@
+/* Iván: fila de ayuda y sonido en la tarjeta de bienvenida del inicio. */
+.home-welcome-tools {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.boton-sonido {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 48px;
+  padding: 8px 18px;
+  border: 3px solid #e4dcf5;
+  border-radius: 999px;
+  background: #ffffff;
+  color: #6a3fd6;
+  font: inherit;
+  font-size: 16px;
+  font-weight: 900;
+  cursor: pointer;
+}
+.boton-sonido[aria-checked="true"] {
+  border-color: #6a3fd6;
+  background: #f3edff;
+}
+.boton-sonido:focus-visible {
+  outline: 4px solid #38bdf8;
+  outline-offset: 3px;
+}
+
+/* Celular: botón redondo solo con ícono; el nombre accesible sigue siendo «Sonido». */
+@media (max-width: 639px) {
+  .boton-sonido {
+    width: 48px;
+    height: 48px;
+    padding: 0;
+    border-radius: 50%;
+  }
+  .boton-sonido-texto {
+    display: none;
+  }
+}

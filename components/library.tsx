@@ -15,6 +15,7 @@ import { storiesForShelf, storyCategories, type Level } from "@/lib/stories";
 import { useReadingLevel } from "./use-reading-level";
 import { StoryShelfRow, type StoryLocks } from "./story-shelf-row";
 import { BotonTutorial } from "./tutorial";
+import { BotonSonido } from "./boton-sonido";
 
 const categoryIcons = {
   amigos: Users,
@@ -49,7 +50,10 @@ export function Library({
             <br className="kid-hello-break" />
             ¿Qué cuento leemos hoy?
           </h1>
-          <BotonTutorial variante="texto" />
+          <div className="home-welcome-tools">
+            <BotonTutorial variante="texto" />
+            <BotonSonido />
+          </div>
           <p>Historias para descubrir, imaginar y compartir a tu ritmo.</p>
         </div>
       </header>
