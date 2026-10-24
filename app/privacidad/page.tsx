@@ -98,13 +98,12 @@ export default function Privacy() {
       </p>
       <h2>Mis libros: guardado temporal en este dispositivo</h2>
       <p>
-        Los seis libros más recientes se guardan automáticamente en una base
-        local del navegador (IndexedDB), junto con su nivel e ilustraciones.
-        Están disponibles durante siete días desde su creación. Al volver a
-        abrir este espacio se eliminan los registros vencidos y los que superan
-        el límite de seis. Si no abres la web, el navegador puede conservar
-        físicamente esos registros hasta la siguiente visita o hasta que borres
-        sus datos.
+        Los libros que creas se guardan automáticamente en una base local del
+        navegador (IndexedDB), junto con su nivel e ilustraciones. Están
+        disponibles durante siete días desde su creación. Al volver a abrir este
+        espacio se eliminan los registros vencidos. Si no abres la web, el
+        navegador puede conservar físicamente esos registros hasta la siguiente
+        visita o hasta que borres sus datos.
       </p>
       <p>
         El guardado no incluye la idea original, respuestas, intentos ni un

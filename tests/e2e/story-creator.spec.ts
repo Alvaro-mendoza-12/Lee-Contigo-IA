@@ -75,7 +75,7 @@ const story = {
 test("el libro creado anima las hojas y suma XP al leer y practicar sin repetir recompensas", async ({
   page,
 }) => {
-  await page.emulateMedia({ reducedMotion: "no-preference" });
+  await page.emulateMedia({ reducedMotion: "reduce" });
   await observeBookMotion(page);
   await page.route("**/api/crear", (route) =>
     route.fulfill({ json: { story } }),
@@ -518,6 +518,53 @@ test("el cuento creado conecta la respuesta con una cita del texto sin reenviar 
   await page.reload();
   await page.getByRole("button", { name: "Mis libros", exact: true }).click();
   await expect(page.getByText("Aquí vivirán tus historias")).toBeVisible();
+});
+
+test("Mis libros conserva más de seis cuentos al crear y recargar", async ({
+  page,
+}) => {
+  let created = 0;
+  await page.route("**/api/crear", (route) => {
+    created++;
+    return route.fulfill({
+      json: { story: { ...story, title: `Aventura de la tortuga ${created}` } },
+    });
+  });
+  await page.route("**/api/crear/portada", (route) =>
+    route.fulfill({ status: 503, json: {} }),
+  );
+  await page.goto("/crear");
+  for (let index = 1; index <= 7; index++) {
+    await page
+      .getByLabel("Mi idea", { exact: true })
+      .fill("Una tortuga sigue un mapa");
+    await page.getByLabel(/Un adulto revisó mi idea/).check();
+    await page
+      .getByRole("button", { name: "Crear mi cuento", exact: true })
+      .click();
+    await expect(
+      page.getByRole("heading", { name: `Aventura de la tortuga ${index}` }),
+    ).toBeVisible();
+    await expect(page.getByText("Guardado por 7 días.")).toBeVisible();
+    if (index < 7)
+      await page
+        .getByRole("button", { name: "Crear otro cuento", exact: true })
+        .click();
+  }
+  await page.reload();
+  const shelf = page.getByRole("region", { name: "Mis libros" });
+  await expect(
+    shelf.getByRole("button", { name: /^Abrir Aventura de la tortuga/ }),
+  ).toHaveCount(7);
+  await shelf
+    .getByRole("button", {
+      name: "Abrir Aventura de la tortuga 1",
+      exact: true,
+    })
+    .click();
+  await expect(
+    page.getByRole("heading", { name: "Aventura de la tortuga 1" }),
+  ).toBeVisible();
 });
 
 test("el lector sigue disponible si el navegador no permite guardar", async ({

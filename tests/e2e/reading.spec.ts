@@ -1,6 +1,7 @@
 import { test, expect } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 import { fontPreferenceKey } from "../../lib/reading";
+import { expectBookMotion, observeBookMotion } from "./helpers/book-motion";
 test("recorrido completo, reintento y pista de respaldo", async ({ page }) => {
   await page.route("**/api/tutor", (route) =>
     route.fulfill({ status: 503, contentType: "application/json", body: "{}" }),
@@ -96,6 +97,7 @@ test("nuevo reto y otra historia preservan el nivel en las rutas", async ({
 test("el libro cambia nivel, conserva tamaño y responde al pasar páginas", async ({
   page,
 }) => {
+  await observeBookMotion(page);
   await page.goto("/leer/luz-del-bosque?nivel=paso");
   await expect(page.getByText(/^Página 1 de \d+$/)).toBeVisible();
   const next = page.getByRole("button", { name: "Página siguiente" });
@@ -143,7 +145,10 @@ test("el libro cambia nivel, conserva tamaño y responde al pasar páginas", asy
       .click();
     await next.scrollIntoViewIfNeeded();
     await next.click();
-    await expect(page.locator(".book-turn-layer")).not.toBeVisible();
+    await expectBookMotion(
+      page,
+      `paper-${page.viewportSize()!.width <= 600 ? "mobile" : "turn"}-next`,
+    );
   }
   await page.getByRole("button", { name: "Ajustes", exact: true }).click();
   await animation.uncheck();

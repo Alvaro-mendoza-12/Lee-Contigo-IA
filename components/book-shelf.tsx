@@ -26,7 +26,7 @@ export function BookShelf({
       <div className="shelf-heading">
         <div>
           <h2 id="saved-books-title">Mis libros</h2>
-          <p>6 libros · 7 días · En este dispositivo</p>
+          <p>7 días · En este dispositivo</p>
         </div>
         {books.length ? (
           <button

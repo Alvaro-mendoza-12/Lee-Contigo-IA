@@ -13,10 +13,7 @@ export async function observeBookMotion(page: Page) {
         if (!target.isConnected) return;
         const style = getComputedStyle(target);
         const matrix = new DOMMatrixReadOnly(style.transform);
-        if (
-          target.getClientRects().length > 0 &&
-          (Math.abs(matrix.m13) > 0.01 || Math.abs(matrix.m41) > 0.1)
-        )
+        if (target.getClientRects().length > 0 && Math.abs(matrix.m13) > 0.01)
           turns.push(event.animationName);
         else if (target.getAnimations().some((a) => a.playState === "running"))
           requestAnimationFrame(sample);
@@ -26,15 +23,19 @@ export async function observeBookMotion(page: Page) {
   });
 }
 
-export async function expectBookMotion(page: Page, animation: string) {
+export async function expectBookMotion(
+  page: Page,
+  animation: string,
+  minimumCount = 1,
+) {
   await expect
     .poll(() =>
       page.evaluate(
-        (name) =>
+        ({ name, count }) =>
           (
             window as unknown as { observedBookTurns: string[] }
-          ).observedBookTurns.includes(name),
-        animation,
+          ).observedBookTurns.filter((turn) => turn === name).length >= count,
+        { name: animation, count: minimumCount },
       ),
     )
     .toBe(true);

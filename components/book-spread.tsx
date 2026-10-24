@@ -19,6 +19,8 @@ export type BookPage = {
   illustration: ReactNode;
 };
 
+const PAGE_TURN_MS = 1000;
+
 /** A stable open spread, with a two-sided leaf crossing the centre binding. */
 export function BookSpread({
   page,
@@ -70,7 +72,7 @@ export function BookSpread({
     if (!turn.previous) return;
     const timer = window.setTimeout(
       () => setTurn((value) => ({ ...value, previous: undefined })),
-      820,
+      PAGE_TURN_MS + 120,
     );
     return () => window.clearTimeout(timer);
   }, [turn.sequence, turn.previous]);
@@ -112,6 +114,7 @@ export function BookSpread({
       style={
         {
           "--reading-font": `${fontSize}px`,
+          "--page-turn-duration": `${PAGE_TURN_MS}ms`,
           ...(fontSize >= 32 ? { "--book-height": "600px" } : {}),
         } as CSSProperties
       }
@@ -152,7 +155,7 @@ export function BookSpread({
         <div className="paper-cover" aria-hidden="true" />
         <div
           key={page.id}
-          className={`paper-spread ${page.number % 2 === 1 ? "text-on-left" : "text-on-right"} ${animated && previous ? `mobile-turn-${turn.direction}` : ""}`}
+          className={`paper-spread ${page.number % 2 === 1 ? "text-on-left" : "text-on-right"}`}
         >
           <div className="paper-sizing" aria-hidden="true" inert>
             {(paragraphs ?? [page.text]).map((text, index) => (
@@ -172,6 +175,19 @@ export function BookSpread({
             className={`book-turn-layer turn-${turn.direction}`}
             aria-hidden="true"
             inert
+            onAnimationEnd={(event) => {
+              if (
+                !/^paper-(turn|mobile)-(next|previous)$/.test(
+                  event.animationName,
+                )
+              )
+                return;
+              setTurn((value) =>
+                value.sequence === turn.sequence
+                  ? { ...value, previous: undefined }
+                  : value,
+              );
+            }}
           >
             <div className="book-stationary-leaf">
               {face(
@@ -191,6 +207,13 @@ export function BookSpread({
               <div className="book-sheet-face sheet-back">
                 {face(page, turn.direction === "next" ? "left" : "right", true)}
               </div>
+            </div>
+            <div className={`book-mobile-leaf mobile-sheet-${turn.direction}`}>
+              <div className="book-mobile-face">
+                {face(previous, "left", true)}
+                {face(previous, "right", true)}
+              </div>
+              <div className="book-mobile-back" />
             </div>
           </div>
         ) : null}
