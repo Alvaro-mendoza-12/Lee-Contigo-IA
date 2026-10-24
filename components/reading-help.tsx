@@ -4,6 +4,7 @@ import { Lightbulb, X, LoaderCircle, ArrowRight } from "lucide-react";
 import type { Level, StoryId } from "@/lib/stories";
 import type { ReadingHelpInput, ReadingHelpOutput } from "@/lib/reading-help";
 import { ReadFeedback } from "./answer-audio";
+import { BarraXP } from "./barra-xp";
 import {
   preparedReadingHelp,
   helpNarrationText,
@@ -253,7 +254,7 @@ export function ReadingHelp({
         <Lightbulb size={18} aria-hidden="true" /> No entendí
       </button>
       {children}
-      {/* XP-IVAN: barra compacta */}
+      <BarraXP variante="compacta" />
       <span className="sr-only" role="status">
         {notice ||
           (selection

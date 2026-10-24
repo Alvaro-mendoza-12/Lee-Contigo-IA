@@ -2,9 +2,11 @@
 import { useEffect, useId, useRef, useState, type ReactNode } from "react";
 import { Maximize2, Minimize2, SlidersHorizontal, X } from "lucide-react";
 import type { NarrationVoice } from "@/lib/narration-voices";
+import type { Level } from "@/lib/stories";
 import { VoicePicker } from "./voice-picker";
 import { InterruptorAudio } from "./interruptor-audio";
 import { abrirTutorial } from "./tutorial";
+import { BorrarProgreso, SelectorNivel } from "./ajustes-xp";
 
 export function ReadingSettings({
   voice,
@@ -14,6 +16,7 @@ export function ReadingSettings({
   children,
   expanded = false,
   onExpandedChange,
+  mostrarNivel,
 }: {
   voice: NarrationVoice;
   onVoiceChange: (voice: NarrationVoice) => void;
@@ -22,6 +25,8 @@ export function ReadingSettings({
   children?: ReactNode;
   expanded?: boolean;
   onExpandedChange?: (expanded: boolean) => void;
+  // Solo el lector lo pasa: el creador elige su nivel antes de crear.
+  mostrarNivel?: Level;
 }) {
   const [open, setOpen] = useState(false);
   const dialog = useRef<HTMLDialogElement>(null);
@@ -117,9 +122,9 @@ export function ReadingSettings({
           >
             Ver la guía
           </button>
-          {/* XP-IVAN: selector de nivel */}
+          {mostrarNivel ? <SelectorNivel nivel={mostrarNivel} /> : null}
           {children}
-          {/* XP-IVAN: borrar progreso */}
+          <BorrarProgreso />
         </div>
       </dialog>
     </div>

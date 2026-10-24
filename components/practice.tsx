@@ -20,6 +20,7 @@ import type { Story, Level } from "@/lib/stories";
 import { Journey } from "./journey";
 import { ReadFeedback } from "./answer-audio";
 import { reproducir, reproducirRespuesta } from "@/lib/sonidos";
+import { sumarXP } from "@/lib/progreso";
 type Hint = {
   hint: string;
   action?: string;
@@ -73,6 +74,7 @@ export function Practice({ story, level }: { story: Story; level: Level }) {
     hintRequest.current++;
     abort.current?.abort();
     if (index === version.questions.length - 1) {
+      sumarXP("preguntas-completas", story.id, level);
       setComplete(true);
     } else {
       setIndex((i) => i + 1);
@@ -302,6 +304,14 @@ export function Practice({ story, level }: { story: Story; level: Level }) {
                 onClick={() => {
                   reproducirRespuesta(selected === question.correct);
                   if (selected === question.correct) {
+                    sumarXP(
+                      hintCount === 0 && incorrectAttempts === 0
+                        ? "pregunta-primer-intento"
+                        : "pregunta-con-pista",
+                      story.id,
+                      level,
+                      question.id,
+                    );
                     setFeedback("correct");
                     return;
                   }

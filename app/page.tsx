@@ -1,4 +1,4 @@
-import { Library } from "@/components/library";
+import { BibliotecaXP } from "@/components/biblioteca-xp";
 import { getLevel } from "@/lib/stories";
 export default async function Home({
   searchParams,
@@ -6,5 +6,5 @@ export default async function Home({
   searchParams: Promise<{ nivel?: string }>;
 }) {
   const { nivel } = await searchParams;
-  return <Library key={getLevel(nivel)} initialLevel={getLevel(nivel)} />;
+  return <BibliotecaXP key={getLevel(nivel)} initialLevel={getLevel(nivel)} />;
 }
