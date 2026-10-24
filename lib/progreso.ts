@@ -41,6 +41,8 @@ export const RECOMPENSAS = {
 
 // Nivel de lector desde el que se puede elegir «Un nuevo reto».
 export const NIVEL_RETO = 2;
+// Solo los primeros cuentos creados dan experiencia.
+export const MAXIMO_CUENTOS_CREADOS = 3;
 export const CLAVE = "lee-contigo-progreso";
 export const CLAVE_DEMO = "lee-contigo-progreso-demo";
 export const MARCA_DEMO = "lee-contigo-demo";
@@ -141,7 +143,13 @@ export function sumarXP(
   // Una pregunta paga una sola vez: +10 o +5, nunca ambas.
   const grupo = motivo.startsWith("pregunta-") ? "pregunta" : motivo;
   const recompensa = [grupo, idCuento, nivel, idPregunta ?? ""].join(":");
-  if (progreso.recompensas.includes(recompensa))
+  const creados = progreso.recompensas.filter((item) =>
+    item.startsWith("cuento-creado:"),
+  ).length;
+  if (
+    progreso.recompensas.includes(recompensa) ||
+    (motivo === "cuento-creado" && creados >= MAXIMO_CUENTOS_CREADOS)
+  )
     return {
       motivo,
       ganada: 0,
@@ -181,6 +189,19 @@ export function cuentoDesbloqueado(id: string) {
   if (modoDemo()) return true;
   const requerido = nivelParaCuento(id);
   return !requerido || nivelActual().numero >= requerido.numero;
+}
+
+// Mensaje de candado para cada cuento que el nivel indicado aún no abre.
+export function cuentosBloqueados(numeroNivel: number) {
+  const bloqueados: Record<string, string> = {};
+  for (const nivel of NIVELES) {
+    if (nivel.numero <= numeroNivel) continue;
+    const ids: readonly string[] =
+      DESBLOQUEOS[nivel.numero as keyof typeof DESBLOQUEOS] ?? [];
+    for (const id of ids)
+      bloqueados[id] = `Se desbloquea al ser ${nivel.titulo}`;
+  }
+  return bloqueados;
 }
 
 export function retoDesbloqueado() {
