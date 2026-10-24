@@ -21,6 +21,8 @@ import { Journey } from "./journey";
 import { ReadFeedback } from "./answer-audio";
 import { reproducir, reproducirRespuesta } from "@/lib/sonidos";
 import { sumarXP } from "@/lib/progreso";
+import { BarraXP } from "./barra-xp";
+import { EstallidoEstrellas, lanzarXP } from "./efecto-respuesta";
 type Hint = {
   hint: string;
   action?: string;
@@ -185,6 +187,7 @@ export function Practice({ story, level }: { story: Story; level: Level }) {
           <ArrowLeft size={16} />
           Volver a leer
         </Link>
+        <BarraXP variante="compacta" />
       </div>
       <div className="practice-layout">
         <section className="question-card">
@@ -235,11 +238,16 @@ export function Practice({ story, level }: { story: Story; level: Level }) {
                 <span className="answer-letter">
                   {feedback === "correct" && i === selected ? (
                     <Check size={18} />
+                  ) : feedback === "retry" && i === selected ? (
+                    <Lightbulb size={18} aria-hidden="true" />
                   ) : (
                     String.fromCharCode(65 + i)
                   )}
                 </span>
                 <span>{option}</span>
+                {feedback === "correct" && i === selected ? (
+                  <EstallidoEstrellas />
+                ) : null}
                 <span className="answer-radio">
                   {selected === i ? <span /> : null}
                 </span>
@@ -260,7 +268,7 @@ export function Practice({ story, level }: { story: Story; level: Level }) {
                   ? "¡Encontraste una buena pista en el texto!"
                   : feedback === "revealed"
                     ? "Leamos juntos la parte clave."
-                    : "Aún no es la respuesta. Busquemos una pista."}
+                    : "¡Casi! Mira la pista."}
               </strong>
               <p>
                 {feedback === "correct"
@@ -273,7 +281,7 @@ export function Practice({ story, level }: { story: Story; level: Level }) {
               </p>
               {feedback === "retry" ? (
                 <ReadFeedback
-                  text={`Aún no es la respuesta. ${question.hints[Math.min(Math.max(incorrectAttempts - 1, 0), 1)]}`}
+                  text={`¡Casi! Mira la pista. ${question.hints[Math.min(Math.max(incorrectAttempts - 1, 0), 1)]}`}
                 />
               ) : null}
               {feedback === "correct" || feedback === "revealed" ? (
@@ -304,7 +312,7 @@ export function Practice({ story, level }: { story: Story; level: Level }) {
                 onClick={() => {
                   reproducirRespuesta(selected === question.correct);
                   if (selected === question.correct) {
-                    sumarXP(
+                    const { ganada } = sumarXP(
                       hintCount === 0 && incorrectAttempts === 0
                         ? "pregunta-primer-intento"
                         : "pregunta-con-pista",
@@ -312,6 +320,11 @@ export function Practice({ story, level }: { story: Story; level: Level }) {
                       level,
                       question.id,
                     );
+                    if (ganada)
+                      lanzarXP(
+                        ganada,
+                        document.querySelector(".answer.selected"),
+                      );
                     setFeedback("correct");
                     return;
                   }

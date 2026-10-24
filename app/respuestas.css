@@ -1,0 +1,149 @@
+/* Iván: respuestas de /practicar. Solo afecta a .practice-page; el creador no cambia. */
+.practice-page {
+  --respuesta-verde: #3f9a54;
+  --respuesta-verde-fondo: #e6f6e6;
+  --respuesta-ambar: #e0a53a;
+  --respuesta-ambar-fondo: #fff4d6;
+  --respuesta-ambar-fuerte: #f2b53c;
+  --respuesta-ambar-tinta: #6b4209;
+}
+
+/* Correcta: rebote, brillo verde y check grande */
+.practice-page .answer.correct {
+  border-color: var(--respuesta-verde);
+  background: var(--respuesta-verde-fondo);
+  box-shadow:
+    0 0 0 3px rgba(63, 154, 84, 0.25),
+    0 0 18px rgba(63, 154, 84, 0.35);
+  animation: respuesta-rebote 0.5s cubic-bezier(0.3, 1.6, 0.5, 1);
+}
+.practice-page .answer.correct .answer-letter {
+  min-width: 40px;
+  height: 40px;
+  border-color: var(--respuesta-verde);
+  border-radius: 50%;
+  background: var(--respuesta-verde);
+  color: #fff;
+  animation: respuesta-pop 0.45s cubic-bezier(0.3, 1.8, 0.5, 1);
+}
+.practice-page .answer.correct .answer-letter svg {
+  width: 26px;
+  height: 26px;
+  stroke-width: 3;
+}
+
+.respuesta-estallido {
+  position: absolute;
+  top: 50%;
+  left: 37px;
+  pointer-events: none;
+}
+.respuesta-estallido > span {
+  position: absolute;
+  top: 0;
+  left: 0;
+  color: #f5b82e;
+  line-height: 1;
+  text-shadow: 0 1px 2px rgba(107, 66, 9, 0.35);
+  opacity: 0;
+  animation: respuesta-estrella 0.7s ease-out var(--retraso) forwards;
+}
+
+/* Incorrecta: un «casi» suave en ámbar, nunca rojo */
+.practice-page .answer.incorrect {
+  border: 2px solid var(--respuesta-ambar);
+  background: var(--respuesta-ambar-fondo);
+  animation: respuesta-casi 0.5s ease-in-out;
+}
+.practice-page .answer.incorrect .answer-letter {
+  border-color: var(--respuesta-ambar);
+  background: var(--respuesta-ambar-fuerte);
+  color: var(--respuesta-ambar-tinta);
+}
+.practice-page .answer-feedback.retry {
+  border-color: var(--respuesta-ambar);
+  background: var(--respuesta-ambar-fondo);
+}
+.practice-page .answer-feedback.retry strong,
+.practice-page .answer-feedback.retry p {
+  color: var(--respuesta-ambar-tinta);
+}
+
+/* El «+10» que vuela hacia la pastilla (se agrega a body) */
+.respuesta-vuelo {
+  position: fixed;
+  z-index: 995;
+  color: var(--xp-principal, #6a3fd6);
+  font-family: var(--font-nunito), Arial, sans-serif;
+  font-size: 26px;
+  font-weight: 900;
+  text-shadow:
+    0 0 0 #fff,
+    0 2px 0 #fff,
+    0 0 10px #fff;
+  pointer-events: none;
+}
+
+@keyframes respuesta-rebote {
+  0% {
+    transform: scale(1);
+  }
+  40% {
+    transform: scale(1.04);
+  }
+  70% {
+    transform: scale(0.99);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+@keyframes respuesta-pop {
+  0% {
+    transform: scale(0.4);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+@keyframes respuesta-estrella {
+  0% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(0.4);
+  }
+  60% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy)))
+      scale(1.1) rotate(40deg);
+  }
+}
+@keyframes respuesta-casi {
+  0%,
+  100% {
+    transform: none;
+  }
+  20% {
+    transform: translateX(-4px) rotate(-0.6deg);
+  }
+  45% {
+    transform: translateX(4px) rotate(0.6deg);
+  }
+  70% {
+    transform: translateX(-2px) rotate(-0.3deg);
+  }
+}
+
+/* Sin rebotes ni estrellas: solo el color y el ícono */
+@media (prefers-reduced-motion: reduce) {
+  .practice-page .answer.correct,
+  .practice-page .answer.correct .answer-letter,
+  .practice-page .answer.incorrect {
+    animation: none;
+  }
+  .respuesta-estallido {
+    display: none;
+  }
+}
