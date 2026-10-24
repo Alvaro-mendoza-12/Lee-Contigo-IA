@@ -133,6 +133,7 @@
   gap: 12px;
   width: 100%;
   max-width: 600px;
+  margin-inline: auto;
   padding: 20px 18px 18px;
   text-align: center;
   background: var(--xp-fondo);
@@ -266,6 +267,10 @@
   font-size: 0.95rem;
   font-weight: 800;
   cursor: pointer;
+}
+/* En las preguntas la pastilla va a la derecha de «Volver a leer». */
+.practice-top .xp-barra-compacta {
+  margin-left: auto;
 }
 .xp-pastilla-lector:hover {
   border-color: var(--xp-principal);
