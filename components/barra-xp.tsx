@@ -64,7 +64,8 @@ function useProgresoXP() {
     let temporizador: ReturnType<typeof setTimeout> | undefined;
     setProgreso(obtenerProgreso());
     function mostrar(ganada: number) {
-      if (ganada <= 0) return;
+      // Mientras se leen las páginas la pastilla se queda quieta.
+      if (ganada <= 0 || window.location.pathname.startsWith("/leer/")) return;
       setGanancia({ id: Date.now(), xp: ganada });
       clearTimeout(temporizador);
       temporizador = setTimeout(() => setGanancia(null), 1800);

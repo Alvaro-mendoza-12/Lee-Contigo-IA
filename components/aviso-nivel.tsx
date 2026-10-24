@@ -1,7 +1,9 @@
 "use client";
 import { useEffect, useRef, useState, type CSSProperties } from "react";
+import { usePathname } from "next/navigation";
 import {
   EVENTO_CELEBRADO,
+  EVENTO_CUENTO_TERMINADO,
   EVENTO_XP,
   type DetalleXP,
   type NivelLector,
@@ -35,39 +37,49 @@ function premios(nivel: NivelLector) {
 export function AvisoNivel() {
   const [nivel, setNivel] = useState<NivelLector | null>(null);
   const boton = useRef<HTMLButtonElement>(null);
+  const ruta = usePathname();
+  // Espera mientras se leen las páginas y mientras dura la fiesta del cuento.
+  const intentar = useRef<() => void>(() => {});
 
   useEffect(() => {
     let guardado: NivelLector | null = null;
+    let enFiesta = false;
     let respaldo: ReturnType<typeof setTimeout> | undefined;
-    function mostrar(siguiente: NivelLector) {
-      setNivel(siguiente);
+    intentar.current = () => {
+      if (!guardado || enFiesta) return;
+      if (window.location.pathname.startsWith("/leer/")) return;
+      setNivel(guardado);
       reproducir("nivel");
-    }
+      guardado = null;
+    };
     function escuchar(evento: Event) {
       const detalle = (evento as CustomEvent<DetalleXP>).detail;
       if (!detalle.subioDeNivel) return;
-      // Al terminar un cuento, primero se ve el «+30» y después este aviso.
-      if (detalle.motivo === "cuento-terminado") {
-        guardado = detalle.nivel;
-        clearTimeout(respaldo);
-        respaldo = setTimeout(soltar, 8000);
-        return;
-      }
-      mostrar(detalle.nivel);
+      guardado = detalle.nivel;
+      intentar.current();
     }
-    function soltar() {
+    function empiezaFiesta() {
+      enFiesta = true;
       clearTimeout(respaldo);
-      if (guardado) mostrar(guardado);
-      guardado = null;
+      respaldo = setTimeout(terminaFiesta, 8000);
+    }
+    function terminaFiesta() {
+      clearTimeout(respaldo);
+      enFiesta = false;
+      intentar.current();
     }
     window.addEventListener(EVENTO_XP, escuchar);
-    window.addEventListener(EVENTO_CELEBRADO, soltar);
+    window.addEventListener(EVENTO_CUENTO_TERMINADO, empiezaFiesta);
+    window.addEventListener(EVENTO_CELEBRADO, terminaFiesta);
     return () => {
       window.removeEventListener(EVENTO_XP, escuchar);
-      window.removeEventListener(EVENTO_CELEBRADO, soltar);
+      window.removeEventListener(EVENTO_CUENTO_TERMINADO, empiezaFiesta);
+      window.removeEventListener(EVENTO_CELEBRADO, terminaFiesta);
       clearTimeout(respaldo);
     };
   }, []);
+
+  useEffect(() => intentar.current(), [ruta]);
 
   useEffect(() => {
     if (!nivel) return;
