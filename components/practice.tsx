@@ -221,7 +221,10 @@ export function Practice({ story, level }: { story: Story; level: Level }) {
                   "answer " +
                   (selected === i ? "selected " : "") +
                   (feedback === "correct" && i === selected ? "correct" : "") +
-                  (feedback === "retry" && i === selected ? " incorrect" : "")
+                  (feedback === "retry" && i === selected ? " incorrect" : "") +
+                  (feedback === "revealed" && i === question.correct
+                    ? " revealed-answer"
+                    : "")
                 }
               >
                 <input
@@ -236,7 +239,8 @@ export function Practice({ story, level }: { story: Story; level: Level }) {
                   }}
                 />
                 <span className="answer-letter">
-                  {feedback === "correct" && i === selected ? (
+                  {(feedback === "correct" && i === selected) ||
+                  (feedback === "revealed" && i === question.correct) ? (
                     <Check size={18} />
                   ) : feedback === "retry" && i === selected ? (
                     <Lightbulb size={18} aria-hidden="true" />
@@ -267,7 +271,7 @@ export function Practice({ story, level }: { story: Story; level: Level }) {
                 {feedback === "correct"
                   ? "¡Encontraste una buena pista en el texto!"
                   : feedback === "revealed"
-                    ? "Leamos juntos la parte clave."
+                    ? "Esta es la respuesta. Mira lo que dice el cuento:"
                     : "¡Casi! Mira la pista."}
               </strong>
               <p>
@@ -285,7 +289,14 @@ export function Practice({ story, level }: { story: Story; level: Level }) {
                 />
               ) : null}
               {feedback === "correct" || feedback === "revealed" ? (
-                <blockquote className="answer-evidence">
+                <blockquote
+                  className={
+                    "answer-evidence" +
+                    (feedback === "revealed"
+                      ? " answer-evidence--resaltada"
+                      : "")
+                  }
+                >
                   {version.paragraphs[question.paragraph]}
                 </blockquote>
               ) : null}
@@ -310,7 +321,13 @@ export function Practice({ story, level }: { story: Story; level: Level }) {
                 className="button"
                 disabled={selected === null || feedback === "retry"}
                 onClick={() => {
-                  reproducirRespuesta(selected === question.correct);
+                  // Tras agotar las dos pistas, el siguiente error muestra la
+                  // respuesta con su explicación. Esa pregunta no da XP.
+                  const revelar =
+                    selected !== question.correct &&
+                    Math.max(hintCount, incorrectAttempts) >= 2;
+                  if (revelar) reproducir("pista");
+                  else reproducirRespuesta(selected === question.correct);
                   if (selected === question.correct) {
                     const { ganada } = sumarXP(
                       hintCount === 0 && incorrectAttempts === 0
@@ -326,6 +343,10 @@ export function Practice({ story, level }: { story: Story; level: Level }) {
                         document.querySelector(".answer.selected"),
                       );
                     setFeedback("correct");
+                    return;
+                  }
+                  if (revelar) {
+                    setFeedback("revealed");
                     return;
                   }
                   const attempts = incorrectAttempts + 1;

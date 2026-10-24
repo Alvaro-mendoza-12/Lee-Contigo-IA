@@ -167,7 +167,7 @@ export function StoryCreator() {
     selectedAnswer !== null &&
     currentQuestion !== undefined &&
     selectedAnswer !== currentQuestion.correctIndex;
-  const revealAnswer = false;
+  const revealAnswer = answerIsWrong && wrongAttempts >= 3;
   const showTutorHint =
     currentQuestion !== undefined && wrongAttempts > 0 && !answerIsCorrect;
   const tutorHintIndex = Math.min(Math.max(wrongAttempts - 1, 0), 1);
@@ -1160,7 +1160,9 @@ export function StoryCreator() {
                 ref={answerFeedbackRef}
                 tabIndex={-1}
               >
-                <strong>Vamos a leer la respuesta con calma.</strong>
+                <strong>
+                  Esta es la respuesta. Mira lo que dice el cuento:
+                </strong>
                 <p>{currentQuestion.explanation}</p>
                 <StoryEvidence
                   quote={currentQuestion.evidenceQuote}

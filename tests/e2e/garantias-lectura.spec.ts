@@ -110,3 +110,56 @@ test("G5 · letra mínima de 16 px y sin scroll horizontal a 320 px", async ({
     ).toBe(true);
   }
 });
+
+test("G3 · tras usar las 2 pistas, el siguiente error muestra la respuesta", async ({
+  page,
+}) => {
+  const [pregunta] = getStory("luz-del-bosque")!.versions.paso.questions;
+  await page.goto("/practicar/luz-del-bosque?nivel=paso");
+  const antes = await xp(page);
+  await page.getByRole("button", { name: "Dame una pista" }).click();
+  await page.getByRole("button", { name: "Dame otra pista" }).click();
+  await expect(
+    page.getByRole("button", { name: "Ya tienes las dos pistas" }),
+  ).toBeVisible();
+  const incorrecta = (pregunta.correct + 1) % pregunta.options.length;
+  await page.locator(".answers label").nth(incorrecta).click();
+  await page.getByRole("button", { name: /Comprobar respuesta/ }).click();
+
+  await expect(
+    page.getByText("Esta es la respuesta. Mira lo que dice el cuento:"),
+  ).toBeVisible();
+  await expect(page.getByText(pregunta.explanation)).toBeVisible();
+  await expect(page.locator(".answer.revealed-answer")).toContainText(
+    pregunta.options[pregunta.correct],
+  );
+  await expect(page.locator(".answer-evidence--resaltada")).toHaveText(
+    getStory("luz-del-bosque")!.versions.paso.paragraphs[pregunta.paragraph],
+  );
+  // G4: una pregunta revelada no da experiencia.
+  expect(await xp(page)).toBe(antes);
+  await page.getByRole("button", { name: "Siguiente pregunta" }).click();
+  await expect(page.getByText("PREGUNTA 2 DE 3")).toBeVisible();
+});
+
+test("G3 · sin pedir pistas, el tercer error también muestra la respuesta", async ({
+  page,
+}) => {
+  const [pregunta] = getStory("luz-del-bosque")!.versions.paso.questions;
+  await page.goto("/practicar/luz-del-bosque?nivel=paso");
+  const antes = await xp(page);
+  const incorrectas = pregunta.options
+    .map((_, i) => i)
+    .filter((i) => i !== pregunta.correct);
+  for (const intento of [incorrectas[0], incorrectas[1]]) {
+    await page.locator(".answers label").nth(intento).click();
+    await page.getByRole("button", { name: /Comprobar respuesta/ }).click();
+    await expect(page.getByText("¡Casi! Mira la pista.")).toBeVisible();
+  }
+  await page.locator(".answers label").nth(incorrectas[0]).click();
+  await page.getByRole("button", { name: /Comprobar respuesta/ }).click();
+  await expect(
+    page.getByText("Esta es la respuesta. Mira lo que dice el cuento:"),
+  ).toBeVisible();
+  expect(await xp(page)).toBe(antes);
+});
