@@ -199,6 +199,9 @@
 .book-sheet-face > .paper-face {
   height: 100%;
 }
+.book-sheet-face > .paper-text {
+  padding: 42px clamp(24px, 3.5vw, 52px) 50px;
+}
 .book-full-text {
   background: #fffdf5;
   color: #272044;
@@ -292,6 +295,12 @@ body:has(.reading-card-expanded) .site-footer {
   .reading-help-controls {
     gap: 8px;
   }
+  .book-mobile-face > .paper-text {
+    background: #fffdf5;
+  }
+  .book-mobile-face .paper-copy-paragraph {
+    line-height: 1.65;
+  }
   .reading-help-controls .paragraph-help {
     flex: 1 1 0;
     justify-content: center;
@@ -330,7 +339,7 @@ body:has(.reading-card-expanded) .site-footer {
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .book-stage .book-turn-layer {
+  .book-stage:not(.user-motion-on) .book-turn-layer {
     display: none;
   }
   .book-stage.user-motion-on .paper-face,

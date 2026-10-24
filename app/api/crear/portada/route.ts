@@ -1,4 +1,4 @@
-import { createHash } from "node:crypto";
+import { createCreationLimiter } from "@/lib/creation-limits";
 import { generateImage, generateText } from "ai";
 import { coverInput, isAppropriateArtDescription } from "@/lib/story-creator";
 import { getGatewayFailureDetails } from "@/lib/ai-diagnostics";
@@ -20,7 +20,7 @@ import { planRasterScenes } from "@/lib/raster-scene-plan";
 export const runtime = "nodejs";
 export const maxDuration = 90;
 
-const limits = new Map<string, { count: number; until: number }>();
+const illustrationLimiter = createCreationLimiter();
 const vectorInput = z
   .object({
     artDescription: z.string().min(20).max(280),
@@ -31,29 +31,14 @@ const vectorInput = z
   })
   .strict();
 
-function reply(body: unknown, status = 200) {
+function reply(body: unknown, status = 200, retryAfter?: number) {
   return Response.json(body, {
     status,
-    headers: { "Cache-Control": "no-store" },
+    headers: {
+      "Cache-Control": "no-store",
+      ...(retryAfter ? { "Retry-After": String(retryAfter) } : {}),
+    },
   });
-}
-
-function tooManyRequests(request: Request) {
-  const client = createHash("sha256")
-    .update(request.headers.get("x-forwarded-for")?.split(",")[0] ?? "local")
-    .digest("hex");
-  const now = Date.now();
-  let limit = limits.get(client);
-  if (!limit || limit.until < now) {
-    limit = { count: 0, until: now + 600_000 };
-    limits.set(client, limit);
-  }
-  if (limits.size > 5000) {
-    for (const [id, entry] of limits) {
-      if (entry.until < now) limits.delete(id);
-    }
-  }
-  return ++limit.count > 2;
 }
 
 export async function POST(request: Request) {
@@ -107,7 +92,7 @@ export async function POST(request: Request) {
       );
     const plan = composeStoryPlan(input.scenes, input.artDescription);
     const source = "composed";
-    const limited = tooManyRequests(request);
+    const limited = !illustrationLimiter.reserve(request).allowed;
     const token = process.env.CLOUDFLARE_API_TOKEN;
     const accountId = process.env.CLOUDFLARE_ACCOUNT_ID;
     let imageReference = input.artDescription;
@@ -161,10 +146,14 @@ export async function POST(request: Request) {
       layout: "atlas",
       source: "collection",
     });
-  if (tooManyRequests(request))
+  const reservation = illustrationLimiter.reserve(request);
+  if (!reservation.allowed)
     return reply(
-      { error: "Ya pediste varias portadas hace poco. Inténtalo más tarde." },
+      {
+        error: `Espera ${reservation.retryAfter} segundos para preparar más ilustraciones.`,
+      },
       429,
+      reservation.retryAfter,
     );
   if (
     !process.env.AI_GATEWAY_API_KEY &&
