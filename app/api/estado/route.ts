@@ -1,4 +1,8 @@
+import { getOpenRouterKeys } from "@/lib/openrouter";
+import { hasCloudflareText } from "@/lib/cloudflare-text";
+
 export function GET() {
+  const openRouterKeys = getOpenRouterKeys();
   const authMode = process.env.AI_GATEWAY_API_KEY
     ? "gateway_key"
     : process.env.VERCEL === "1"
@@ -19,6 +23,11 @@ export function GET() {
         process.env.CLOUDFLARE_API_TOKEN && process.env.CLOUDFLARE_ACCOUNT_ID,
       ),
       providerAvailability: "not_checked",
+      textProviders: {
+        gatewayConfigured: authMode !== "not_configured",
+        openRouterConfigured: openRouterKeys.length > 0,
+        cloudflareConfigured: hasCloudflareText(),
+      },
     },
     { headers: { "Cache-Control": "no-store" } },
   );

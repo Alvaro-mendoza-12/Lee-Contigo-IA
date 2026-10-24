@@ -2,6 +2,7 @@ import { expect, test } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 import { composeStoryPlan } from "../../lib/story-illustrations";
 import sharp from "sharp";
+import { expectBookMotion, observeBookMotion } from "./helpers/book-motion";
 
 const story = {
   title: "La tortuga y la luz",
@@ -70,6 +71,77 @@ const story = {
     },
   ],
 };
+
+test("el libro creado anima las hojas y suma XP al leer y practicar sin repetir recompensas", async ({
+  page,
+}) => {
+  await page.emulateMedia({ reducedMotion: "no-preference" });
+  await observeBookMotion(page);
+  await page.route("**/api/crear", (route) =>
+    route.fulfill({ json: { story } }),
+  );
+  await page.route("**/api/crear/portada", (route) =>
+    route.fulfill({ status: 503, json: {} }),
+  );
+  await page.goto("/crear");
+  await page
+    .getByLabel("Mi idea", { exact: true })
+    .fill("Una tortuga sigue un mapa");
+  await page.getByLabel(/Un adulto revisó mi idea/).check();
+  await page
+    .getByRole("button", { name: "Crear mi cuento", exact: true })
+    .click();
+  const xp = () =>
+    page.evaluate(
+      () => JSON.parse(localStorage.getItem("lee-contigo-progreso")!).xp,
+    );
+  await expect.poll(xp).toBe(515);
+  const next = page.getByRole("button", { name: "Página siguiente" });
+  const mode = page.viewportSize()!.width <= 600 ? "mobile" : "turn";
+  await next.click();
+  await expectBookMotion(page, `paper-${mode}-next`);
+  await page.getByRole("button", { name: "Anterior", exact: true }).click();
+  await expectBookMotion(page, `paper-${mode}-previous`);
+  while (await next.isVisible()) await next.click();
+  expect(await xp()).toBe(515);
+  await expect(page.getByRole("alertdialog")).toHaveCount(0);
+  await page.getByRole("button", { name: "Leer y explorar" }).click();
+  await expect.poll(xp).toBe(545);
+  await expect(page.locator(".creator-quiz .xp-pastilla-lector")).toBeVisible();
+  const options = page
+    .getByRole("group", { name: "Opciones de respuesta" })
+    .getByRole("button");
+  await options.nth(1).click();
+  expect(await xp()).toBe(545);
+  await page.getByRole("button", { name: "Intentar otra vez" }).click();
+  await options.nth(0).click();
+  await expect.poll(xp).toBe(550);
+  await page.getByRole("button", { name: "Siguiente pregunta" }).click();
+  for (let index = 1; index < story.questions.length; index++) {
+    await options.nth(0).click();
+    await page
+      .getByRole("button", {
+        name: index === 2 ? "Terminar cuento" : "Siguiente pregunta",
+      })
+      .click();
+  }
+  await expect(
+    page.getByRole("heading", { name: "¡Terminaste de leer!" }),
+  ).toBeVisible();
+  await expect.poll(xp).toBe(590);
+  await page.getByRole("button", { name: "Leer otra vez" }).click();
+  while (await next.isVisible()) await next.click();
+  await page.getByRole("button", { name: "Leer y explorar" }).click();
+  for (let index = 0; index < story.questions.length; index++) {
+    await options.nth(0).click();
+    await page
+      .getByRole("button", {
+        name: index === 2 ? "Terminar cuento" : "Siguiente pregunta",
+      })
+      .click();
+  }
+  expect(await xp()).toBe(590);
+});
 
 test("la política de ilustración se conserva al guardar y reintentar, sin depender de la voz", async ({
   page,
