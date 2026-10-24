@@ -50,7 +50,7 @@ export function AvisoNivel() {
       if (detalle.motivo === "cuento-terminado") {
         guardado = detalle.nivel;
         clearTimeout(respaldo);
-        respaldo = setTimeout(soltar, 4000);
+        respaldo = setTimeout(soltar, 8000);
         return;
       }
       mostrar(detalle.nivel);

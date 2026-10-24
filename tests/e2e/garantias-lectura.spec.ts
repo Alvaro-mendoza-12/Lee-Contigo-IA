@@ -63,6 +63,7 @@ for (const [id, nivel] of [
     await leerHastaElFinal(page);
     await page.getByRole("link", { name: "Vamos a pensar" }).click();
     await expect(page).toHaveURL(new RegExp(`/practicar/${id}`));
+    await page.getByRole("button", { name: "¡A pensar!" }).click();
     await responderBien(page, id, nivel);
   });
 

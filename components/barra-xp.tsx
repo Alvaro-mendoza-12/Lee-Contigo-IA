@@ -70,8 +70,10 @@ function useProgresoXP() {
       temporizador = setTimeout(() => setGanancia(null), 1800);
     }
     function actualizar(evento: Event) {
+      const { motivo, ganada } = (evento as CustomEvent<DetalleXP>).detail;
       setProgreso(obtenerProgreso());
-      mostrar((evento as CustomEvent<DetalleXP>).detail.ganada);
+      // El +30 de un cuento terminado lo muestra la celebración en /practicar.
+      if (motivo !== "cuento-terminado") mostrar(ganada);
     }
     // El «+30» de un cuento terminado se ganó en el lector: aquí solo se muestra.
     function celebrar(evento: Event) {
