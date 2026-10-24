@@ -42,6 +42,8 @@ export async function generateStructuredText<T>({
 }): Promise<{ output: T }> {
   const started = Date.now();
   const cloudflare = hasCloudflareText();
+  const compactRequest =
+    feature === "story-safety" || feature === "story-scene-plan";
   const deadline = signal
     ? AbortSignal.any([signal, AbortSignal.timeout(timeoutMs)])
     : AbortSignal.timeout(timeoutMs);
@@ -74,7 +76,7 @@ export async function generateStructuredText<T>({
                 deadline,
                 AbortSignal.timeout(
                   Math.min(
-                    feature === "story-safety"
+                    compactRequest
                       ? 1_500
                       : feature === "generated-story"
                         ? 15_000
@@ -98,9 +100,9 @@ export async function generateStructuredText<T>({
     }
   }
   const routerMs = cloudflare
-    ? feature === "story-safety"
-      ? // Short classifications do not need the 8.5–18s story-generation reserve.
-        // That reserve previously left OpenRouter no time in a 7–8s review.
+    ? compactRequest
+      ? // Short moderation and scene-planning requests do not need the
+        // 8.5–18s story-generation reserve.
         Math.max(
           0,
           timeoutMs -
