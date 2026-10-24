@@ -16,12 +16,13 @@ import {
   X,
   LoaderCircle,
 } from "lucide-react";
-import type { Story, Level } from "@/lib/stories";
+import type { Story, Level, StoryId } from "@/lib/stories";
 import { Journey } from "./journey";
 import { ReadFeedback } from "./answer-audio";
 import { reproducir, reproducirRespuesta } from "@/lib/sonidos";
 import { sumarXP } from "@/lib/progreso";
 import { BarraXP } from "./barra-xp";
+import { EscucharParrafo } from "./escuchar-parrafo";
 import { EstallidoEstrellas, lanzarXP } from "./efecto-respuesta";
 type Hint = {
   hint: string;
@@ -284,9 +285,18 @@ export function Practice({ story, level }: { story: Story; level: Level }) {
                       ]}
               </p>
               {feedback === "retry" ? (
-                <ReadFeedback
-                  text={`¡Casi! Mira la pista. ${question.hints[Math.min(Math.max(incorrectAttempts - 1, 0), 1)]}`}
-                />
+                <>
+                  <ReadFeedback
+                    text={`¡Casi! Mira la pista. ${question.hints[Math.min(Math.max(incorrectAttempts - 1, 0), 1)]}`}
+                  />
+                  <EscucharParrafo
+                    etiqueta="Escuchar esta parte del cuento"
+                    texto={version.paragraphs[question.paragraph]}
+                    paragraph={question.paragraph}
+                    level={level}
+                    storyId={story.id as StoryId}
+                  />
+                </>
               ) : null}
               {feedback === "correct" || feedback === "revealed" ? (
                 <blockquote
