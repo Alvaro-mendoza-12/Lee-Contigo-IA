@@ -1,4 +1,5 @@
 import sharp from "sharp";
+import { createHash } from "node:crypto";
 import { createScenePrompt, type ScenePlan } from "./story-illustrations.ts";
 
 export const CLOUDFLARE_IMAGE_MODEL = "@cf/black-forest-labs/flux-1-schnell";
@@ -28,6 +29,8 @@ export async function generateCloudflareScenes({
   if (!token || !/^[a-f0-9]{32}$/i.test(accountId) || paragraphs.length !== 6)
     return images;
   const deadline = AbortSignal.any([signal, AbortSignal.timeout(42000)]);
+  const seed =
+    createHash("sha256").update(description).digest().readUInt32BE(0) || 1;
   let next = 0;
   let unavailable = false;
   async function worker() {
@@ -52,6 +55,7 @@ export async function generateCloudflareScenes({
                 paragraphs[index - 1],
               ),
               steps: 4,
+              seed,
             }),
             signal: deadline,
           },

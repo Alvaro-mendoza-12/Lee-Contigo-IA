@@ -14,6 +14,8 @@ import {
   verifyIllustrationPolicy,
 } from "@/lib/illustration-authorization";
 import { generateCloudflareScenes } from "@/lib/cloudflare-images";
+import { hasTextAi } from "@/lib/structured-ai";
+import { planRasterScenes } from "@/lib/raster-scene-plan";
 
 export const runtime = "nodejs";
 export const maxDuration = 90;
@@ -108,12 +110,28 @@ export async function POST(request: Request) {
     const limited = tooManyRequests(request);
     const token = process.env.CLOUDFLARE_API_TOKEN;
     const accountId = process.env.CLOUDFLARE_ACCOUNT_ID;
+    let imageReference = input.artDescription;
+    let imageScenes = input.scenes;
+    if (token && accountId && !limited && hasTextAi()) {
+      try {
+        const brief = await planRasterScenes({
+          description: input.artDescription,
+          paragraphs: input.scenes,
+          signal: request.signal,
+        });
+        imageReference = brief.characters;
+        imageScenes = brief.scenes;
+      } catch {
+        // The approved original passages remain usable if text AI is unavailable.
+        console.warn("raster_scene_plan_unavailable");
+      }
+    }
     const pageImages =
       token && accountId && !limited
         ? await generateCloudflareScenes({
             plan,
-            description: input.artDescription,
-            paragraphs: input.scenes,
+            description: imageReference,
+            paragraphs: imageScenes,
             allowHumanAnimalHybrids: policy?.allowHumanAnimalHybrids ?? false,
             token,
             accountId,

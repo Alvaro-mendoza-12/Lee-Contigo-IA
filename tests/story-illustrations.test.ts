@@ -85,6 +85,28 @@ test("la generación raster usa el pasaje exacto, no los sustitutos del plan vec
   assert.doesNotMatch(hybrid, /No human-animal hybrids/);
 });
 
+test("el prompt cabe en el límite de Cloudflare incluso con referencias y párrafos largos", () => {
+  const paragraph = "Una tortuga camina por el bosque. "
+    .repeat(12)
+    .slice(0, 360);
+  const description = "Una tortuga con una mochila azul. "
+    .repeat(10)
+    .slice(0, 280);
+  const plan = composeStoryPlan(Array(6).fill(paragraph), description);
+  const prompt = createScenePrompt(
+    plan,
+    description,
+    paragraph,
+    5,
+    false,
+    paragraph,
+  );
+  assert.ok(prompt.length <= 2048);
+  const data = JSON.parse(prompt.slice(prompt.indexOf("{")));
+  assert.equal(data.characterReference, description);
+  assert.equal(data.passage, paragraph);
+});
+
 test("el permiso de híbridos está firmado junto al cuento y no se puede reutilizar ni ampliar", () => {
   const paragraphs = Array(6).fill(
     "Una niña y su gata buscan un libro en el jardín.",
