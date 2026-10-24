@@ -45,6 +45,7 @@ import {
 import { ReadFeedback } from "./answer-audio";
 import { InterruptorAudio } from "./interruptor-audio";
 import { reproducir, reproducirRespuesta } from "@/lib/sonidos";
+import { sumarXP } from "@/lib/progreso";
 import { BookShelf } from "./book-shelf";
 import {
   listSavedBooks,
@@ -438,6 +439,7 @@ export function StoryCreator() {
       };
       currentBook.current = saved;
       persistBook(saved);
+      sumarXP("cuento-creado", saved.id, level);
       await createCover(data.story);
       if (!controller.signal.aborted) setScreen("book");
     } catch (cause) {

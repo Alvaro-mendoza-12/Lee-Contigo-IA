@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { getStory, getLevel } from "@/lib/stories";
 import { Practice } from "@/components/practice";
+import { GuardiaCuento } from "@/components/guardia-cuento";
 export const metadata = { title: "Explora lo que leíste" };
 export default async function PracticePage({
   params,
@@ -13,10 +14,12 @@ export default async function PracticePage({
   const story = getStory(id);
   if (!story) notFound();
   return (
-    <Practice
-      key={id + getLevel(nivel)}
-      story={story}
-      level={getLevel(nivel)}
-    />
+    <GuardiaCuento storyId={story.id} level={getLevel(nivel)}>
+      <Practice
+        key={id + getLevel(nivel)}
+        story={story}
+        level={getLevel(nivel)}
+      />
+    </GuardiaCuento>
   );
 }

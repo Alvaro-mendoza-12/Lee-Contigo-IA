@@ -6,7 +6,10 @@ import {
   DESBLOQUEOS,
   EVENTO_XP,
   MARCA_DEMO,
+  MAXIMO_CUENTOS_CREADOS,
+  NIVELES,
   cuentoDesbloqueado,
+  cuentosBloqueados,
   nivelActual,
   nivelParaCuento,
   obtenerProgreso,
@@ -55,7 +58,9 @@ function preparar({
   local = new Memoria() as Memoria | MemoriaRota | undefined,
   session = new Memoria() as Memoria | MemoriaRota | undefined,
 } = {}) {
-  const ventana = Object.assign(new EventTarget(), { location: { search: url } });
+  const ventana = Object.assign(new EventTarget(), {
+    location: { search: url },
+  });
   const eventos: DetalleXP[] = [];
   ventana.addEventListener(EVENTO_XP, (evento) =>
     eventos.push((evento as CustomEvent<DetalleXP>).detail),
@@ -80,7 +85,10 @@ test("cada motivo suma la experiencia indicada", () => {
     sumarXP("pregunta-con-pista", "luz-del-bosque", "paso", "q2").ganada,
     5,
   );
-  assert.equal(sumarXP("cuento-terminado", "luz-del-bosque", "paso").ganada, 30);
+  assert.equal(
+    sumarXP("cuento-terminado", "luz-del-bosque", "paso").ganada,
+    30,
+  );
   assert.equal(
     sumarXP("preguntas-completas", "luz-del-bosque", "paso").ganada,
     20,
@@ -169,7 +177,10 @@ test("los cuentos y el reto se desbloquean según el nivel", () => {
 
   guardarXP(local as Memoria, 300);
   assert.equal(cuentoDesbloqueado("orquesta-del-bosque"), true);
-  assert.equal(nivelParaCuento("sendero-huellas")?.titulo, "Explorador de Cuentos");
+  assert.equal(
+    nivelParaCuento("sendero-huellas")?.titulo,
+    "Explorador de Cuentos",
+  );
   assert.equal(nivelParaCuento("libro-propio"), undefined);
 });
 
@@ -266,5 +277,39 @@ test("reiniciar borra el progreso real y avisa a la barra", () => {
   assert.equal((local as Memoria).getItem(CLAVE), null);
   assert.equal(obtenerProgreso().xp, 0);
   assert.equal(eventos.at(-1)?.total, 0);
-  assert.equal(sumarXP("cuento-terminado", "luz-del-bosque", "paso").ganada, 30);
+  assert.equal(
+    sumarXP("cuento-terminado", "luz-del-bosque", "paso").ganada,
+    30,
+  );
+});
+
+test("solo los primeros cuentos creados dan experiencia", () => {
+  const { eventos } = preparar();
+  for (let i = 0; i < MAXIMO_CUENTOS_CREADOS; i++)
+    assert.equal(sumarXP("cuento-creado", `libro-${i}`, "paso").ganada, 15);
+  const avisos = eventos.length;
+  assert.equal(sumarXP("cuento-creado", "libro-extra", "reto").ganada, 0);
+  assert.equal(eventos.length, avisos);
+  assert.equal(obtenerProgreso().xp, 15 * MAXIMO_CUENTOS_CREADOS);
+  // El tope no afecta a las demás recompensas.
+  assert.equal(
+    sumarXP("cuento-terminado", "luz-del-bosque", "paso").ganada,
+    30,
+  );
+});
+
+test("los mensajes de candado nombran el nivel que abre cada cuento", () => {
+  const nivel1 = cuentosBloqueados(1);
+  assert.equal(nivel1["luz-del-bosque"], undefined);
+  assert.equal(nivel1["barco-de-papel"], "Se desbloquea al ser Lector Brote");
+  assert.equal(
+    nivel1["orquesta-del-bosque"],
+    "Se desbloquea al ser Guardián de Historias",
+  );
+  assert.equal(
+    Object.keys(nivel1).length,
+    DESBLOQUEOS[2].length + DESBLOQUEOS[3].length + DESBLOQUEOS[4].length,
+  );
+  assert.deepEqual(Object.keys(cuentosBloqueados(3)), [...DESBLOQUEOS[4]]);
+  assert.deepEqual(cuentosBloqueados(NIVELES.length), {});
 });

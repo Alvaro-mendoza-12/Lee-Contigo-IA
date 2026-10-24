@@ -10,15 +10,22 @@ export default defineConfig({
   reporter: [["list"], ["html", { open: "never" }]],
   use: {
     baseURL: process.env.TEST_BASE_URL || "http://127.0.0.1:4173",
-    // Most flows represent a returning reader. tutorial.spec.ts overrides
-    // this state to verify the real first visit and its persisted dismissal.
+    // Most flows represent a returning reader who already opened every story
+    // (500 XP, nivel 5). tutorial.spec.ts and xp.spec.ts override this state
+    // to verify a real first visit.
     storageState: {
       cookies: [],
       origins: [
         {
           origin: new URL(process.env.TEST_BASE_URL || "http://127.0.0.1:4173")
             .origin,
-          localStorage: [{ name: "tutorial-visto", value: "true" }],
+          localStorage: [
+            { name: "tutorial-visto", value: "true" },
+            {
+              name: "lee-contigo-progreso",
+              value: JSON.stringify({ version: 1, xp: 500, recompensas: [] }),
+            },
+          ],
         },
       ],
     },

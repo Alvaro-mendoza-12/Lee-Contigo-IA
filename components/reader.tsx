@@ -31,6 +31,7 @@ import { useNarration } from "./use-narration";
 import { ReadingHelp } from "./reading-help";
 import { ReadingSettings } from "./reading-settings";
 import { reproducir } from "@/lib/sonidos";
+import { sumarXP } from "@/lib/progreso";
 
 export function Reader({
   story,
@@ -294,6 +295,7 @@ export function Reader({
                   onAnimateChange={setAnimate}
                   expanded={expanded}
                   onExpandedChange={setExpanded}
+                  mostrarNivel={level}
                 >
                   <button
                     type="button"
@@ -425,6 +427,7 @@ export function Reader({
                 <Link
                   className="button"
                   href={`/practicar/${story.id}?nivel=${level}`}
+                  onClick={() => sumarXP("cuento-terminado", story.id, level)}
                 >
                   Vamos a pensar
                   <ArrowRight size={19} aria-hidden="true" />

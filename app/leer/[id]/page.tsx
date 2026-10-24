@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { getStory, getLevel, stories } from "@/lib/stories";
 import { Reader } from "@/components/reader";
+import { GuardiaCuento } from "@/components/guardia-cuento";
 import { getReadingGoal } from "@/lib/reading";
 export function generateStaticParams() {
   return stories.map((story) => ({ id: story.id }));
@@ -27,12 +28,14 @@ export default async function StoryPage({
   const story = getStory(id);
   if (!story) notFound();
   return (
-    <Reader
-      key={id + getLevel(nivel) + (juntos ?? "") + (objetivo ?? "")}
-      story={story}
-      initialLevel={getLevel(nivel)}
-      accompanied={juntos === "1"}
-      goal={getReadingGoal(objetivo)}
-    />
+    <GuardiaCuento storyId={story.id} level={getLevel(nivel)}>
+      <Reader
+        key={id + getLevel(nivel) + (juntos ?? "") + (objetivo ?? "")}
+        story={story}
+        initialLevel={getLevel(nivel)}
+        accompanied={juntos === "1"}
+        goal={getReadingGoal(objetivo)}
+      />
+    </GuardiaCuento>
   );
 }
