@@ -2,6 +2,7 @@ import { expect, test } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 import { composeStoryPlan } from "../../lib/story-illustrations";
 import sharp from "sharp";
+import { expectMobileReaderLayout } from "./helpers/reader-layout";
 import { expectBookMotion, observeBookMotion } from "./helpers/book-motion";
 
 const story = {
@@ -565,6 +566,36 @@ test("Mis libros conserva más de seis cuentos al crear y recargar", async ({
   await expect(
     page.getByRole("heading", { name: "Aventura de la tortuga 1" }),
   ).toBeVisible();
+});
+
+test("un cuento creado mantiene sus seis páginas legibles a 320 px con letra grande", async ({ page }) => {
+  await page.setViewportSize({ width: 320, height: 740 });
+  await page.route("**/api/crear", (route) => route.fulfill({
+    contentType: "application/json",
+    body: JSON.stringify({ story }),
+  }));
+  await page.route("**/api/crear/portada", (route) => route.fulfill({
+    contentType: "application/json",
+    body: JSON.stringify({
+      layout: "vector",
+      source: "ai-composed",
+      illustrationPlan: composeStoryPlan(story.paragraphs, story.artDescription),
+    }),
+  }));
+  await page.goto("/crear");
+  await page.getByLabel("Mi idea", { exact: true }).fill("Una tortuga sigue un mapa con su amiga");
+  await page.getByLabel(/Un adulto revisó mi idea/).check();
+  await page.getByRole("button", { name: "Crear mi cuento", exact: true }).click();
+  await expect(page.locator(".book-page-text")).toHaveText(story.paragraphs[0]);
+  await page.getByRole("button", { name: "Aumentar tamaño de letra" }).click();
+  for (const [index, paragraph] of story.paragraphs.entries()) {
+    if (index) await page.getByRole("button", { name: "Página siguiente" }).click();
+    await expect(page.locator(".book-turn-layer")).toHaveCount(0);
+    await expect(page.locator(".book-page-text")).toHaveText(paragraph);
+    await expect(page.locator(".book-page-text")).toHaveCSS("font-size", "26px");
+    await expectMobileReaderLayout(page);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  }
 });
 
 test("el lector sigue disponible si el navegador no permite guardar", async ({

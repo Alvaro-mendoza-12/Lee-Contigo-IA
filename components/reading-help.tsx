@@ -143,6 +143,8 @@ export function ReadingHelp({
     setResult(null);
     setNotice("");
     return () => {
+      // Invalidate all requests, including ones started after this effect ran.
+      // eslint-disable-next-line react-hooks/exhaustive-deps
       generation.current++;
       abort.current?.abort();
     };

@@ -122,6 +122,8 @@
 /* Botón «?» para volver a abrir el tutorial. */
 .tutorial-boton-ayuda {
   width: 48px;
+  min-width: 48px;
+  flex-shrink: 0;
   height: 48px;
   border-radius: 50%;
   border: 3px solid #e4dcf5;
