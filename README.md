@@ -82,6 +82,7 @@ No incluye cuentas institucionales, cobros, estadísticas longitudinales ni un p
 
 ## Documentación y entrega
 
+- [Auditoría integral y mejoras de noviembre de 2026](docs/AUDITORIA_INTEGRAL_Y_MEJORAS_2026-11-01.md): investigación internacional, cambios de la rama `mejoras`, vista previa, resultados y límites de las pruebas.
 - `documentacion_tutor_lectura_ia/14_implementacion_y_ux.md`: alcance real, arquitectura, experiencia, pruebas y operación.
 - `documentacion_tutor_lectura_ia/15_recursos_visuales.md`: procedencia y prompts de las ilustraciones.
 - `documentacion_tutor_lectura_ia/`: análisis y planificación inicial. Los documentos 00 a 13 conservan decisiones anteriores; el 14 describe lo implementado.

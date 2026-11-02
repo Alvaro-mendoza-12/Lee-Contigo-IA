@@ -16,6 +16,7 @@ Esta auditoría comprueba diseño y funcionamiento y consulta investigación edu
 - Despliegue base verificado en Vercel: `dpl_36qGdR4H8evASS98HbMx9qkXoEaU`, estado Ready.
 - Se revisan inicio y biblioteca, lector, preguntas, creador y libros guardados, acompañamiento, privacidad, navegación, diálogos, preferencias, recompensas y las rutas de IA, imágenes, voz y estado.
 - La matriz de diseño comprende 320, 360, 390, 430, 600, 601, 768, 1024 y 1440 px; los recorridos existentes añaden 1366 y 1920 px.
+- Implementación publicada: commit `b7fbcf7e79436f79d83b337aa3bc169c7866a773`, rama remota `mejoras`. [Vista previa de la rama](https://lee-contigo-ia-git-mejoras-alvaro-s-projects1.vercel.app), [despliegue de la implementación auditada](https://lee-contigo-pl2om146t-alvaro-s-projects1.vercel.app). Vercel confirmó estado Ready y destino Preview; producción continúa en el commit base. Una actualización posterior de este informe no cambia el código comprobado.
 - Durante el trabajo aparecieron cambios simultáneos de otra tarea en la carpeta original. Se preservaron y se continuó en `D:\LeeContigo-auditoria-mejoras`, desde el mismo commit de producción. La auditoría no incorpora la nueva mascota de esa otra tarea. La rama local aislada es `codex/mejoras-auditoria`; la rama publicada para revisión es `mejoras`.
 - Los dos PDF ajenos a esta solicitud permanecen intactos. Las capturas proporcionadas por el usuario se tratan como evidencia visual.
 
@@ -53,7 +54,7 @@ No se impone un tiempo universal de atención o una cuenta atrás. Por ejemplo, 
 | Las letras decorativas A/B/C forman parte del nombre accesible de cada respuesta. | Se ocultan a la tecnología asistiva; el nombre del control corresponde al texto de la opción. La presentación visual se conserva. |
 | El cierre de la práctica se limita al cuestionario y las recompensas. | «Cuéntalo a tu manera» es un desplegable opcional, con una pregunta breve según el nivel y la alternativa de contar o dibujar. No añade formularios, grabaciones, puntuación ni solicitudes de IA. |
 | La instrucción del tutor menciona 8–10 años, aunque el producto atiende 6–10. | Se alinea el rango y se pide adaptar el lenguaje al nivel indicado sin inferir edad o capacidad. Se conserva el filtrado y el respaldo preparado. |
-| El cliente importa el catálogo completo para mostrar portadas y etiquetas. | Se separan metadatos y textos. El inicio recibe solo los campos necesarios para la estantería y las longitudes de las páginas. La compilación ya no contiene el texto completo del catálogo en los archivos JavaScript públicos. |
+| El cliente importa el catálogo completo para mostrar portadas y etiquetas. | Se separan metadatos y textos. El inicio recibe solo los campos necesarios para la estantería y las longitudes de las páginas. La búsqueda de los 166 párrafos de los 19 cuentos en los 22 archivos JavaScript públicos de la compilación no encontró coincidencias. Los textos de cada libro siguen entregándose al abrir su lectura. |
 | Acompañamiento y README describen funciones antiguas. | Se corrige la explicación de ilustraciones, se incorporan referencias internacionales y se actualizan catálogo, tamaños, guardado y continuidad en la documentación. |
 
 El nuevo guardado contiene solo origen, identificador, nivel, párrafo, palabra y momento del guardado. No contiene título, cuento, idea original ni respuesta. Las marcas caducadas se eliminan al consultarlas; sin una nueva visita el navegador puede conservarlas físicamente. «Borrar mi progreso» elimina puntos y marcas; borrar libros no elimina las marcas del catálogo. Una restricción de almacenamiento no impide leer.
@@ -76,6 +77,8 @@ El nuevo guardado contiene solo origen, identificador, nivel, párrafo, palabra 
 
 En la medición base aislada del inicio móvil, Lighthouse obtuvo **64 en rendimiento, 100 en accesibilidad automática y 100 en buenas prácticas**; LCP 6,3 s, TBT 270 ms, CLS 0,142 y transferencia aproximada de 1.765 KiB. Son mediciones de laboratorio de una visita, no resultados de usuarios reales ni un certificado de accesibilidad. Las imágenes de los atlas dominan la transferencia; conviene optimizar las portadas y revisar CSS histórico en una siguiente intervención medida.
 
+En la vista previa, otra medición aislada obtuvo **52 en rendimiento, 100 en accesibilidad automática y 100 en buenas prácticas**; LCP 6,9 s, TBT 660 ms, CLS 0,142 y unos 1.745 KiB. No se demuestra una mejora de velocidad con estas mediciones: la transferencia bajó ligeramente, pero los tiempos fueron peores. Son dos visitas de laboratorio, insuficientes para aislar una causa o estimar la experiencia real. El rendimiento móvil permanece como deuda explícita de esta entrega.
+
 Se descartaron dos mediciones iniciales de rendimiento porque el Chrome del equipo añadía solicitudes a AdBlock360. El código del producto no referencia ese dominio; la carga inicial en el navegador de Playwright aislado solo observó el dominio de LeeContigo y no realizó POST. No se modificó la configuración personal del navegador. La prueba que comprueba ausencia de llamadas a IA observa específicamente las rutas de la aplicación.
 
 `npm audit --omit=dev` no detectó vulnerabilidades conocidas de producción. La auditoría completa detectó 15 paquetes de desarrollo afectados por **un mismo aviso moderado de minimatch**, no 15 avisos independientes. La solución publicada es 11.0.1, pero el arreglo automático del árbol propone degradar ESLint y la configuración de Next a versiones incompatibles. Se deja como pendiente una actualización compatible de esa cadena. No se aplican degradaciones forzadas ni se presenta la auditoría completa como limpia. [Aviso primario GHSA-g3hv-75wg-m249](https://github.com/advisories/GHSA-g3hv-75wg-m249).
@@ -88,15 +91,23 @@ Se descartaron dos mediciones iniciales de rendimiento porque el Chrome del equi
 | Unitarias tras los cambios | 117 aprobadas, 0 fallidas |
 | Lint y tipos | Aprobados |
 | Compilación de producción | Aprobada |
-| Recorridos completos Chromium | En ejecución; se actualiza antes de publicar |
-| WebKit: responsive, mejoras y creador | En ejecución; se actualiza antes de publicar |
-| Vista previa de Vercel | Pendiente de publicación y comprobación |
+| Recorridos completos Chromium, copia local | 249 aprobados, 0 fallidos, 1 omitido por duplicar en móvil el recorrido completo del catálogo |
+| GitHub Actions de la implementación | Aprobado: lint, tipos, 117 unitarias, compilación y 249 recorridos Chromium; 1 omitido. [Ejecución](https://github.com/Alvaro-mendoza-12/Lee-Contigo-IA/actions/runs/41387224334) |
+| WebKit: responsive, mejoras y creador | 37 aprobados, 1 fallido al recuperar la página tras recargar y 1 omitido porque la inyección del gesto usa CDP de Chromium. No se considera aprobada la suite completa |
+| Repetición dirigida de la recarga WebKit | El mismo caso, sin modificar: 5 aprobados de 5. Además, cinco diagnósticos con lectura del almacenamiento conservaron la marca. La intermitencia inicial sigue pendiente de confirmar en Safari físico |
+| Vista previa de Vercel | Ready; los 9 recorridos nuevos aprobaron en Chromium móvil contra el enlace público |
+| Inspección visual de la vista previa | A 320 px: libro con texto junto a la imagen, tres destinos con «Seguir leyendo», resumen de privacidad y detalle adulto desplegado sin desbordamiento horizontal. Capturas revisadas visualmente |
+| Creación real en la vista previa | HTTP 200, seis párrafos en 16,5 s; esquema válido y sin incidencias en el validador de calidad del proyecto. No valida ilustraciones, narración ni eficacia educativa |
 
 En la primera pasada móvil, 24 recorridos aprobaron y dos fallaron. Se corrigió el nombre accesible de las opciones y se separaron las llamadas de la app del tráfico añadido por el navegador del equipo. La siguiente pasada aprobó ocho casos nuevos y detectó que axe se ejecutaba durante la salida de las estrellas de XP: se espera ahora su retirada antes de auditar el estado final, conservando todas las reglas de contraste.
 
 La primera suite completa aprobó 240 recorridos y omitió uno; fallaron un caso de catálogo que reunía 114 combinaciones bajo un único plazo y dos ejecuciones del gesto nativo. Se separó el catálogo por ancho conservando sus verificaciones. Los gestos ahora avanzan por cuadros y esperan el fin del desplazamiento; se comprueba el retroceso sin asumir la misma distancia de inercia para dos deslizamientos. La revalidación dirigida aprobó los cuatro casos de catálogo y navegación.
 
 La primera ampliación de WebKit aprobó 27 casos, falló diez del creador y omitió el gesto exclusivo de Chromium. La pérdida de entrada temprana se corrigió; la repetición dirigida aprobó la carga deliberadamente lenta y la política de ilustración. El recorrido que lee y practica dos veces alcanzó su plazo total de 30 segundos, por lo que dispone de 60 segundos, manteniendo las aserciones individuales de 10 segundos.
+
+Una pasada posterior simultánea con Chromium se interrumpió y no se cuenta como aprobada. La pasada final de WebKit se ejecutó sola y obtuvo los resultados indicados en la tabla. No se aumentó el plazo ni se retiró la aserción del caso intermitente de recarga para ocultarlo. La marca se conservó en los diagnósticos, pero no se identificó la causa de la diferencia con la primera ejecución; por ello no se atribuye el fallo al navegador o a la aplicación con certeza.
+
+La creación real utilizó una idea ficticia sobre una tortuga y una ardilla que reparan un puente. Se leyó el resultado y se validó su estructura con el esquema del proyecto; no se enviaron datos de niños. Se solicitó únicamente el texto del cuento, sin generar un juego adicional de imágenes o voz. Las pruebas del creador que sí simulan esos servicios permanecen identificadas como tales.
 
 Los registros y capturas se guardan en `output/playwright/` de la copia aislada, ignorados por Git. El informe de publicación con el commit, despliegue y resultados del enlace público se conserva en `output/playwright/mejoras-publication.json`.
 
@@ -122,7 +133,7 @@ Para comprobar un despliegue concreto, definir `TEST_BASE_URL` con su URL antes 
 3. **Preparación para más tráfico.** Límites compartidos entre instancias, observación de disponibilidad sin registrar contenido infantil y un mecanismo real de revisión de contenido. El descarte actual de una pista es solo local.
 4. **Actualización de herramientas de desarrollo.** Resolver el aviso de minimatch mediante versiones compatibles, manteniendo el lint de Next y la comprobación de tipos.
 5. **Revisión editorial y cultural.** Revisar vocabulario, representaciones, narración y dificultad de ambos niveles con educadores de las comunidades destinatarias. No traducir automáticamente a múltiples idiomas sin esa revisión.
-6. **Dispositivos y accesibilidad manual.** iPhone y Android físicos, rotación, teclado móvil, lectores de pantalla y ampliación. La emulación no certifica esas combinaciones.
+6. **Dispositivos y accesibilidad manual.** Confirmar primero la recuperación tras recarga en Safari, por la incidencia intermitente de WebKit. Probar iPhone y Android físicos, rotación, teclado móvil, lectores de pantalla y ampliación. La emulación no certifica esas combinaciones.
 
 ## Referencias internacionales consultadas
 
