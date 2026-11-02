@@ -49,6 +49,8 @@ Se añaden 19 escenarios propios: 18 en `responsive-audit.spec.ts` y uno para el
 
 En la primera pasada de WebKit fallaron el retorno del foco de Ajustes y el tiempo total del caso de giro. El primero se corrigió en el componente. La traza del segundo mostró que el primer clic de letra consumió 23 segundos y que los giros sí terminaban en aproximadamente 1,2 segundos; al caso se le asignan 60 segundos y se espera la carga de las fuentes antes de interactuar, conservando el límite de 10 segundos de cada aserción. La repetición aislada de ambos casos pasó después de la corrección. La revalidación posterior en Chrome cubre ajuste de nivel, guía, audio, ampliación y cierre de los diálogos, sin repetir innecesariamente todo el catálogo.
 
+La primera validación de publicación en GitHub aprobó instalación, lint, tipos, unitarias y compilación, pero falló una prueba táctil por usar la ilustración renderizada en el servidor antes de finalizar la hidratación (222 recorridos aprobados, 1 fallido y 1 omitido). La prueba ahora comprueba que Ajustes abre y cierra antes del gesto, y espera las fuentes. Esto evita que el cambio inicial a la disposición compacta desmonte el elemento durante `scrollIntoViewIfNeeded`; no se omite la prueba ni se cambian sus aserciones de desplazamiento.
+
 - Anchos de la nueva matriz: **320, 360, 390, 430, 600, 601, 768, 1024 y 1440 px**. La suite existente añade **1366 y 1920 px**.
 - Pantallas: inicio, biblioteca y su redirección, creador, guía de acompañamiento, privacidad, lector y práctica.
 - Lectura: todas las páginas de «El puente de las ardillas» con letras de 18, 22 y 26 px; ambas caras del libro; seis páginas de un cuento creado con letra grande a 320 px; catálogo en ambos niveles mediante los casos existentes.

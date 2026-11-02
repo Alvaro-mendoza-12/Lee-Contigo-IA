@@ -15,6 +15,16 @@ test.describe("desplazamiento táctil", () => {
     );
     await page.setViewportSize({ width: 320, height: 568 });
     await page.goto("/leer/puente-de-ardillas?nivel=paso");
+    // Wait for the interactive reader: hydration changes its compact page key.
+    // A server-rendered illustration can detach before a raw scroll operation.
+    await page.getByRole("button", { name: "Ajustes", exact: true }).click();
+    const settings = page.getByRole("dialog", { name: "Ajustes de lectura" });
+    await expect(settings).toBeVisible();
+    await settings
+      .getByRole("button", { name: "Cerrar ajustes", exact: true })
+      .click();
+    await expect(settings).not.toBeVisible();
+    await page.evaluate(() => document.fonts.ready);
     const art = page.locator(".paper-spread > .paper-art");
     await art.scrollIntoViewIfNeeded();
     const box = (await art.boundingBox())!;
