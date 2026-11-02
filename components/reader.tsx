@@ -14,7 +14,7 @@ import {
   Square,
   Volume2,
 } from "lucide-react";
-import { levels, type Story, type Level } from "@/lib/stories";
+import { levels, type Story, type Level } from "@/lib/story-metadata";
 import {
   fontSteps,
   paginateStory,
@@ -32,6 +32,13 @@ import { ReadingHelp } from "./reading-help";
 import { ReadingSettings } from "./reading-settings";
 import { reproducir } from "@/lib/sonidos";
 import { terminarCuento } from "@/lib/progreso";
+import {
+  catalogueReadingBook,
+  readReadingPlace,
+  removeReadingPlace,
+  saveReadingPlace,
+} from "@/lib/reading-place";
+import { usePageAnimation } from "./use-page-animation";
 
 export function Reader({
   story,
@@ -47,11 +54,12 @@ export function Reader({
   const level = initialLevel;
   const [size, setSize] = useReadingFont();
   const [position, setPosition] = useState({ paragraph: 0, word: 0 });
+  const [restored, setRestored] = useState(false);
   const [fullText, setFullText] = useState(false);
   const [expanded, setExpanded] = useState(false);
   const dialogRef = useRef<HTMLElement>(null);
   const expandControlRef = useRef<HTMLButtonElement>(null);
-  const [animate, setAnimate] = useState(true);
+  const [animate, setAnimate] = usePageAnimation();
   const [compact, setCompact] = useState(false);
   const {
     speaking,
@@ -159,9 +167,18 @@ export function Reader({
   }, [expanded]);
 
   useEffect(() => {
-    setPosition({ paragraph: 0, word: 0 });
+    const saved = readReadingPlace(
+      catalogueReadingBook(story.id, level),
+      version.paragraphs,
+    );
+    setPosition(
+      saved
+        ? { paragraph: saved.paragraph, word: saved.word }
+        : { paragraph: 0, word: 0 },
+    );
+    setRestored(true);
     stopNarration();
-  }, [level, story.id, stopNarration]);
+  }, [level, story.id, version.paragraphs, stopNarration]);
 
   function stopVoice() {
     stopNarration();
@@ -171,6 +188,10 @@ export function Reader({
     const targetIndex = Math.max(0, Math.min(next, pages.length - 1));
     const target = pages[targetIndex];
     if (targetIndex !== index) reproducir("pagina");
+    saveReadingPlace(catalogueReadingBook(story.id, level), {
+      paragraph: target.paragraph,
+      word: target.start,
+    });
     setPosition({ paragraph: target.paragraph, word: target.start });
   }
   function resize(next: number) {
@@ -296,6 +317,12 @@ export function Reader({
                   expanded={expanded}
                   onExpandedChange={setExpanded}
                   mostrarNivel={level}
+                  onRestart={() => {
+                    stopVoice();
+                    setFullText(false);
+                    setPosition({ paragraph: 0, word: 0 });
+                    removeReadingPlace(catalogueReadingBook(story.id, level));
+                  }}
                 >
                   <button
                     type="button"
@@ -362,7 +389,7 @@ export function Reader({
                   onNavigate={(offset) => turnPage(index + offset)}
                   page={{
                     id: `${story.id}-${level}-${size}-${compact}-${index}`,
-                    book: `${story.id}-${level}-${size}-${compact}`,
+                    book: `${story.id}-${level}-${size}-${compact}-${restored}`,
                     number: index + 1,
                     text: current.text,
                     paragraph: current.paragraph,
@@ -427,7 +454,10 @@ export function Reader({
                 <Link
                   className="button"
                   href={`/practicar/${story.id}?nivel=${level}`}
-                  onClick={() => terminarCuento(story.id, level)}
+                  onClick={() => {
+                    removeReadingPlace(catalogueReadingBook(story.id, level));
+                    terminarCuento(story.id, level);
+                  }}
                 >
                   Vamos a pensar
                   <ArrowRight size={19} aria-hidden="true" />

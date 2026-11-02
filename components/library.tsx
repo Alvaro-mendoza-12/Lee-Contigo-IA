@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useRef, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import {
   ArrowRight,
   BookCheck,
@@ -12,7 +12,13 @@ import {
   Sparkles,
   Users,
 } from "lucide-react";
-import { storiesForShelf, storyCategories, type Level } from "@/lib/stories";
+import { storyCategories, type Level } from "@/lib/story-metadata";
+import type { CatalogueStory } from "@/lib/story-catalogue";
+import {
+  readReadingPlaces,
+  readingPlaceEvent,
+  type ReadingPlace,
+} from "@/lib/reading-place";
 import { useReadingLevel } from "./use-reading-level";
 import { StoryShelfRow, type StoryLocks } from "./story-shelf-row";
 import { BotonTutorial } from "./tutorial";
@@ -34,17 +40,46 @@ export function Library({
   experienceBar,
   lockedStories,
   readStories,
+  catalogue: entries,
 }: {
   initialLevel?: Level;
   experienceBar?: ReactNode;
   lockedStories?: StoryLocks;
   readStories?: ReadonlySet<string>;
+  catalogue: CatalogueStory[];
 }) {
   const [level] = useReadingLevel(initialLevel);
+  const [places, setPlaces] = useState<ReadingPlace[]>([]);
+  useEffect(() => {
+    const update = () => setPlaces(readReadingPlaces());
+    update();
+    window.addEventListener(readingPlaceEvent, update);
+    window.addEventListener("storage", update);
+    return () => {
+      window.removeEventListener(readingPlaceEvent, update);
+      window.removeEventListener("storage", update);
+    };
+  }, []);
   const catalogue = useRef<HTMLDivElement>(null);
-  const shelf = storiesForShelf(level);
+  const shelf = entries.filter(
+    (story) => !story.shelf || story.shelf === level,
+  );
   const unread = shelf.filter((story) => !readStories?.has(story.id));
   const read = shelf.filter((story) => readStories?.has(story.id));
+  const recent = places.find((place) => {
+    if (
+      place.source !== "catalogue" ||
+      place.paragraph === 0 ||
+      lockedStories?.[place.id]
+    )
+      return false;
+    const words = entries.find((story) => story.id === place.id)
+      ?.pageWordCounts[place.level][place.paragraph];
+    return words !== undefined && place.word < words;
+  });
+  const recentStory = recent
+    ? entries.find((story) => story.id === recent.id)
+    : undefined;
 
   return (
     <div className="container kid-library child-library inicio-page">
@@ -70,10 +105,18 @@ export function Library({
       >
         <Link
           className="home-destination"
-          href="#cuentos"
+          href={
+            recent && recentStory
+              ? `/leer/${recent.id}?nivel=${recent.level}`
+              : "#cuentos"
+          }
           data-tutorial="cuentos"
-          aria-label="Cuentos"
-          onNavigate={() => catalogue.current?.focus({ preventScroll: true })}
+          aria-label={
+            recentStory ? `Seguir leyendo ${recentStory.title}` : "Cuentos"
+          }
+          onNavigate={() => {
+            if (!recentStory) catalogue.current?.focus({ preventScroll: true });
+          }}
         >
           <BookOpen
             className="home-destination-icon"
@@ -81,8 +124,8 @@ export function Library({
             aria-hidden="true"
           />
           <span>
-            <strong>Cuentos</strong>
-            <small>Elige una historia</small>
+            <strong>{recentStory ? "Seguir leyendo" : "Cuentos"}</strong>
+            <small>{recentStory?.title ?? "Elige una historia"}</small>
           </span>
           <ArrowRight size={22} aria-hidden="true" />
         </Link>

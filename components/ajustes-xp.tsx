@@ -2,7 +2,7 @@
 import { useEffect, useId, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { LockKeyhole, RotateCcw } from "lucide-react";
-import { levels, type Level } from "@/lib/stories";
+import { levels, type Level } from "@/lib/story-metadata";
 import {
   EVENTO_XP,
   NIVELES,
@@ -11,6 +11,7 @@ import {
   retoDesbloqueado,
 } from "@/lib/progreso";
 import "@/app/xp.css";
+import { clearReadingPlaces } from "@/lib/reading-place";
 
 export const avisoReto = `Un nuevo reto se abre al ser ${NIVELES[NIVEL_RETO - 1].titulo}.`;
 
@@ -89,8 +90,8 @@ export function BorrarProgreso() {
       {confirmando ? (
         <div role="group" aria-labelledby={pregunta}>
           <p id={pregunta} className="xp-nota">
-            ¿Seguro? Tu experiencia volverá a 0 y los cuentos nuevos se cerrarán
-            otra vez.
+            ¿Seguro? Se borrarán tus puntos y las páginas que recordamos. Los
+            cuentos nuevos se cerrarán otra vez.
           </p>
           <div className="xp-borrar-acciones">
             <button
@@ -98,6 +99,7 @@ export function BorrarProgreso() {
               className="button"
               onClick={() => {
                 reiniciarProgreso();
+                clearReadingPlaces();
                 cerrar("Listo. Tu progreso empezó de nuevo.");
               }}
             >

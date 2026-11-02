@@ -11,7 +11,8 @@ import {
   LockKeyhole,
   Sparkles,
 } from "lucide-react";
-import type { Level, Story } from "@/lib/stories";
+import type { Level } from "@/lib/stories";
+import type { CatalogueStory } from "@/lib/story-catalogue";
 import { StoryArt } from "./art";
 
 // Iván supplies the lock message per story after connecting progression.
@@ -32,7 +33,7 @@ export function StoryShelfRow({
   id: string;
   title: string;
   icon: ReactNode;
-  books: Story[];
+  books: CatalogueStory[];
   level: Level;
   priority?: boolean;
   includeCreateCard?: boolean;

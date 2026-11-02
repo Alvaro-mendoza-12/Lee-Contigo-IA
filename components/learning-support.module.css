@@ -1,0 +1,77 @@
+.reflection {
+  width: min(100%, 38rem);
+  margin: 24px auto;
+  padding: 4px 16px;
+  border: 1px solid #c3d8ce;
+  border-radius: 16px;
+  background: #f3faf4;
+  color: #352560;
+  text-align: left;
+}
+
+.reflection summary {
+  display: flex;
+  min-height: 48px;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  font-weight: 800;
+  list-style: none;
+}
+
+.reflection summary::-webkit-details-marker {
+  display: none;
+}
+
+.reflection summary::after {
+  content: "▸";
+  margin-left: auto;
+}
+
+.reflection[open] summary::after {
+  content: "▾";
+}
+
+.reflection svg {
+  flex-shrink: 0;
+}
+
+.reflection p {
+  margin: 8px 0 12px;
+  font-size: 18px;
+  line-height: 1.6;
+}
+
+.confirmDialog {
+  width: min(32rem, calc(100% - 32px));
+  max-height: calc(100dvh - 32px);
+  padding: clamp(20px, 5vw, 32px);
+  border: 2px solid #c3d8ce;
+  border-radius: 22px;
+  background: #fffdf4;
+  color: #352560;
+  overflow-wrap: anywhere;
+  overscroll-behavior: contain;
+}
+
+.confirmDialog::backdrop {
+  background: #20163880;
+}
+
+.confirmDialog h2 {
+  font-size: clamp(22px, 5vw, 28px);
+}
+
+.confirmDialog p {
+  margin-block: 16px;
+}
+
+.confirmActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.confirmStatus:empty {
+  display: none;
+}

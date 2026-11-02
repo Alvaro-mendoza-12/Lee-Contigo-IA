@@ -1,10 +1,11 @@
 "use client";
 import { BookOpen, ArrowRight, Trash2 } from "lucide-react";
-import { useState, type CSSProperties } from "react";
+import { useEffect, useId, useRef, useState, type CSSProperties } from "react";
 import type { SavedBook } from "@/lib/book-shelf";
-import { levels } from "@/lib/stories";
+import { levels } from "@/lib/story-metadata";
 import { GeneratedScene } from "./generated-scene";
 import { ReadingFriend } from "./reading-friend";
+import styles from "./learning-support.module.css";
 
 export function BookShelf({
   books,
@@ -19,52 +20,136 @@ export function BookShelf({
   onClear: () => Promise<void>;
   onCreate: () => void;
 }) {
-  const [confirmClear, setConfirmClear] = useState(false);
-  const [removing, setRemoving] = useState<string | null>(null);
+  const [pending, setPending] = useState<
+    { id: string; title: string } | "all" | null
+  >(null);
+  const [removing, setRemoving] = useState(false);
+  const [error, setError] = useState("");
+  const [message, setMessage] = useState("");
+  const dialog = useRef<HTMLDialogElement>(null);
+  const cancel = useRef<HTMLButtonElement>(null);
+  const trigger = useRef<HTMLButtonElement | null>(null);
+  const heading = useRef<HTMLHeadingElement>(null);
+  const id = useId();
+
+  useEffect(() => {
+    if (!pending) return;
+    const element = dialog.current;
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    element?.showModal();
+    const frame = requestAnimationFrame(() => cancel.current?.focus());
+    return () => {
+      cancelAnimationFrame(frame);
+      element?.close();
+      document.body.style.overflow = previous;
+    };
+  }, [pending]);
+
+  function close() {
+    dialog.current?.close();
+    setPending(null);
+    requestAnimationFrame(() => {
+      const destination = trigger.current?.isConnected
+        ? trigger.current
+        : heading.current;
+      destination?.focus({ preventScroll: true });
+    });
+  }
+
+  async function confirmDeletion() {
+    if (!pending || removing) return;
+    setRemoving(true);
+    setError("");
+    try {
+      if (pending === "all") await onClear();
+      else await onRemove(pending.id);
+      setMessage(pending === "all" ? "Libros borrados." : "Libro borrado.");
+      close();
+    } catch {
+      setError("No se pudo borrar. Inténtalo otra vez.");
+    } finally {
+      setRemoving(false);
+    }
+  }
   return (
     <section className="saved-books" aria-labelledby="saved-books-title">
       <div className="shelf-heading">
         <div>
-          <h2 id="saved-books-title">Mis libros</h2>
+          <h2 id="saved-books-title" ref={heading} tabIndex={-1}>
+            Mis libros
+          </h2>
           <p>7 días · En este dispositivo</p>
         </div>
         {books.length ? (
           <button
             type="button"
             className="text-button"
-            onClick={() => setConfirmClear(true)}
+            disabled={removing}
+            onClick={(event) => {
+              trigger.current = event.currentTarget;
+              setError("");
+              setPending("all");
+            }}
           >
             <Trash2 size={16} aria-hidden="true" />
             Borrar todos
           </button>
         ) : null}
       </div>
-      {confirmClear ? (
-        <div
-          className="shelf-confirm"
-          role="group"
-          aria-label="Confirmar borrado"
-        >
-          <p>¿Borrar los libros guardados en este dispositivo?</p>
+      <dialog
+        ref={dialog}
+        className={styles.confirmDialog}
+        aria-labelledby={`${id}-title`}
+        aria-describedby={`${id}-description`}
+        onCancel={(event) => {
+          event.preventDefault();
+          if (!removing) close();
+        }}
+      >
+        <h2 id={`${id}-title`}>
+          {pending === "all" ? "¿Borrar tus libros?" : "¿Borrar este libro?"}
+        </h2>
+        <p id={`${id}-description`}>
+          {pending === "all"
+            ? "Se quitarán todos los libros de este navegador."
+            : pending
+              ? `«${pending.title}» se quitará de este navegador.`
+              : ""}
+        </p>
+        <p>
+          {pending === "all"
+            ? "No podrás recuperarlos aquí."
+            : "No podrás recuperarlo aquí."}
+        </p>
+        {error ? <p role="alert">{error}</p> : null}
+        <div className={styles.confirmActions}>
+          <button
+            ref={cancel}
+            className="button button-outline"
+            type="button"
+            disabled={removing}
+            onClick={close}
+          >
+            No, conservar
+          </button>
           <button
             className="button"
             type="button"
-            onClick={async () => {
-              await onClear();
-              setConfirmClear(false);
-            }}
+            disabled={removing}
+            onClick={confirmDeletion}
           >
-            Sí, borrar los libros
-          </button>
-          <button
-            className="text-button"
-            type="button"
-            onClick={() => setConfirmClear(false)}
-          >
-            Conservarlos
+            {removing
+              ? "Borrando…"
+              : pending === "all"
+                ? "Sí, borrar los libros"
+                : "Sí, borrar el libro"}
           </button>
         </div>
-      ) : null}
+      </dialog>
+      <p className={styles.confirmStatus} role="status">
+        {message}
+      </p>
       {books.length ? (
         <div className="shelf-grid">
           {books.map((book) => (
@@ -117,12 +202,12 @@ export function BookShelf({
               <button
                 type="button"
                 className="saved-book-remove"
-                disabled={removing === book.id}
+                disabled={removing}
                 aria-label={`Borrar ${book.story.title}`}
-                onClick={async () => {
-                  setRemoving(book.id);
-                  await onRemove(book.id);
-                  setRemoving(null);
+                onClick={(event) => {
+                  trigger.current = event.currentTarget;
+                  setError("");
+                  setPending({ id: book.id, title: book.story.title });
                 }}
               >
                 <Trash2 size={16} aria-hidden="true" />

@@ -11,9 +11,16 @@ import {
 import { Library } from "./library";
 import { BarraXP } from "./barra-xp";
 import type { StoryLocks } from "./story-shelf-row";
+import type { CatalogueStory } from "@/lib/story-catalogue";
 
 // Empieza con los candados del nivel 1 para no mostrar un cuento abierto por error.
-export function BibliotecaXP({ initialLevel }: { initialLevel: Level }) {
+export function BibliotecaXP({
+  initialLevel,
+  catalogue,
+}: {
+  initialLevel: Level;
+  catalogue: CatalogueStory[];
+}) {
   const [candados, setCandados] = useState<StoryLocks>(() =>
     cuentosBloqueados(1),
   );
@@ -32,6 +39,7 @@ export function BibliotecaXP({ initialLevel }: { initialLevel: Level }) {
   return (
     <Library
       initialLevel={initialLevel}
+      catalogue={catalogue}
       experienceBar={<BarraXP />}
       lockedStories={candados}
       readStories={leidos}

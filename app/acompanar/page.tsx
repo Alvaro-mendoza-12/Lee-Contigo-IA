@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { CompanionPlanner } from "@/components/companion-planner";
 import { stories } from "@/lib/stories";
+import styles from "./guide.module.css";
 import {
   ArrowRight,
   ShieldCheck,
@@ -59,18 +60,17 @@ export default function Guide() {
           <Sparkles size={26} />
           <h2>¿Qué hace la IA?</h2>
           <p>
-            En los cuentos creados a partir de una idea, prepara un relato al
-            nivel elegido, preguntas para localizar información, inferir y
-            encontrar la idea principal y dos pistas por pregunta. La página
-            añade paisajes ilustrados de nuestra colección para acompañar la
-            lectura. Si una respuesta no coincide, la página muestra la pista
-            siguiente y el párrafo de apoyo; no envía la respuesta del niño a
-            otra llamada. En las historias de biblioteca, formula pistas a
-            partir del relato y la pregunta. No es un chat abierto ni hace
-            diagnósticos. Si la IA no está disponible, aparece una pista
-            preparada y se indica su procedencia.
+            En la biblioteca, propone pistas sobre el texto. Al crear un cuento,
+            prepara la historia, sus preguntas y un plan de escenas. La página
+            muestra dibujos de respaldo y puede solicitar ilustraciones con IA.
+            Una persona adulta debe revisar la idea y acompañar la lectura del
+            resultado. Las respuestas del niño se comparan en el navegador; no
+            se envían a otra llamada de IA.
           </p>
-          <p>Comprueba las pistas contra el texto: la IA puede equivocarse.</p>
+          <p>
+            No es un chat ni hace diagnósticos. Cada ayuda indica su origen.
+            Comprueben las pistas contra el texto: la IA puede equivocarse.
+          </p>
         </section>
         <section className="guide-card">
           <ShieldCheck size={26} />
@@ -99,33 +99,90 @@ export default function Guide() {
         </section>
       </div>
       <section className="evidence-note">
-        <span className="small-label">POR QUÉ PRACTICAR LA COMPRENSIÓN</span>
-        <h2>Leer también es conectar ideas.</h2>
+        <span className="small-label">LEER Y CONVERSAR</span>
+        <h2>Una historia que puedan contar.</h2>
         <p>
-          La ENLA 2024 reportó que el 32,8 % de estudiantes de cuarto de
-          primaria alcanzó el nivel satisfactorio en Lectura. En 2025, los
-          resultados nacionales fueron similares a los de 2023 y 2024. Es una
-          razón para seguir explorando apoyos educativos, no una prueba de que
-          este prototipo mejora el aprendizaje.
+          Dejen que el niño elija un cuento. Al terminar, invítenlo a contar qué
+          ocurrió o a dibujarlo. Pregunten qué parte del texto le ayudó a pensar
+          eso. Pueden hacer una pausa y seguir otro día: los puntos no son una
+          nota ni una medida de comprensión.
         </p>
-        <div className="evidence-links">
-          <a
-            href="https://umc.minedu.gob.pe/resultadosenla2024/"
-            className="inline-link"
-            target="_blank"
-            rel="noreferrer"
-          >
-            Consultar resultados de ENLA 2024 <ArrowRight size={15} />
-          </a>
-          <a
-            href="https://umc.minedu.gob.pe/enla-2025-se-mantienen-avances-en-lectura-y-matematica-con-mejoras-en-las-zonas-rurales/"
-            className="inline-link"
-            target="_blank"
-            rel="noreferrer"
-          >
-            Consultar nota de ENLA 2025 <ArrowRight size={15} />
-          </a>
-        </div>
+        <details className={styles.sources}>
+          <summary>Fuentes y contexto para acompañar</summary>
+          <ul>
+            <li>
+              <a
+                href="https://ies.ed.gov/ncee/wwc/PracticeGuide/14"
+                target="_blank"
+                rel="noreferrer"
+              >
+                IES: estrategias de comprensión y conversación sobre el texto
+              </a>
+            </li>
+            <li>
+              <a
+                href="https://educationendowmentfoundation.org.uk/education-evidence/guidance-reports/literacy-ks2"
+                target="_blank"
+                rel="noreferrer"
+              >
+                EEF: lectura y lenguaje entre los 7 y 11 años
+              </a>
+            </li>
+            <li>
+              <a
+                href="https://www.pnl2027.gov.pt/np4/leituraemfamilia.html"
+                target="_blank"
+                rel="noreferrer"
+              >
+                Portugal: lectura en familia y elección de historias
+              </a>
+            </li>
+            <li>
+              <a
+                href="https://www.unicef.org/innocenti/reports/policy-guidance-ai-children"
+                target="_blank"
+                rel="noreferrer"
+              >
+                UNICEF: privacidad, inclusión y bienestar en la IA para niños
+              </a>
+            </li>
+            <li>
+              <a
+                href="https://www.apa.org/news/press/releases/2026/09/education-technology-engagement"
+                target="_blank"
+                rel="noreferrer"
+              >
+                APA: disfrutar una aplicación no demuestra aprendizaje
+              </a>
+            </li>
+          </ul>
+          <h3>El contexto de Perú</h3>
+          <p>
+            La ENLA 2024 reportó que el 32,8 % de estudiantes de cuarto de
+            primaria alcanzó el nivel satisfactorio en Lectura. En 2025, los
+            resultados nacionales fueron similares a los de 2023 y 2024. Es una
+            razón para seguir explorando apoyos educativos, no una prueba de que
+            este prototipo mejora el aprendizaje.
+          </p>
+          <div className="evidence-links">
+            <a
+              href="https://umc.minedu.gob.pe/resultadosenla2024/"
+              className="inline-link"
+              target="_blank"
+              rel="noreferrer"
+            >
+              Consultar resultados de ENLA 2024 <ArrowRight size={15} />
+            </a>
+            <a
+              href="https://umc.minedu.gob.pe/enla-2025-se-mantienen-avances-en-lectura-y-matematica-con-mejoras-en-las-zonas-rurales/"
+              className="inline-link"
+              target="_blank"
+              rel="noreferrer"
+            >
+              Consultar nota de ENLA 2025 <ArrowRight size={15} />
+            </a>
+          </div>
+        </details>
       </section>
       <div className="guide-cta">
         <Check size={20} />

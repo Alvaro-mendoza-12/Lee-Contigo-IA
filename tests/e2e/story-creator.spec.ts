@@ -4,6 +4,7 @@ import { composeStoryPlan } from "../../lib/story-illustrations";
 import sharp from "sharp";
 import { expectMobileReaderLayout } from "./helpers/reader-layout";
 import { expectBookMotion, observeBookMotion } from "./helpers/book-motion";
+import { readingPlaceKey } from "../../lib/reading-place";
 
 const story = {
   title: "La tortuga y la luz",
@@ -73,9 +74,43 @@ const story = {
   ],
 };
 
+test("la idea no se pierde mientras termina de cargar la interfaz", async ({
+  page,
+}) => {
+  let releaseScripts!: () => void;
+  const scripts = new Promise<void>((resolve) => {
+    releaseScripts = resolve;
+  });
+  await page.route(/\/_next\/static\/.*\.js(?:\?|$)/, async (route) => {
+    await scripts;
+    await route.continue();
+  });
+  await page.route("**/api/crear", (route) =>
+    route.fulfill({ json: { story } }),
+  );
+  await page.route("**/api/crear/portada", (route) =>
+    route.fulfill({ status: 503, json: {} }),
+  );
+  await page.goto("/crear", { waitUntil: "commit" });
+  const field = page.getByLabel("Mi idea", { exact: true });
+  try {
+    await expect(field).toBeDisabled();
+  } finally {
+    releaseScripts();
+  }
+  await field.fill("Una tortuga sigue un mapa");
+  await expect(field).toHaveValue("Una tortuga sigue un mapa");
+  await page.getByLabel(/Un adulto revisó mi idea/).check();
+  await page
+    .getByRole("button", { name: "Crear mi cuento", exact: true })
+    .click();
+  await expect(page.getByRole("heading", { name: story.title })).toBeVisible();
+});
+
 test("el libro creado anima las hojas y suma XP al leer y practicar sin repetir recompensas", async ({
   page,
 }) => {
+  test.setTimeout(60_000);
   await page.emulateMedia({ reducedMotion: "reduce" });
   await observeBookMotion(page);
   await page.route("**/api/crear", (route) =>
@@ -97,6 +132,13 @@ test("el libro creado anima las hojas y suma XP al leer y practicar sin repetir 
       () => JSON.parse(localStorage.getItem("lee-contigo-progreso")!).xp,
     );
   await expect.poll(xp).toBe(515);
+  // A deliberate choice can enable page turns when the OS asks for less motion.
+  await page.getByRole("button", { name: "Ajustes", exact: true }).click();
+  await expect(page.getByLabel("Animar páginas")).not.toBeChecked();
+  await page.getByLabel("Animar páginas").check();
+  await page
+    .getByRole("button", { name: "Cerrar ajustes", exact: true })
+    .click();
   const next = page.getByRole("button", { name: "Página siguiente" });
   const mode = page.viewportSize()!.width <= 600 ? "mobile" : "turn";
   await next.click();
@@ -130,6 +172,10 @@ test("el libro creado anima las hojas y suma XP al leer y practicar sin repetir 
     page.getByRole("heading", { name: "¡Terminaste de leer!" }),
   ).toBeVisible();
   await expect.poll(xp).toBe(590);
+  await page.getByText("Cuéntalo a tu manera", { exact: true }).click();
+  await expect(
+    page.getByText("Puedes contarlo en voz alta o dibujarlo."),
+  ).toBeVisible();
   await page.getByRole("button", { name: "Leer otra vez" }).click();
   while (await next.isVisible()) await next.click();
   await page.getByRole("button", { name: "Leer y explorar" }).click();
@@ -311,6 +357,12 @@ test("las seis ilustraciones generadas cambian con la escena y se conservan al r
   await page.reload();
   await page
     .getByRole("button", { name: `Abrir ${story.title}`, exact: true })
+    .click();
+  // Reopening preserves both the scene and the reading place.
+  await expect(art).toHaveAttribute("src", pageImages[1]);
+  await page.getByRole("button", { name: "Ajustes", exact: true }).click();
+  await page
+    .getByRole("button", { name: "Leer desde el inicio", exact: true })
     .click();
   await expect(art).toHaveAttribute("src", pageImages[0]);
   expect(
@@ -515,6 +567,28 @@ test("el cuento creado conecta la respuesta con una cita del texto sin reenviar 
   await page
     .getByRole("button", { name: `Borrar ${story.title}`, exact: true })
     .click();
+  const deletion = page.getByRole("dialog", { name: "¿Borrar este libro?" });
+  await expect(deletion).toBeVisible();
+  await expect(
+    deletion.getByRole("button", { name: "No, conservar" }),
+  ).toBeFocused();
+  const accessibilityDelete = await new AxeBuilder({ page })
+    .withTags(["wcag2a", "wcag2aa", "wcag21aa", "wcag22aa"])
+    .analyze();
+  expect(accessibilityDelete.violations).toEqual([]);
+  await page.keyboard.press("Escape");
+  await expect(
+    shelf.getByRole("button", { name: `Abrir ${story.title}` }),
+  ).toBeVisible();
+  await expect(
+    shelf.getByRole("button", { name: `Borrar ${story.title}`, exact: true }),
+  ).toBeFocused();
+  await shelf
+    .getByRole("button", { name: `Borrar ${story.title}`, exact: true })
+    .click();
+  await deletion
+    .getByRole("button", { name: "Sí, borrar el libro", exact: true })
+    .click();
   await expect(page.getByText("Aquí vivirán tus historias")).toBeVisible();
   await page.reload();
   await page.getByRole("button", { name: "Mis libros", exact: true }).click();
@@ -568,33 +642,125 @@ test("Mis libros conserva más de seis cuentos al crear y recargar", async ({
   ).toBeVisible();
 });
 
-test("un cuento creado mantiene sus seis páginas legibles a 320 px con letra grande", async ({ page }) => {
+test("un libro creado retoma su página y borrar todos pide confirmación", async ({
+  page,
+}) => {
   await page.setViewportSize({ width: 320, height: 740 });
-  await page.route("**/api/crear", (route) => route.fulfill({
-    contentType: "application/json",
-    body: JSON.stringify({ story }),
-  }));
-  await page.route("**/api/crear/portada", (route) => route.fulfill({
-    contentType: "application/json",
-    body: JSON.stringify({
-      layout: "vector",
-      source: "ai-composed",
-      illustrationPlan: composeStoryPlan(story.paragraphs, story.artDescription),
-    }),
-  }));
+  let generations = 0;
+  await page.route("**/api/crear", (route) => {
+    generations++;
+    return route.fulfill({ json: { story } });
+  });
+  await page.route("**/api/crear/portada", (route) =>
+    route.fulfill({ status: 503, json: {} }),
+  );
+  await page.goto("/leer/puente-de-ardillas?nivel=paso");
+  await page.getByRole("button", { name: "Página siguiente" }).click();
   await page.goto("/crear");
-  await page.getByLabel("Mi idea", { exact: true }).fill("Una tortuga sigue un mapa con su amiga");
+  await page
+    .getByLabel("Mi idea", { exact: true })
+    .fill("Una tortuga sigue un mapa");
   await page.getByLabel(/Un adulto revisó mi idea/).check();
-  await page.getByRole("button", { name: "Crear mi cuento", exact: true }).click();
+  await page
+    .getByRole("button", { name: "Crear mi cuento", exact: true })
+    .click();
+  await expect(page.getByText("Guardado por 7 días.")).toBeVisible();
+  await page.getByRole("button", { name: "Página siguiente" }).click();
+  await expect(page.getByText("Página 2 de 6", { exact: true })).toBeVisible();
+  await page.reload();
+  await page
+    .getByRole("button", { name: `Abrir ${story.title}`, exact: true })
+    .click();
+  await expect(page.getByText("Página 2 de 6", { exact: true })).toBeVisible();
+  await expect(page.locator(".book-page-text")).toHaveText(story.paragraphs[1]);
+  expect(generations).toBe(1);
+  await page.getByRole("button", { name: "Ajustes", exact: true }).click();
+  await page
+    .getByRole("button", { name: "Leer desde el inicio", exact: true })
+    .click();
+  await expect(page.getByText("Página 1 de 6", { exact: true })).toBeVisible();
+  await page.getByRole("button", { name: "Página siguiente" }).click();
+  await page.getByRole("button", { name: "Mis libros", exact: true }).click();
+  const clear = page.getByRole("button", { name: "Borrar todos", exact: true });
+  await clear.click();
+  const deletion = page.getByRole("dialog", { name: "¿Borrar tus libros?" });
+  await expect(
+    deletion.getByRole("button", { name: "No, conservar" }),
+  ).toBeFocused();
+  expect(
+    await deletion.evaluate(
+      (element) => element.scrollWidth <= element.clientWidth,
+    ),
+  ).toBe(true);
+  await deletion.getByRole("button", { name: "No, conservar" }).click();
+  await expect(clear).toBeFocused();
+  await expect(
+    page.getByRole("button", { name: `Abrir ${story.title}`, exact: true }),
+  ).toBeVisible();
+  await clear.click();
+  await deletion
+    .getByRole("button", { name: "Sí, borrar los libros", exact: true })
+    .click();
+  await expect(page.getByText("Aquí vivirán tus historias")).toBeVisible();
+  const marks = await page.evaluate(
+    (key) => JSON.parse(localStorage.getItem(key)!).places,
+    readingPlaceKey,
+  );
+  expect(marks).toHaveLength(1);
+  expect(marks[0].source).toBe("catalogue");
+  await page.reload();
+  await page.getByRole("button", { name: "Mis libros", exact: true }).click();
+  await expect(page.getByText("Aquí vivirán tus historias")).toBeVisible();
+});
+
+test("un cuento creado mantiene sus seis páginas legibles a 320 px con letra grande", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 320, height: 740 });
+  await page.route("**/api/crear", (route) =>
+    route.fulfill({
+      contentType: "application/json",
+      body: JSON.stringify({ story }),
+    }),
+  );
+  await page.route("**/api/crear/portada", (route) =>
+    route.fulfill({
+      contentType: "application/json",
+      body: JSON.stringify({
+        layout: "vector",
+        source: "ai-composed",
+        illustrationPlan: composeStoryPlan(
+          story.paragraphs,
+          story.artDescription,
+        ),
+      }),
+    }),
+  );
+  await page.goto("/crear");
+  await page
+    .getByLabel("Mi idea", { exact: true })
+    .fill("Una tortuga sigue un mapa con su amiga");
+  await page.getByLabel(/Un adulto revisó mi idea/).check();
+  await page
+    .getByRole("button", { name: "Crear mi cuento", exact: true })
+    .click();
   await expect(page.locator(".book-page-text")).toHaveText(story.paragraphs[0]);
   await page.getByRole("button", { name: "Aumentar tamaño de letra" }).click();
   for (const [index, paragraph] of story.paragraphs.entries()) {
-    if (index) await page.getByRole("button", { name: "Página siguiente" }).click();
+    if (index)
+      await page.getByRole("button", { name: "Página siguiente" }).click();
     await expect(page.locator(".book-turn-layer")).toHaveCount(0);
     await expect(page.locator(".book-page-text")).toHaveText(paragraph);
-    await expect(page.locator(".book-page-text")).toHaveCSS("font-size", "26px");
+    await expect(page.locator(".book-page-text")).toHaveCSS(
+      "font-size",
+      "26px",
+    );
     await expectMobileReaderLayout(page);
-    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    expect(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth <= innerWidth,
+      ),
+    ).toBe(true);
   }
 });
 

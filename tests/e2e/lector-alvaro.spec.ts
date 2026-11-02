@@ -103,14 +103,14 @@ for (const width of [320, 390, 768, 1024, 1366, 1920]) {
   });
 }
 
-test("cada cuento y nivel conserva párrafos e ilustraciones al cambiar la letra", async ({
-  page,
-}) => {
-  test.setTimeout(180000);
-  await page.addInitScript(() =>
-    localStorage.setItem("lee-contigo-reading-font-v2", "26"),
-  );
-  for (const width of [390, 768, 1366]) {
+for (const width of [390, 768, 1366]) {
+  test(`cada cuento y nivel conserva párrafos e ilustraciones con letra grande a ${width} px`, async ({
+    page,
+  }) => {
+    test.setTimeout(120000);
+    await page.addInitScript(() =>
+      localStorage.setItem("lee-contigo-reading-font-v2", "26"),
+    );
     await page.setViewportSize({ width, height: 1000 });
     for (const story of stories)
       for (const level of ["paso", "reto"] as const) {
@@ -146,8 +146,8 @@ test("cada cuento y nivel conserva párrafos e ilustraciones al cambiar la letra
           story.versions[level].paragraphs[1],
         );
       }
-  }
-});
+  });
+}
 
 test("el creador permite ideas seguras y bloquea insultos en la entrada y el servidor", async ({
   page,

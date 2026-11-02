@@ -129,7 +129,7 @@ test("el libro cambia nivel, conserva tamaño y responde al pasar páginas", asy
   await page.getByRole("button", { name: "Ajustes", exact: true }).click();
   const animation = page.getByLabel("Animar páginas");
   await expect(animation).toBeEnabled();
-  await expect(animation).toBeChecked();
+  await expect(animation).not.toBeChecked();
   if (await animation.isEnabled()) {
     await animation.uncheck();
     await page
@@ -154,7 +154,7 @@ test("el libro cambia nivel, conserva tamaño y responde al pasar páginas", asy
   await animation.uncheck();
   await page.reload();
   await page.getByRole("button", { name: "Ajustes", exact: true }).click();
-  await expect(page.getByLabel("Animar páginas")).toBeChecked();
+  await expect(page.getByLabel("Animar páginas")).not.toBeChecked();
 });
 test("la guía permite preparar y comenzar una lectura acompañada", async ({
   page,

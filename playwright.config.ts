@@ -1,6 +1,4 @@
 import { defineConfig, devices } from "@playwright/test";
-import { existsSync } from "node:fs";
-const localChrome = "C:/Program Files/Google/Chrome/Application/chrome.exe";
 export default defineConfig({
   testDir: "./tests/e2e",
   fullyParallel: true,
@@ -31,9 +29,6 @@ export default defineConfig({
     },
     trace: "retain-on-failure",
     screenshot: "only-on-failure",
-    launchOptions: {
-      executablePath: existsSync(localChrome) ? localChrome : undefined,
-    },
   },
   projects: [
     {

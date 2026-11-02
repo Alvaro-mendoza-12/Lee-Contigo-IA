@@ -2,7 +2,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { ArrowRight, Check, HeartHandshake } from "lucide-react";
-import { levels, type Level } from "@/lib/stories";
+import { levels, type Level } from "@/lib/story-metadata";
 import { readingGoals, type ReadingGoal } from "@/lib/reading";
 
 export function CompanionPlanner({

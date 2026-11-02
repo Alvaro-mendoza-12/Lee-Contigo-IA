@@ -1,0 +1,25 @@
+.sources {
+  margin-top: 24px;
+}
+
+.sources > summary {
+  display: flex;
+  min-height: 48px;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  font-weight: 800;
+}
+
+.sources ul {
+  display: grid;
+  gap: 12px;
+  padding-left: 22px;
+}
+
+.sources a {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  overflow-wrap: anywhere;
+}

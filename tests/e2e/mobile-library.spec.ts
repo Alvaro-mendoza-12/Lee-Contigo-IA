@@ -3,6 +3,24 @@ import AxeBuilder from "@axe-core/playwright";
 
 test.use({ hasTouch: true });
 
+async function settleScroll(target: Locator) {
+  await target.evaluate(
+    (element) =>
+      new Promise<void>((resolve) => {
+        let timer = window.setTimeout(done, 100);
+        function done() {
+          element.removeEventListener("scroll", changed);
+          resolve();
+        }
+        function changed() {
+          clearTimeout(timer);
+          timer = window.setTimeout(done, 100);
+        }
+        element.addEventListener("scroll", changed, { passive: true });
+      }),
+  );
+}
+
 async function swipe(page: Page, target: Locator, direction: "left" | "right") {
   await target.scrollIntoViewIfNeeded();
   const box = (await target.boundingBox())!;
@@ -15,11 +33,18 @@ async function swipe(page: Page, target: Locator, direction: "left" | "right") {
       type: "touchStart",
       touchPoints: [{ x: from, y }],
     });
-    for (let step = 1; step <= 8; step++)
+    for (let step = 1; step <= 8; step++) {
       await session.send("Input.dispatchTouchEvent", {
         type: "touchMove",
         touchPoints: [{ x: from + ((to - from) * step) / 8, y }],
       });
+      await page.evaluate(
+        () =>
+          new Promise<void>((resolve) =>
+            requestAnimationFrame(() => resolve()),
+          ),
+      );
+    }
     await session.send("Input.dispatchTouchEvent", {
       type: "touchEnd",
       touchPoints: [],
@@ -27,6 +52,7 @@ async function swipe(page: Page, target: Locator, direction: "left" | "right") {
   } finally {
     await session.detach();
   }
+  await settleScroll(target);
 }
 
 test("el menú móvil ocupa una fila con iconos, nombres y estado actual", async ({
@@ -99,9 +125,23 @@ test("las tres categorías muestran cuentos y se deslizan con dedo, botones y te
   await expect
     .poll(() => rail.evaluate((el) => el.scrollLeft))
     .toBeGreaterThan(0);
+  const afterLeftSwipe = await rail.evaluate((el) => el.scrollLeft);
   await swipe(page, rail, "right");
-  await expect.poll(() => rail.evaluate((el) => el.scrollLeft)).toBe(0);
+  // Native touch inertia can travel several covers; the reverse gesture must
+  // move back, without assuming that two different flings cover equal distance.
+  await expect
+    .poll(() => rail.evaluate((el) => el.scrollLeft))
+    .toBeLessThan(afterLeftSwipe);
   await rail.focus();
+  for (
+    let step = 0;
+    step < 5 && (await rail.evaluate((el) => el.scrollLeft)) > 0;
+    step++
+  ) {
+    await page.keyboard.press("ArrowLeft");
+    await settleScroll(rail);
+  }
+  await expect.poll(() => rail.evaluate((el) => el.scrollLeft)).toBe(0);
   await page.keyboard.press("ArrowRight");
   await expect
     .poll(() => rail.evaluate((el) => el.scrollLeft))
@@ -109,10 +149,9 @@ test("las tres categorías muestran cuentos y se deslizan con dedo, botones y te
   await expect(page.getByRole("radio")).toHaveCount(0);
   await page.goto("/biblioteca?nivel=reto");
   await page.locator(".story-card-direct[href^='/leer/']").first().waitFor();
-  await expect(page.locator(".story-card-direct[href^='/leer/']").first()).toHaveAttribute(
-    "href",
-    /nivel=reto/,
-  );
+  await expect(
+    page.locator(".story-card-direct[href^='/leer/']").first(),
+  ).toHaveAttribute("href", /nivel=reto/);
   for (const width of [320, 390]) {
     await page.setViewportSize({ width, height: 844 });
     await expect

@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import { getLevel, type Level } from "@/lib/stories";
+import { getLevel, type Level } from "@/lib/story-metadata";
 
 export function useReadingLevel(initialLevel: Level) {
   const [level, setLevel] = useState(initialLevel);

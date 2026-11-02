@@ -1,6 +1,12 @@
 "use client";
 import { useEffect, useId, useRef, useState, type ReactNode } from "react";
-import { Maximize2, Minimize2, SlidersHorizontal, X } from "lucide-react";
+import {
+  Maximize2,
+  Minimize2,
+  RotateCcw,
+  SlidersHorizontal,
+  X,
+} from "lucide-react";
 import type { NarrationVoice } from "@/lib/narration-voices";
 import type { Level } from "@/lib/stories";
 import { VoicePicker } from "./voice-picker";
@@ -17,6 +23,7 @@ export function ReadingSettings({
   expanded = false,
   onExpandedChange,
   mostrarNivel,
+  onRestart,
 }: {
   voice: NarrationVoice;
   onVoiceChange: (voice: NarrationVoice) => void;
@@ -27,6 +34,7 @@ export function ReadingSettings({
   onExpandedChange?: (expanded: boolean) => void;
   // Solo el lector lo pasa: el creador elige su nivel antes de crear.
   mostrarNivel?: Level;
+  onRestart?: () => void;
 }) {
   const [open, setOpen] = useState(false);
   const dialog = useRef<HTMLDialogElement>(null);
@@ -130,6 +138,18 @@ export function ReadingSettings({
           </button>
           {mostrarNivel ? <SelectorNivel nivel={mostrarNivel} /> : null}
           {children}
+          {onRestart ? (
+            <button
+              type="button"
+              className="button button-outline"
+              onClick={() => {
+                close();
+                onRestart();
+              }}
+            >
+              <RotateCcw size={18} aria-hidden="true" /> Leer desde el inicio
+            </button>
+          ) : null}
           <BorrarProgreso />
         </div>
       </dialog>

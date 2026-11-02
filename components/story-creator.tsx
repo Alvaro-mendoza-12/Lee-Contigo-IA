@@ -25,7 +25,7 @@ import {
   type FormEvent,
 } from "react";
 import { fontSteps, paginateStory } from "@/lib/reading";
-import { levels, type Level, type StoryArtVariant } from "@/lib/stories";
+import { levels, type Level, type StoryArtVariant } from "@/lib/story-metadata";
 import { StoryArt } from "./art";
 import { ReadingFriend } from "./reading-friend";
 import { BotonTutorial } from "./tutorial";
@@ -34,6 +34,14 @@ import { ReadingPause } from "./reading-pause";
 import { useNarration } from "./use-narration";
 import { ReadingSettings } from "./reading-settings";
 import { useReadingFont } from "./use-reading-font";
+import { usePageAnimation } from "./use-page-animation";
+import { ReadingReflection } from "./reading-reflection";
+import {
+  clearReadingPlaces,
+  readReadingPlace,
+  removeReadingPlace,
+  saveReadingPlace,
+} from "@/lib/reading-place";
 import { ReadingHelp } from "./reading-help";
 import { GeneratedScene } from "./generated-scene";
 import {
@@ -94,6 +102,12 @@ const ideaStarters = [
 ] satisfies { label: string; idea: string; art: StoryArtVariant }[];
 
 export function StoryCreator() {
+  const [ready, setReady] = useState(false);
+  useEffect(() => {
+    // Keep SSR controls disabled until React can preserve the child's input.
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- Browser initialization after hydration.
+    setReady(true);
+  }, []);
   const [screen, setScreen] = useState<Screen>("form");
   const [workspace, setWorkspace] = useState<"create" | "shelf">("create");
   const [books, setBooks] = useState<SavedBook[]>([]);
@@ -126,7 +140,7 @@ export function StoryCreator() {
   const [creating, setCreating] = useState(false);
   const [fontSize, setFontSize] = useReadingFont();
   const [position, setPosition] = useState({ paragraph: 0, word: 0 });
-  const [animate, setAnimate] = useState(true);
+  const [animate, setAnimate] = usePageAnimation();
   const [compact, setCompact] = useState(false);
   const {
     speaking,
@@ -193,7 +207,6 @@ export function StoryCreator() {
     setStory(null);
     setIllustrationPlan(null);
     setAudioTokens([]);
-    setAnimate(true);
     setCover(null);
     setPageImages(undefined);
     setCoverState("idle");
@@ -301,7 +314,15 @@ export function StoryCreator() {
     setCoverIsAtlas(book.atlas);
     setCoverFromCollection(book.collection);
     setCoverState(book.cover ? "ready" : "unavailable");
-    setPosition({ paragraph: 0, word: 0 });
+    const saved = readReadingPlace(
+      { source: "created", id: book.id, level: book.level },
+      book.story.paragraphs,
+    );
+    setPosition(
+      saved
+        ? { paragraph: saved.paragraph, word: saved.word }
+        : { paragraph: 0, word: 0 },
+    );
     setQuestionIndex(0);
     setWrongAttempts(0);
     setSelectedAnswer(null);
@@ -312,13 +333,17 @@ export function StoryCreator() {
   async function deleteSavedBooks(id?: string) {
     await storageQueue.current.catch(() => undefined);
     try {
-      if (id) setBooks(await removeBook(id));
-      else {
+      if (id) {
+        setBooks(await removeBook(id));
+        clearReadingPlaces("created", id);
+      } else {
         await clearBooks();
+        clearReadingPlaces("created");
         setBooks([]);
       }
     } catch {
       setSaveState("unavailable");
+      throw new Error("No se pudieron borrar los libros");
     }
   }
 
@@ -504,6 +529,11 @@ export function StoryCreator() {
     const target = pages[targetIndex];
     if (target) {
       if (targetIndex !== currentPageIndex) reproducir("pagina");
+      if (currentBook.current)
+        saveReadingPlace(
+          { source: "created", id: currentBook.current.id, level },
+          { paragraph: target.paragraph, word: target.start },
+        );
       setPosition({ paragraph: target.paragraph, word: target.start });
     }
   }
@@ -516,6 +546,17 @@ export function StoryCreator() {
         word: currentPage.start,
       });
     setFontSize(next);
+  }
+
+  function restartReading() {
+    stopSpeaking();
+    setPosition({ paragraph: 0, word: 0 });
+    if (currentBook.current)
+      removeReadingPlace({
+        source: "created",
+        id: currentBook.current.id,
+        level,
+      });
   }
 
   function readCurrentPage() {
@@ -589,12 +630,12 @@ export function StoryCreator() {
       {screen === "form" ? (
         <>
           <header className="creator-heading">
-            <ReadingFriend />
             <h1 ref={activeHeading} tabIndex={-1}>
               Crea tu cuento
             </h1>
             <BotonTutorial />
           </header>
+          <ReadingFriend />
           <div
             className="creator-workspace-tabs"
             role="group"
@@ -643,6 +684,7 @@ export function StoryCreator() {
                 id="story-idea"
                 ref={ideaField}
                 name="idea"
+                disabled={!ready || creating}
                 value={idea}
                 onChange={(event) => {
                   setIdea(event.target.value.slice(0, 220));
@@ -680,7 +722,7 @@ export function StoryCreator() {
                       className="idea-starter"
                       type="button"
                       key={starter.art}
-                      disabled={creating}
+                      disabled={!ready || creating}
                       aria-pressed={idea === starter.idea}
                       aria-labelledby={`idea-starter-${index}-title`}
                       aria-describedby={`idea-starter-${index}-description`}
@@ -727,6 +769,7 @@ export function StoryCreator() {
                     >
                       <input
                         type="radio"
+                        disabled={!ready || creating}
                         name="create-level"
                         value={id}
                         checked={level === id}
@@ -764,6 +807,7 @@ export function StoryCreator() {
               <label className="creator-adult-check">
                 <input
                   type="checkbox"
+                  disabled={!ready || creating}
                   checked={adultReviewed}
                   onChange={(event) => setAdultReviewed(event.target.checked)}
                   required
@@ -787,7 +831,7 @@ export function StoryCreator() {
               <button
                 className="button creator-submit"
                 type="submit"
-                disabled={creating || Boolean(ideaSafetyIssue)}
+                disabled={!ready || creating || Boolean(ideaSafetyIssue)}
               >
                 {creating ? (
                   <>
@@ -943,6 +987,7 @@ export function StoryCreator() {
                 onVoiceChange={changeVoice}
                 animate={animate}
                 onAnimateChange={setAnimate}
+                onRestart={restartReading}
               />
             </div>
           </div>
@@ -1064,8 +1109,14 @@ export function StoryCreator() {
                 className="button"
                 onClick={() => {
                   stopSpeaking();
-                  if (currentBook.current)
+                  if (currentBook.current) {
+                    removeReadingPlace({
+                      source: "created",
+                      id: currentBook.current.id,
+                      level,
+                    });
                     sumarXP("cuento-terminado", currentBook.current.id, level);
+                  }
                   setScreen("questions");
                 }}
               >
@@ -1282,7 +1333,7 @@ export function StoryCreator() {
               className="button button-outline"
               type="button"
               onClick={() => {
-                setPosition({ paragraph: 0, word: 0 });
+                restartReading();
                 setQuestionIndex(0);
                 setSelectedAnswer(null);
                 setWrongAttempts(0);
@@ -1295,6 +1346,7 @@ export function StoryCreator() {
               <Sparkles size={17} /> Crear otro cuento
             </button>
           </div>
+          <ReadingReflection level={level} />
           <Link className="inline-link" href="/biblioteca">
             Explorar los cuentos de la biblioteca <ArrowRight size={16} />
           </Link>

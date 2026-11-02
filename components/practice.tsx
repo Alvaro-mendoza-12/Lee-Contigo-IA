@@ -24,6 +24,7 @@ import { sumarXP } from "@/lib/progreso";
 import { BarraXP } from "./barra-xp";
 import { EscucharParrafo } from "./escuchar-parrafo";
 import { EstallidoEstrellas, lanzarXP } from "./efecto-respuesta";
+import { ReadingReflection } from "./reading-reflection";
 type Hint = {
   hint: string;
   action?: string;
@@ -158,6 +159,7 @@ export function Practice({ story, level }: { story: Story; level: Level }) {
           <div className="completion-note">
             <HeartMessage />
           </div>
+          <ReadingReflection level={level} />
           <Link className="button" href="/biblioteca">
             Elegir otra historia <ArrowRight size={18} />
           </Link>
@@ -239,7 +241,7 @@ export function Practice({ story, level }: { story: Story; level: Level }) {
                     setFeedback(null);
                   }}
                 />
-                <span className="answer-letter">
+                <span className="answer-letter" aria-hidden="true">
                   {(feedback === "correct" && i === selected) ||
                   (feedback === "revealed" && i === question.correct) ? (
                     <Check size={18} />
@@ -253,7 +255,7 @@ export function Practice({ story, level }: { story: Story; level: Level }) {
                 {feedback === "correct" && i === selected ? (
                   <EstallidoEstrellas />
                 ) : null}
-                <span className="answer-radio">
+                <span className="answer-radio" aria-hidden="true">
                   {selected === i ? <span /> : null}
                 </span>
               </label>
