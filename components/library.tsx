@@ -23,6 +23,7 @@ import { useReadingLevel } from "./use-reading-level";
 import { StoryShelfRow, type StoryLocks } from "./story-shelf-row";
 import { BotonTutorial } from "./tutorial";
 import { BotonSonido } from "./boton-sonido";
+import { LumaCompanion } from "./luma-companion";
 
 const categoryIcons = {
   amigos: Users,
@@ -96,6 +97,7 @@ export function Library({
           </div>
           <p>Historias para descubrir, imaginar y compartir a tu ritmo.</p>
         </div>
+        <LumaCompanion />
       </header>
 
       <div

@@ -31,6 +31,7 @@ import { useNarration } from "./use-narration";
 import { ReadingHelp } from "./reading-help";
 import { ReadingSettings } from "./reading-settings";
 import { reproducir } from "@/lib/sonidos";
+import { LumaCompanion } from "./luma-companion";
 import { terminarCuento } from "@/lib/progreso";
 import {
   catalogueReadingBook,
@@ -228,6 +229,11 @@ export function Reader({
         <ArrowLeft size={16} aria-hidden="true" />
         Volver a las historias
       </Link>
+      <LumaCompanion
+        context="reader"
+        reaction={index > 0 ? "leer" : undefined}
+        cue={index}
+      />
       <div
         className={`reading-layout${expanded ? " reading-layout-expanded" : ""}`}
       >

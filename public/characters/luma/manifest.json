@@ -1,0 +1,40 @@
+{
+  "name": "Luma",
+  "author": "LeeContigo IA",
+  "source": "assets/blender/luma-referencia.blend",
+  "fps": 24,
+  "frames": 48,
+  "columns": 6,
+  "rows": 8,
+  "tileSize": 384,
+  "revision": 3,
+  "clips": [
+    "saludar",
+    "leer",
+    "pensar",
+    "celebrar",
+    "volar"
+  ],
+  "timeline": {
+    "saludar": [
+      1,
+      48
+    ],
+    "leer": [
+      49,
+      96
+    ],
+    "pensar": [
+      97,
+      144
+    ],
+    "celebrar": [
+      145,
+      192
+    ],
+    "volar": [
+      193,
+      240
+    ]
+  }
+}

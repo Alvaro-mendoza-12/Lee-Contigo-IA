@@ -1,0 +1,6 @@
+Luma · recreación 3D para LeeContigo IA a partir de la imagen proporcionada por el usuario.
+Modelado, materiales, controles, iluminación y animaciones creados en Blender 5.2.2 LTS.
+Fuente editable: assets/blender/luma-referencia.blend
+Animaciones GLB verificadas: Saludar, Leer, Pensar, Celebrar, Volar
+Referencia: assets/blender/referencia-luma.png, también incluida en la escena editable.
+Geometría, materiales, controles y animaciones construidos en Blender.

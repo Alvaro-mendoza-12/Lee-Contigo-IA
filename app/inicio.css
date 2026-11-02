@@ -27,14 +27,16 @@
 
 .inicio-page .home-welcome {
   display: grid;
-  min-height: clamp(240px, 30vw, 360px);
-  place-items: center;
-  padding: clamp(24px, 5vw, 64px) clamp(16px, 8vw, 100px);
+  grid-template-columns: minmax(0, 1.2fr) minmax(220px, 0.8fr);
+  align-items: center;
+  gap: clamp(12px, 3vw, 36px);
+  min-height: 360px;
+  padding: clamp(18px, 3vw, 36px) clamp(16px, 4vw, 48px);
   border: 1px solid #e9dfc6;
   border-radius: clamp(22px, 3vw, 36px);
   background: #fffbee url("/images/lee-contigo-fondo-infancia.webp") center /
     cover no-repeat;
-  text-align: center;
+  text-align: left;
 }
 
 .inicio-page .home-welcome-copy {
@@ -52,7 +54,11 @@
 
 .inicio-page .home-welcome .tutorial-boton-ayuda {
   display: block;
-  margin: 20px auto 0;
+  margin: 0;
+}
+
+.inicio-page .home-welcome-tools {
+  justify-content: flex-start;
 }
 
 .inicio-page .home-welcome p {
@@ -61,6 +67,17 @@
   color: #55517a;
   font-size: clamp(16px, 1.6vw, 19px);
   line-height: 1.6;
+}
+
+@media (max-width: 640px) {
+  .inicio-page .home-welcome {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 8px;
+    padding: 16px;
+    text-align: center;
+  }
+  .inicio-page .home-welcome-copy { padding: 14px; }
+  .inicio-page .home-welcome-tools { justify-content: center; }
 }
 
 .inicio-page .home-destinations {

@@ -27,7 +27,7 @@ import {
 import { fontSteps, paginateStory } from "@/lib/reading";
 import { levels, type Level, type StoryArtVariant } from "@/lib/story-metadata";
 import { StoryArt } from "./art";
-import { ReadingFriend } from "./reading-friend";
+import { LumaCompanion } from "./luma-companion";
 import { BotonTutorial } from "./tutorial";
 import { BookSpread } from "./book-spread";
 import { ReadingPause } from "./reading-pause";
@@ -635,7 +635,11 @@ export function StoryCreator() {
             </h1>
             <BotonTutorial />
           </header>
-          <ReadingFriend />
+          <LumaCompanion
+            context="creator"
+            reaction={creating ? "pensar" : undefined}
+            loop={creating}
+          />
           <div
             className="creator-workspace-tabs"
             role="group"

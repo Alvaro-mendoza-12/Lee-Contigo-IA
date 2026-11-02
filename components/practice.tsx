@@ -25,6 +25,7 @@ import { BarraXP } from "./barra-xp";
 import { EscucharParrafo } from "./escuchar-parrafo";
 import { EstallidoEstrellas, lanzarXP } from "./efecto-respuesta";
 import { ReadingReflection } from "./reading-reflection";
+import { LumaCompanion } from "./luma-companion";
 type Hint = {
   hint: string;
   action?: string;
@@ -137,6 +138,7 @@ export function Practice({ story, level }: { story: Story; level: Level }) {
       <div className="container practice-page">
         <Journey current={3} />
         <section className="completion">
+          <LumaCompanion context="complete" reaction="celebrar" />
           <div className="completion-art" aria-hidden="true">
             <Sprout size={58} strokeWidth={1.4} />
             <span>✦</span>
@@ -194,6 +196,17 @@ export function Practice({ story, level }: { story: Story; level: Level }) {
       </div>
       <div className="practice-layout">
         <section className="question-card">
+          <LumaCompanion
+            context="practice"
+            reaction={
+              feedback === "correct"
+                ? "celebrar"
+                : feedback === "retry" || hints
+                  ? "pensar"
+                  : undefined
+            }
+            cue={index + incorrectAttempts}
+          />
           <div className="question-progress">
             <span className="small-label">
               PREGUNTA {index + 1} DE {version.questions.length}

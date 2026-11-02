@@ -54,7 +54,6 @@
 .tutorial-luciernaga {
   flex-shrink: 0;
   width: 84px;
-  animation: tutorial-vuelo 3.2s ease-in-out infinite;
 }
 .tutorial-luciernaga svg {
   display: block;

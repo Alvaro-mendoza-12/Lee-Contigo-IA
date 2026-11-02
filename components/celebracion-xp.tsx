@@ -15,7 +15,7 @@ import {
 } from "@/lib/progreso";
 import { reproducir } from "@/lib/sonidos";
 import { lanzarXP } from "./efecto-respuesta";
-import { ReadingFriend } from "./reading-friend";
+import { LumaCelebration } from "./luma-companion";
 import { BuhoLector, GotaAlegre, SemillaBailarina } from "./personajes-fiesta";
 import "@/app/xp.css";
 
@@ -37,7 +37,7 @@ const confeti = Array.from({ length: 24 }, (_, i) => ({
   color: coloresConfeti[i % coloresConfeti.length],
 }));
 const personajes = [
-  { Personaje: ReadingFriend, baile: "salta" },
+  { Personaje: LumaCelebration, baile: "salta" },
   { Personaje: BuhoLector, baile: "brazos" },
   { Personaje: GotaAlegre, baile: "salta" },
   { Personaje: SemillaBailarina, baile: "baila" },

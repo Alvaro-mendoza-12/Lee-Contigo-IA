@@ -20,6 +20,7 @@ export type Sonido =
   | "pista"
   | "nivel"
   | "boton"
+  | "saludo"
   | "fiesta";
 
 /**
@@ -67,6 +68,8 @@ export const configuracion = {
     nivel: { volumen: 0.055, duracion: 0.9 },
     /** Clic muy suave al tocar los interruptores. */
     boton: { volumen: 0.03, duracion: 0.05 },
+    /** Dos notas redondas al saludar a Luma, solo después de un toque. */
+    saludo: { volumen: 0.035, duracion: 0.32 },
     /** Fiesta al terminar un cuento: cuatro notas rápidas y un brillo. */
     fiesta: { volumen: 0.06, duracion: 0.38 },
   },
@@ -329,6 +332,10 @@ export function reproducir(nombre: Sonido) {
       }
       case "boton":
         nota(salida, 1200, t, d, v, "sine", 800);
+        break;
+      case "saludo":
+        nota(salida, 659, t, d * 0.55, v, "sine", 784);
+        nota(salida, 988, t + d * 0.35, d * 0.65, v * 0.8);
         break;
       case "fiesta": {
         const paso = d * 0.13;

@@ -12,7 +12,7 @@ import {
 import { createPortal } from "react-dom";
 import { usePathname } from "next/navigation";
 import { CircleHelp } from "lucide-react";
-import { ReadingFriend } from "./reading-friend";
+import { LumaIntroduction } from "./luma-companion";
 import {
   EVENTO_ABRIR,
   abrirTutorial,
@@ -295,7 +295,7 @@ export function Tutorial({
       >
         <div className="tutorial-fila">
           <div className="tutorial-luciernaga" aria-hidden="true">
-            <ReadingFriend />
+            <LumaIntroduction />
           </div>
           <div className="tutorial-contenido">
             <p className="tutorial-progreso">
