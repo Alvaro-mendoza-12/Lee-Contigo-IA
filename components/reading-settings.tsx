@@ -35,14 +35,17 @@ export function ReadingSettings({
   useEffect(() => {
     if (!open) return;
     const previous = document.body.style.overflow;
+    const element = dialog.current;
     document.body.style.overflow = "hidden";
-    dialog.current?.showModal();
+    element?.showModal();
     return () => {
-      dialog.current?.close();
+      element?.close();
       document.body.style.overflow = previous;
     };
   }, [open]);
   function close() {
+    // Safari keeps outside controls inert until the native dialog is closed.
+    dialog.current?.close();
     setOpen(false);
     trigger.current?.focus({ preventScroll: true });
   }
@@ -64,7 +67,10 @@ export function ReadingSettings({
         id={id}
         className="reader-settings-dialog"
         aria-labelledby={`${id}-title`}
-        onCancel={close}
+        onCancel={(event) => {
+          event.preventDefault();
+          close();
+        }}
         onClose={() => {
           if (open) close();
         }}

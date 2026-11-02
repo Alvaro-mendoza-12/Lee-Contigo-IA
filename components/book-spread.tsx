@@ -35,35 +35,37 @@ export function BookSpread({
   onNavigate: (offset: number) => void;
   paragraphs?: string[];
 }) {
-  const latest = useRef(page);
   const touchStart = useRef<{ x: number; y: number } | null>(null);
   const [opening, setOpening] = useState(true);
   const [turn, setTurn] = useState<{
-    id: string;
+    current: BookPage;
     previous?: BookPage;
     direction: "next" | "previous";
     sequence: number;
-  }>({ id: page.id, direction: "next", sequence: 0 });
+  }>({ current: page, direction: "next", sequence: 0 });
 
-  if (turn.id !== page.id) {
-    if (opening) setOpening(false);
-    const previous = latest.current;
+  if (turn.current !== page) {
+    const previous = turn.current;
+    const changed = previous.id !== page.id;
+    if (changed && opening) setOpening(false);
     setTurn({
-      id: page.id,
-      previous:
-        animated &&
-        previous.book === page.book &&
-        previous.number !== page.number
+      current: page,
+      previous: changed
+        ? animated &&
+          previous.book === page.book &&
+          previous.number !== page.number
           ? previous
-          : undefined,
-      direction: page.number > previous.number ? "next" : "previous",
-      sequence: turn.sequence + 1,
+          : undefined
+        : turn.previous,
+      direction: changed
+        ? page.number > previous.number
+          ? "next"
+          : "previous"
+        : turn.direction,
+      sequence: turn.sequence + (changed ? 1 : 0),
     });
   }
 
-  useEffect(() => {
-    latest.current = page;
-  });
   useEffect(() => {
     const timer = window.setTimeout(() => setOpening(false), 850);
     return () => window.clearTimeout(timer);

@@ -177,6 +177,37 @@ export function StoryCreator() {
     currentQuestion !== undefined && wrongAttempts > 0 && !answerIsCorrect;
   const tutorHintIndex = Math.min(Math.max(wrongAttempts - 1, 0), 1);
 
+  function stopSpeaking() {
+    stopNarration();
+  }
+
+  function resetCreator() {
+    currentBook.current = null;
+    setWorkspace("create");
+    coverRequest.current += 1;
+    coverAbort.current?.abort();
+    creationAbort.current?.abort();
+    setCreating(false);
+    stopSpeaking();
+    setScreen("form");
+    setStory(null);
+    setIllustrationPlan(null);
+    setAudioTokens([]);
+    setAnimate(true);
+    setCover(null);
+    setPageImages(undefined);
+    setCoverState("idle");
+    setIdea("");
+    setError("");
+    setGatewayUnavailable(false);
+    setLevel("paso");
+    setAdultReviewed(false);
+    setPosition({ paragraph: 0, word: 0 });
+    setQuestionIndex(0);
+    setSelectedAnswer(null);
+    setWrongAttempts(0);
+  }
+
   useEffect(() => {
     let cancelled = false;
     listSavedBooks()
@@ -211,7 +242,7 @@ export function StoryCreator() {
       window.removeEventListener("pageshow", clearOnRestore);
       if ("speechSynthesis" in window) window.speechSynthesis.cancel();
     };
-    // resetCreator is intentionally defined below and only used on bfcache restore.
+    // The restore handler only uses stable setters, refs and narration cleanup.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -226,10 +257,6 @@ export function StoryCreator() {
   useEffect(() => {
     if (selectedAnswer !== null) answerFeedbackRef.current?.focus();
   }, [selectedAnswer, wrongAttempts]);
-
-  function stopSpeaking() {
-    stopNarration();
-  }
 
   function persistBook(book: SavedBook) {
     setSaveState("saving");
@@ -469,34 +496,6 @@ export function StoryCreator() {
     } finally {
       if (creationAbort.current === controller) setCreating(false);
     }
-  }
-
-  function resetCreator() {
-    currentBook.current = null;
-    setWorkspace("create");
-    coverRequest.current += 1;
-    coverAbort.current?.abort();
-    creationAbort.current?.abort();
-    setCreating(false);
-    stopSpeaking();
-    setScreen("form");
-    setStory(null);
-    setIllustrationPlan(null);
-    setAudioTokens([]);
-    setAnimate(true);
-    setCover(null);
-    setPageImages(undefined);
-    setCoverState("idle");
-    setIdea("");
-    setError("");
-    setGatewayUnavailable(false);
-    setLevel("paso");
-    setAdultReviewed(false);
-    setPosition({ paragraph: 0, word: 0 });
-    setQuestionIndex(0);
-    setSelectedAnswer(null);
-    setWrongAttempts(0);
-    setError("");
   }
 
   function turnPage(next: number) {

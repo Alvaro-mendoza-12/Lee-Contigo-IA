@@ -496,14 +496,6 @@ label {
     --book-height: 440px;
     padding-top: 3px;
   }
-  .book-reader .paper-art {
-    height: 135px;
-  }
-  .book-reader .paper-text,
-  .book-reader .paper-text.book-leaf {
-    top: 135px;
-    padding-inline: 20px;
-  }
   .book-reader .book-page-text {
     line-height: 1.5;
   }

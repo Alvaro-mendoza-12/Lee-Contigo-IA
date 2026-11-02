@@ -43,13 +43,18 @@ Abrir http://127.0.0.1:4173. En este equipo el puerto 3000 está reservado; por 
 npm.cmd run build
 npm.cmd run start -- --port 4173
 npm.cmd run typecheck
+npm.cmd run lint
 npm.cmd test
-npx.cmd playwright test
+npm.cmd run test:e2e
+npx.cmd playwright install webkit
+npm.cmd run test:e2e:webkit
 ```
 
-Comprobación del corte actual: 35 pruebas unitarias y 60 recorridos de navegador en escritorio y móvil aprobados contra una compilación de producción. Incluyen accesibilidad automática con axe, selección y ayuda contextual, cambio de nivel, animación, elección de voz, respaldo audible y guardado local de ilustraciones simuladas. Se comprobaron las tres voces mediante ElevenLabs real; la generación real de Cloudflare respondió correctamente y OpenRouter devolvió un límite de disponibilidad en la última comprobación. Las pruebas simuladas no garantizan disponibilidad de proveedores ni eficacia educativa. Los documentos 18, 24 y 25 distinguen comprobaciones anteriores y actuales.
+La auditoría responsive del 1 de noviembre parte del commit `c0b2a7c` de `main`, verificado contra el despliegue de producción de Vercel. La suite propia usa Node Test Runner y Playwright; no necesita las pruebas de otro producto. Los resultados, fallos reproducidos, anchos comprobados y límites están en [el informe de auditoría](docs/AUDITORIA_RESPONSIVE_2026-11-01.md). Las pruebas de voz e ilustraciones con respuestas simuladas no garantizan disponibilidad de los proveedores ni eficacia educativa.
 
 Para las comprobaciones de navegador hay que instalar Chromium con `npx.cmd playwright install chromium`. Se pueden dirigir al despliegue público mediante `TEST_BASE_URL`.
+
+El lint usa la configuración de Next.js. Se conserva `tsc` de TypeScript 7 para la comprobación de tipos y se instala la API compatible de TypeScript 6 para ESLint, siguiendo [la configuración oficial de compatibilidad](https://devblogs.microsoft.com/typescript/announcing-typescript-7-0/#running-side-by-side-with-typescript-6.0). `playwright.webkit.config.ts` comprueba el diseño en WebKit sin mezclar sus proyectos con los de Chrome.
 
 ## IA y configuración
 

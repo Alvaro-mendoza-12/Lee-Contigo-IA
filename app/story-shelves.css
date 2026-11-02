@@ -107,8 +107,8 @@
 
 .story-shelf-arrows button {
   display: grid;
-  width: 42px;
-  height: 42px;
+  width: 44px;
+  height: 44px;
   place-items: center;
   border: 1px solid #82937d;
   border-radius: 50%;
